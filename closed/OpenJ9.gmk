@@ -51,7 +51,7 @@ endif
 
 OPENJ9_ALT_SHARED_LIBRARIES := \
 	$(LIBRARY_PREFIX)jclse11_29$(SHARED_LIBRARY_SUFFIX) \
-	j9vm_jdk11/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX) \
+	j9vm_jdk12/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX) \
 	#
 
 OPENJ9_SHARED_CLASSES_LIBRARIES := \
@@ -108,7 +108,7 @@ OPENJ9_MISC_FILES := \
 
 OPENJ9_NOTICE_FILE := openj9/longabout.html
 OPENJ9_NOTICE_FILE_RENAME := openj9-notices.html
-OPENJ9_REDIRECTOR := redirector/$(LIBRARY_PREFIX)jvm_jdk11$(SHARED_LIBRARY_SUFFIX)
+OPENJ9_REDIRECTOR := redirector/$(LIBRARY_PREFIX)jvm_jdk12$(SHARED_LIBRARY_SUFFIX)
 
 MODULES_LIBS_DIR := $(OUTPUTDIR)/support/modules_libs
 
@@ -374,9 +374,9 @@ endif
 	# jvm is required for compiling other java.base support natives
 	@$(ECHO) "Creating support/modules_libs/java.base/*/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX) from J9 sources"
 	@$(MKDIR) -p $(MODULES_LIBS_DIR)/java.base/j9vm
-	@$(CP) -p $(OUTPUTDIR)/vm/redirector/$(LIBRARY_PREFIX)jvm_jdk11$(SHARED_LIBRARY_SUFFIX) $(MODULES_LIBS_DIR)/java.base/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
+	@$(CP) -p $(OUTPUTDIR)/vm/redirector/$(LIBRARY_PREFIX)jvm_jdk12$(SHARED_LIBRARY_SUFFIX) $(MODULES_LIBS_DIR)/java.base/j9vm/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
 	@$(MKDIR) -p $(MODULES_LIBS_DIR)/java.base/server
-	@$(CP) -p $(OUTPUTDIR)/vm/redirector/$(LIBRARY_PREFIX)jvm_jdk11$(SHARED_LIBRARY_SUFFIX) $(MODULES_LIBS_DIR)/java.base/server/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
+	@$(CP) -p $(OUTPUTDIR)/vm/redirector/$(LIBRARY_PREFIX)jvm_jdk12$(SHARED_LIBRARY_SUFFIX) $(MODULES_LIBS_DIR)/java.base/server/$(LIBRARY_PREFIX)jvm$(SHARED_LIBRARY_SUFFIX)
 
 ifeq (true,$(OPENJ9_ENABLE_DDR))
 	@$(ECHO) Copying j9ddr.dat
