@@ -73,3 +73,12 @@ OPENJ9_LIBS_SUBDIR      := @OPENJ9_LIBS_SUBDIR@
 # It ensures that OMR autoconf uses the compiler, not ccache
 export ac_cv_prog_CC    := @CC@
 export ac_cv_prog_CXX   := @CXX@
+
+ifeq ($(OPENJDK_TARGET_OS), windows)
+  # Set environment variables for Microsoft Visual Studio toolchain.
+  # Note that PATH is set in spec.gmk.
+  export INCLUDE := "@VS_INCLUDE@"
+  export LIB := "@VS_LIB@"
+  export MSVC_VERSION := @TOOLCHAIN_VERSION@
+endif
+
