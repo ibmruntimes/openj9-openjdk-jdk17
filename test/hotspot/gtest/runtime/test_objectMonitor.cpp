@@ -21,30 +21,29 @@
  * questions.
  */
 
+#include "precompiled.hpp"
+#include "runtime/objectMonitor.hpp"
+#include "runtime/vm_version.hpp"
+#include "unittest.hpp"
 
-/*
- * @test
- *
- * @summary converted from VM Testbase nsk/jvmti/ResourceExhausted/resexhausted003.
- * VM Testbase keywords: [jpda, jvmti, noras, vm6, quarantine]
- * VM Testbase comments: 6606767
- * VM Testbase readme:
- * Description
- *      Test verifies that ResourceExhausted JVMTI event is generated for
- *      PermGen OOME by creating class loaders and classes
- * Comments
- *      CR 6465063
- *
- * @library /vmTestbase
- *          /test/lib
- * @run driver jdk.test.lib.FileInstaller . .
- * @run main/othervm/native
- *      -agentlib:resexhausted=-waittime=5
- *      -Xms64m
- *      -Xmx64m
- *      -XX:MaxMetaspaceSize=9m
- *      -XX:-UseGCOverheadLimit
- *      nsk.jvmti.ResourceExhausted.resexhausted003
- *      ../../classes/0/vmTestbase
- */
+TEST_VM(ObjectMonitor, sanity) {
 
+ EXPECT_EQ(0, ObjectMonitor::header_offset_in_bytes()) << "Offset for _header must be zero.";
+
+ uint cache_line_size = VM_Version::L1_data_cache_line_size();
+
+ if (cache_line_size != 0) {
+   // We were able to determine the L1 data cache line size so
+   // do some cache line specific sanity checks
+   EXPECT_EQ((size_t) 0, sizeof (PaddedEnd<ObjectMonitor>) % cache_line_size)
+        << "PaddedEnd<ObjectMonitor> size is not a "
+        << "multiple of a cache line which permits false sharing. "
+        << "sizeof(PaddedEnd<ObjectMonitor>) = "
+        << sizeof (PaddedEnd<ObjectMonitor>)
+        << "; cache_line_size = " << cache_line_size;
+
+   EXPECT_GE((size_t) ObjectMonitor::owner_offset_in_bytes(), cache_line_size)
+        << "the _header and _owner fields are closer "
+        << "than a cache line which permits false sharing.";
+  }
+}
