@@ -19,6 +19,4 @@
  * 
  * ===========================================================================
  */
-module java.rmi {
   uses com.ibm.sharedclasses.spi.SharedClassProvider;
-}
