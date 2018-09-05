@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,25 +21,16 @@
  * questions.
  */
 
-#include "jni.h"
-#include "nsk_tools.cpp"
+/* @test TestNoPerfCounter
+ * @bug 8210265
+ * @requires vm.gc=="null"
+ * @library /test/lib /
+ * @summary Tests that disabling perf counters does not crash the VM
+ * @run main/othervm -XX:-UsePerfData TestNoPerfCounter
+ */
 
-extern "C" {
-
-
-JNIEXPORT void JNICALL
-Java_nsk_jdi_ThreadReference_forceEarlyReturn_forceEarlyReturn005_forceEarlyReturn005a_nativeJNIMonitorEnter(JNIEnv *env, jobject classObject, jobject object)
-{
-        jint success  = env->MonitorEnter(object);
-
-        if(success != 0)
-        {
-                NSK_COMPLAIN1("MonitorEnter return non-zero: %d\n", success);
-
-                env->ThrowNew(
-                    env->FindClass("nsk/share/TestJNIError"),
-                    "MonitorEnter return non-zero");
-        }
-}
-
+public class TestNoPerfCounter {
+    public static void main(String[] args) throws Exception {
+        // Nothing to do
+    }
 }
