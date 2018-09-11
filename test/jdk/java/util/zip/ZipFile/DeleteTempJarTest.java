@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,35 +21,31 @@
  * questions.
  */
 
-import jdk.testlibrary.JDKToolLauncher;
-import jdk.test.lib.process.OutputAnalyzer;
-import jdk.test.lib.process.ProcessTools;
-
 /*
  * @test
- * @bug 4990825
- * @library /lib/testlibrary
+ * @bug 4166799
+ * @summary Make sure URL-downloaded jar files (jar_cache files)
+ *          will be deleted when VM exits.
+ * @modules jdk.httpserver
  * @library /test/lib
- * @modules java.management
- * @build jdk.testlibrary.*
- * @run main TestJstatdUsage
+ * @build jdk.test.lib.process.*
+ *        DeleteTempJar
+ * @run main DeleteTempJarTest
  */
-public class TestJstatdUsage {
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.Asserts;
+
+public class DeleteTempJarTest {
 
     public static void main(String[] args) throws Exception {
-        testUsage("-?");
-        testUsage("-h");
-        testUsage("--help");
+        String tmpFile = ProcessTools.executeTestJvm(DeleteTempJar.class.getName())
+                                     .shouldHaveExitValue(0)
+                                     .getStdout();
+
+        Asserts.assertFalse(Files.exists(Paths.get(tmpFile.trim())));
     }
-
-    private static void testUsage(String option) throws Exception {
-        JDKToolLauncher launcher = JDKToolLauncher.createUsingTestJDK("jstatd");
-        launcher.addToolArg(option);
-        ProcessBuilder processBuilder = new ProcessBuilder(launcher.getCommand());
-        OutputAnalyzer output = ProcessTools.executeProcess(processBuilder);
-
-        output.shouldContain("usage: jstatd [-nr] [-p port] [-n rminame]");
-        output.shouldHaveExitValue(0);
-    }
-
 }
