@@ -557,7 +557,6 @@ java/net/MulticastSocket/SetGetNetworkInterfaceTest.java        8207404 aix-all
 java/net/DatagramSocket/SendDatagramToBadAddress.java           7143960 macosx-all
 
 java/net/Socket/LingerTest.java                                 8208690 generic-all
-sun/net/www/http/HttpClient/MultiThreadTest.java                8208690 generic-all
 
 ############################################################################
 
@@ -679,6 +678,7 @@ sun/security/pkcs11/tls/TestLeadingZeroesP11.java               8204203 windows-
 sun/security/pkcs11/tls/TestMasterSecret.java                   8204203 windows-all
 sun/security/pkcs11/tls/TestPRF.java                            8204203 windows-all
 sun/security/pkcs11/tls/TestPremaster.java                      8204203 windows-all
+sun/security/tools/keytool/NssTest.java                         8204203 windows-all
 
 ############################################################################
 
