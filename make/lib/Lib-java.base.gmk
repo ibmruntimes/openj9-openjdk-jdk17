@@ -23,6 +23,10 @@
 # questions.
 #
 
+# ===========================================================================
+# (c) Copyright IBM Corp. 2018, 2018 All Rights Reserved
+# ===========================================================================
+
 include LibCommon.gmk
 
 # Hook to include the corresponding custom file, if present.
@@ -130,6 +134,8 @@ endif
 ################################################################################
 # Create the jsig library
 
+# use libjsig from OpenJ9
+ifeq ($(OPENJ9_TOPDIR),)
 ifeq ($(OPENJDK_TARGET_OS_TYPE), unix)
   ifeq ($(STATIC_BUILD), false)
     $(eval $(call SetupJdkLibrary, BUILD_LIBJSIG, \
@@ -172,6 +178,7 @@ ifeq ($(OPENJDK_TARGET_OS_TYPE), unix)
 
   endif
 endif
+endif # use libjsig from OpenJ9
 
 ################################################################################
 # Create the symbols file for static builds.
