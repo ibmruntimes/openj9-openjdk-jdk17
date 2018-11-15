@@ -25,7 +25,7 @@
  * @test
  * @summary
  * @requires vm.opt.final.EnableJVMCI == true
- * @requires vm.simpleArch == "sparcv9"
+ *
  * @modules jdk.internal.vm.compiler
  *
  * @library /test/lib /compiler/graalunit /
@@ -34,5 +34,5 @@
  *
  * @run driver jdk.test.lib.FileInstaller ../../ProblemList-graal.txt ExcludeList.txt
  *
- * @run main/othervm compiler.graalunit.common.GraalUnitTestLauncher -prefix org.graalvm.compiler.core.sparc.test -exclude ExcludeList.txt
+ * @run main/othervm compiler.graalunit.common.GraalUnitTestLauncher -prefix org.graalvm.compiler.replacements.jdk12.test -exclude ExcludeList.txt
  */
