@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018, Red Hat, Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,20 +21,25 @@
  * questions.
  */
 
-/*
+/**
  * @test
- * @bug 8214025
- * @summary Test compilation with non-default value for ScavengeRootsInCode.
- * @run main/othervm -XX:+UnlockDiagnosticVMOptions -Xcomp -XX:-TieredCompilation
- *                   -XX:ScavengeRootsInCode=1 compiler.arguments.TestScavengeRootsInCode
+ * @bug 8214189
+ * @summary test/hotspot/jtreg/compiler/intrinsics/mathexact/MulExactLConstantTest.java fails on Windows x64 when run with -XX:-TieredCompilation
+ *
+ * @run main/othervm -XX:-TieredCompilation -XX:-BackgroundCompilation -XX:-UseOnStackReplacement MultiplyByConstantLongMax
+ *
  */
 
-package compiler.arguments;
+public class MultiplyByConstantLongMax {
+    public static void main(String[] args) {
+        for (int i = 0; i < 20_000; i++) {
+            if (test(1) != Long.MAX_VALUE) {
+                throw new RuntimeException("incorrect result");
+            }
+        }
+    }
 
-public class TestScavengeRootsInCode {
-
-    static public void main(String[] args) {
-        System.out.println("Passed");
+    private static long test(long v) {
+        return v * Long.MAX_VALUE;
     }
 }
-
