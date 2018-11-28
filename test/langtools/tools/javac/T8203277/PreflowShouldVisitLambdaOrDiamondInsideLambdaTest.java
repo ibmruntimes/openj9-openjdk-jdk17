@@ -23,18 +23,25 @@
 
 /*
  * @test
- * @bug 8214025
- * @summary Test compilation with non-default value for ScavengeRootsInCode.
- * @run main/othervm -XX:+UnlockDiagnosticVMOptions -Xcomp -XX:-TieredCompilation
- *                   -XX:ScavengeRootsInCode=1 compiler.arguments.TestScavengeRootsInCode
+ * @bug 8203277
+ * @summary preflow visitor used during lambda attribution shouldn't visit class definitions inside the lambda body
+ * @compile PreflowShouldVisitLambdaOrDiamondInsideLambdaTest.java
  */
 
-package compiler.arguments;
+import java.util.List;
+import java.util.function.Function;
 
-public class TestScavengeRootsInCode {
+class PreflowShouldVisitLambdaOrDiamondInsideLambdaTest {
+    void build() {
+        List<Function<String, Double>> list1 = transform(null,
+                builder -> new Function<>() {
+                    public Double apply(String params) { return null; }
+                });
 
-    static public void main(String[] args) {
-        System.out.println("Passed");
+        List<Function<String, Double>> list2 = transform(null,
+                builder -> arg -> null);
     }
-}
 
+    static <Argument, Result> List<Result> transform(List<Argument> fromList,
+            Function<? super Argument,? extends Result> function) { return null; }
+}
