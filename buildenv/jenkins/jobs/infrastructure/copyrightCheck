@@ -196,7 +196,7 @@ timeout(time: 6, unit: 'HOURS') {
                                             }
                                         }
                                     }
-                                    if (line.contains("\"Classpath\" exception") || line.contains("GPL Classpath Exception")) {
+                                    if (line.contains(" \"Classpath\"") || line.contains("GPL Classpath Exception")) {
                                         foundCPE = lineCount;
                                         println "We have found a CPE on line '${foundCPE}' in file: '${file}'"
                                         if (line.contains("IBM designates")) {
@@ -252,7 +252,7 @@ timeout(time: 6, unit: 'HOURS') {
                                     // The file is in the 'closed' directory and doesnt contain 
                                     // Oracle copyright with GPLv2 and Classpath Exception so should
                                     // have IBM copyright with GPLv2 and CE at the top of the file
-                                    if (foundIBMCopyright >= 3) {
+                                    if (foundIBMCopyright >= 5) {
                                         errorStr = "IBM Copyright with GPLv2 and IBM Classpath Exception should be at the top of the file"
                                         FAIL = addError(BAD_FILES, "${file}", errorStr)
                                     }
