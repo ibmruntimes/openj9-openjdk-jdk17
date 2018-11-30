@@ -44,7 +44,7 @@ src/solaris/doc
 *.ico
 *.bmp
 *.wav
-/LICENSE
-/README
+LICENSE
+README
 *.md
 *.icu
