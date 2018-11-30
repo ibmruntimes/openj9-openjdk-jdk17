@@ -148,6 +148,7 @@ timeout(time: 6, unit: 'HOURS') {
                             def errorStr
                             def foundNonIBMCopyright = false
                             def inJDK = true
+                            def maxLines = 100
                             
                             def theFile = readFile "${file}"
                             
@@ -155,8 +156,12 @@ timeout(time: 6, unit: 'HOURS') {
                                 println "File is empty"
                             } else {
                                 String[] fileLines = theFile.split("\n")
+                                if ("${file}".startsWith("LICENSE")) {
+                                    maxLines=400
+                                }
                                 toLines = fileLines.size()
-                                if (toLines > 100) { toLines = 100 }
+                                if (toLines > maxLines) { toLines = maxLines }
+                                println "The number of lines being checked is ${toLines} with max ${maxLines}"
                                 for (lineCount = 0; lineCount < toLines; lineCount++) {
                                     String line = fileLines[lineCount]
                                     if (line.contains("Oracle designates")) {
@@ -211,7 +216,7 @@ timeout(time: 6, unit: 'HOURS') {
                                     }
                                     if (foundGPLv2 < 0 && line.contains("GNU General Public License")) {
                                         foundGPLv2 = lineCount
-                                        println "We have found the GPL on line '${foundGPLv2}' in file: '${file}'"
+                                        println "We have found the GPLv2 on line '${foundGPLv2}' in file: '${file}'"
                                     }
                                 }
                             }
@@ -313,15 +318,27 @@ timeout(time: 6, unit: 'HOURS') {
                                     } // foundGPLv2
                                 } else {
                                     // We have found some nonIBM copyright
+                                    println "We have found some nonIBM copyright"
                                     if (foundGPLv2 >= 0) {
                                         // We have found GPLv2
+                                        println "We have found GPLv2"
                                         if (foundCPE < 0) {
                                             // We have not found Classpath Exception
+                                            println "We have not found Classpath Exception"
                                             if (inJDK) {
-                                                // The file is on the JDK binary
-                                                errorStr = "Does not contain a GPLv2 Classpath Exception"
-                                                FAIL = addError(BAD_FILES, "${file}", errorStr)
-                                                checkCopyrightDate = false
+                                                // The file is in the JDK binary
+                                                println "The file is in the JDK binary"
+                                                if ("${file}".startsWith("LICENSE")) {
+                                                    if (foundIBMCPE < 0) {
+                                                        errorStr = "LICENSE does not contain IBM designates Classpath Exception"
+                                                        FAIL = addError(BAD_FILES, "${file}", errorStr)
+                                                    }
+                                                    checkCopyrightDate = false
+                                                } else {
+                                                    errorStr = "Does not contain a GPLv2 Classpath Exception"
+                                                    FAIL = addError(BAD_FILES, "${file}", errorStr)
+                                                    checkCopyrightDate = false
+                                                }
                                             } else {
                                                 // The file is NOT in the JDK binary
                                                 if (foundIBMCopyright < 0) {
@@ -332,10 +349,19 @@ timeout(time: 6, unit: 'HOURS') {
                                             }
                                         } else {
                                             // We have found GPLv2 and CPE, check if we have IBM copyright
-                                            if (foundIBMCopyright < 0 && foundIBMPortionsCopyright < 0) {
-                                                errorStr = "IBM Copyright (basic) is missing from the file"
-                                                FAIL = addError(BAD_FILES, "${file}", errorStr)
+                                            println "We have found GPLv2 and CPE, check if we have IBM copyright"
+                                            if ("${file}".startsWith("LICENSE")) {
+                                                if (foundIBMCPE < 0) {
+                                                    errorStr = "LICENSE does not contain IBM designates Classpath Exception"
+                                                    FAIL = addError(BAD_FILES, "${file}", errorStr)
+                                                }
                                                 checkCopyrightDate = false
+                                            } else {
+                                                if (foundIBMCopyright < 0 && foundIBMPortionsCopyright < 0) {
+                                                    errorStr = "IBM Copyright (basic) is missing from the file"
+                                                    FAIL = addError(BAD_FILES, "${file}", errorStr)
+                                                    checkCopyrightDate = false
+                                                }
                                             }
                                         }
                                     } else {
