@@ -90,7 +90,6 @@ public final class SystemProps {
         putIfAbsent(props, "socksNonProxyHosts", raw.propDefault(Raw._socksNonProxyHosts_NDX));
         putIfAbsent(props, "awt.toolkit", raw.propDefault(Raw._awt_toolkit_NDX));
         putIfAbsent(props, "java.awt.headless", raw.propDefault(Raw._java_awt_headless_NDX));
-        putIfAbsent(props, "java.awt.printerjob", raw.propDefault(Raw._java_awt_printerjob_NDX));
         putIfAbsent(props, "java.awt.graphicsenv", raw.propDefault(Raw._java_awt_graphicsenv_NDX));
         putIfAbsent(props, "sun.desktop", raw.propDefault(Raw._sun_desktop_NDX));
         putIfAbsent(props, "sun.java2d.fontpath", raw.propDefault(Raw._sun_java2d_fontpath_NDX));
@@ -153,16 +152,18 @@ public final class SystemProps {
                                       String format) {
         // Do not override command line setting
         String baseValue = cmdProps.getProperty(base);
-        if (baseValue == null) {
-            // Not overridden on the command line; define the properties if there are platform defined values
-            baseValue = display;
-        }
         if (baseValue != null) {
-            cmdProps.put(base, baseValue);
+            return;     // Do not override value from the command line
+        }
+
+        // Not overridden on the command line; define the properties if there are platform defined values
+        if (display != null) {
+            cmdProps.put(base, display);
+            baseValue = display;
         }
 
         /* user.xxx.display property */
-        String disp = base + ".display";
+        String disp = base.concat(".display");
         String dispValue = cmdProps.getProperty(disp);
         if (dispValue == null && display != null && !display.equals(baseValue)) {
             // Create the property only if different from the base property
@@ -170,7 +171,7 @@ public final class SystemProps {
         }
 
         /* user.xxx.format property */
-        String fmt = base + ".format";
+        String fmt = base.concat(".format");
         String fmtValue = cmdProps.getProperty(fmt);
         if (fmtValue == null && format != null && !format.equals(baseValue)) {
             // Create the property only if different than the base property
@@ -204,8 +205,7 @@ public final class SystemProps {
         @Native private static final int _https_proxyHost_NDX = 1 + _http_proxyPort_NDX;
         @Native private static final int _https_proxyPort_NDX = 1 + _https_proxyHost_NDX;
         @Native private static final int _java_awt_graphicsenv_NDX = 1 + _https_proxyPort_NDX;
-        @Native private static final int _java_awt_printerjob_NDX = 1 + _java_awt_graphicsenv_NDX;
-        @Native private static final int _java_awt_headless_NDX = 1 + _java_awt_printerjob_NDX;
+        @Native private static final int _java_awt_headless_NDX = 1 + _java_awt_graphicsenv_NDX;
         @Native private static final int _java_io_tmpdir_NDX = 1 + _java_awt_headless_NDX;
         @Native private static final int _line_separator_NDX = 1 + _java_io_tmpdir_NDX;
         @Native private static final int _os_arch_NDX = 1 + _line_separator_NDX;
