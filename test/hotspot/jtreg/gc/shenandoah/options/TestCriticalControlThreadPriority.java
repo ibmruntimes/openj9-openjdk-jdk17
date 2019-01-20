@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2001, 2019, Oracle and/or its affiliates. All rights reserved.
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ * Copyright (c) 2019, Red Hat, Inc. All rights reserved.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
@@ -19,11 +18,24 @@
  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
  * or visit www.oracle.com if you need additional information or have any
  * questions.
+ *
  */
 
-/**
- * Here is the use of link: {@link java.io.File File}
- * Here is the use of docRoot: <a href="{@docRoot}/index-all.html">index</a>.
- * Here is the use of link: {@link java.io.File Second File Link}
+/*
+ * @test TestCriticalControlThreadPriority
+ * @summary Check that ShenandoahCriticalControlThreadPriority works
+ * @bug 8217343
+ * @key gc
+ * @requires vm.gc.Shenandoah
+ *
+ * @run main/othervm -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:-ShenandoahCriticalControlThreadPriority -Xmx1g TestCriticalControlThreadPriority
+ * @run main/othervm -XX:+UnlockExperimentalVMOptions -XX:+UseShenandoahGC -XX:+ShenandoahCriticalControlThreadPriority -Xmx1g TestCriticalControlThreadPriority
  */
-public class TestDocRootTag {}
+
+public class TestCriticalControlThreadPriority {
+
+    public static void main(String[] args) throws Exception {
+        // checking the initialization before entering main()
+    }
+
+}
