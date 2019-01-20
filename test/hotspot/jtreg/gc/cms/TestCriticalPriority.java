@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Red Hat, Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,39 +21,17 @@
  * questions.
  */
 
-package pkg;
-
-/**
- * This is a class (i.e. it is indeed a class).
+/*
+ * @test TestCriticalPriority
+ * @key gc
+ * @bug 8217378
+ * @requires vm.gc.ConcMarkSweep & !vm.graal.enabled
+ * @summary Test critical priority is accepted
+ * @run main/othervm -XX:+UseConcMarkSweepGC -XX:+UnlockExperimentalVMOptions -XX:+UseCriticalCMSThreadPriority TestCriticalPriority
  */
-public class BreakIteratorTest {
-    /**
-     * tests the breakiterator (i.e. how the firstSentence is broken up). Second sentence.
-     */
-    public void foo(){}
 
-    /**
-     * with an inline tag <code>jdk.javadoc.taglet.Taglet</code> does it work. Second line.
-     */
-    public void bar(){}
-
-    /**
-     * with a block tag <p> does it work. Second line.
-     */
-    public void baz(){}
-
-    /**
-     * with an anchor for the
-     * <a href="{@docRoot}/index-all.html">top level index</a>.  Second line.
-     */
-    public void foobar(){}
-
-    /**
-     * A constant indicating that the keyLocation is indeterminate
-     * or not relevant.
-     * <code>KEY_TYPED</code> events do not have a keyLocation; this value
-     * is used instead.
-     */
-    public void fe(){}
-
+public class TestCriticalPriority {
+    public static void main(String args[]) throws Exception {
+        // The failure would be detected before entering main().
+    }
 }

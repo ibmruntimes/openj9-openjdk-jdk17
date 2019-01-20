@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,39 +21,19 @@
  * questions.
  */
 
-package pkg;
-
-/**
- * This is a class (i.e. it is indeed a class).
+/*
+ * Key algorithms.
  */
-public class BreakIteratorTest {
-    /**
-     * tests the breakiterator (i.e. how the firstSentence is broken up). Second sentence.
-     */
-    public void foo(){}
+public enum KeyAlgorithm {
 
-    /**
-     * with an inline tag <code>jdk.javadoc.taglet.Taglet</code> does it work. Second line.
-     */
-    public void bar(){}
+    DSA("DSA"),
+    RSA("RSA"),
+    EC("EC"),
+    RSASSAPSS("RSASSA-PSS");
 
-    /**
-     * with a block tag <p> does it work. Second line.
-     */
-    public void baz(){}
+    public final String name;
 
-    /**
-     * with an anchor for the
-     * <a href="{@docRoot}/index-all.html">top level index</a>.  Second line.
-     */
-    public void foobar(){}
-
-    /**
-     * A constant indicating that the keyLocation is indeterminate
-     * or not relevant.
-     * <code>KEY_TYPED</code> events do not have a keyLocation; this value
-     * is used instead.
-     */
-    public void fe(){}
-
+    private KeyAlgorithm(String name) {
+        this.name = name;
+    }
 }
