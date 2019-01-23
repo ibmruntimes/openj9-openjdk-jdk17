@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,30 +23,18 @@
 
 /*
  * @test
- * @bug 8143232
- * @summary Test verifies that LF bootstraps properly when run with COMPILE_THRESHOLD set
- * @compile CompileThresholdBootstrapTest.java
- * @run testng/othervm -Djava.lang.invoke.MethodHandle.COMPILE_THRESHOLD=30 test.java.lang.invoke.CompileThresholdBootstrapTest
+ * @bug 8217447
+ * @summary Test running TraceICs enabled.
+ * @run main/othervm -XX:+IgnoreUnrecognizedVMOptions -XX:+TraceICs
+ *                   compiler.arguments.TestTraceICs
  */
-package test.java.lang.invoke;
 
-import java.lang.invoke.MethodHandles;
-import org.testng.*;
-import org.testng.annotations.*;
+package compiler.arguments;
 
-public final class CompileThresholdBootstrapTest {
+public class TestTraceICs {
 
-    @Test
-    public void testBootstrap() throws Throwable {
-        Assert.assertEquals((int)MethodHandles.constant(int.class, (int)0).invokeExact(), 0);
-    }
-
-    public static void main(String ... args) {
-        try {
-            CompileThresholdBootstrapTest test = new CompileThresholdBootstrapTest();
-            test.testBootstrap();
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+    static public void main(String[] args) {
+        System.out.println("Passed");
     }
 }
+
