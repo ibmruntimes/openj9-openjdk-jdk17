@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2009, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,12 +23,23 @@
  * questions.
  */
 
-#include "jni.h"
-#include "jni_util.h"
-#include "jvm.h"
-#include "jlong.h"
+package jdk.internal.vm.annotation;
 
-/* this is a fake c file to make the build happy since there is no
-   real SocketDispatcher.c file on Solaris but there is on windows. */
+import java.lang.annotation.*;
 
-static jfieldID fd_fdID;        /* for jint 'fd' in java.io.FileDescriptor */
+/**
+ * A method or constructor may be annotated as "hidden" to hint it is desirable
+ * to omit it from stack traces.
+ *
+ * @implNote
+ * This annotation only takes effect for methods or constructors of classes
+ * loaded by the boot loader.  Annotations on methods or constructors of classes
+ * loaded outside of the boot loader are ignored.
+ *
+ * <p>HotSpot JVM provides diagnostic option {@code -XX:+ShowHiddenFrames} to
+ * always show "hidden" frames.
+ */
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Hidden {
+}
