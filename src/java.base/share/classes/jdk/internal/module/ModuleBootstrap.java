@@ -24,7 +24,7 @@
  */
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2018, 2018 All Rights Reserved
+ * (c) Copyright IBM Corp. 2018, 2019 All Rights Reserved
  * ===========================================================================
  */
 
@@ -60,7 +60,7 @@ import jdk.internal.access.JavaLangAccess;
 import jdk.internal.access.JavaLangModuleAccess;
 import jdk.internal.access.SharedSecrets;
 import jdk.internal.perf.PerfCounter;
-import jdk.internal.loader.ClassLoaders;						//IBM-shared_classes_misc
+import jdk.internal.loader.ClassLoaders;						//OpenJ9-shared_classes_misc
 
 /**
  * Initializes/boots the module system.
@@ -461,10 +461,10 @@ public final class ModuleBootstrap {
                 limitedFinder = new SafeModuleFinder(finder);
         }
 
-        ClassLoader appLoader = ClassLoaders.appClassLoader();                                                  //IBM-shared_classes_misc
-        ClassLoader platformLoader = ClassLoaders.platformClassLoader();                                //IBM-shared_classes_misc
-        ((BuiltinClassLoader)platformLoader).initializeSharedClassesSupport();                  //IBM-shared_classes_misc
-        ((BuiltinClassLoader)appLoader).initializeSharedClassesSupport();                               //IBM-shared_classes_misc
+        ClassLoader appLoader = ClassLoaders.appClassLoader();                                                  //OpenJ9-shared_classes_misc
+        ClassLoader platformLoader = ClassLoaders.platformClassLoader();                                //OpenJ9-shared_classes_misc
+        ((BuiltinClassLoader)platformLoader).initializeSharedClassesSupport();                  //OpenJ9-shared_classes_misc
+        ((BuiltinClassLoader)appLoader).initializeSharedClassesSupport();                               //OpenJ9-shared_classes_misc
 
         // Module graph can be archived at CDS dump time. Only allow the
         // unnamed module case for now.
