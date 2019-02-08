@@ -117,7 +117,18 @@ check () {
 
   # File needs checking
 
-  MAX_LINES=400
+  # If we are checking this file or the pull request copyright checker limit
+  # the number of lines processed otherwise, since all the copyright search
+  # strings are in these files, errors would be reported.
+  case "$1" in
+    *copyrightCheckDir.sh)
+      trace "Checking copyright checker file $1"
+      MAX_LINES=80;;
+    *copyrightCheck)
+      trace "Checking copyright checker file $1"
+      MAX_LINES=80;;
+    *) MAX_LINES=400;;
+  esac
 
   # Some source files have special characters such as the copyright symbol.
   # Linux grep interprets these as binary files unless the '-a' option is used
