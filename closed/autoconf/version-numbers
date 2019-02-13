@@ -1,5 +1,5 @@
 # ===========================================================================
-# (c) Copyright IBM Corp. 2017, 2019 All Rights Reserved
+# (c) Copyright IBM Corp. 2019, 2019 All Rights Reserved
 # ===========================================================================
 # 
 # This code is free software; you can redistribute it and/or modify it
@@ -20,6 +20,9 @@
 # 
 # ===========================================================================
 
-OPENJ9OMR_SHA := $(shell git -C $(OPENJ9OMR_TOPDIR) rev-parse --short HEAD)
-OPENJ9_SHA  := $(shell git -C $(OPENJ9_TOPDIR)  rev-parse --short HEAD)
-SOURCE_REVISION = OpenJDK:$(OPENJDK_SHA) OpenJ9:$(OPENJ9_SHA) OMR:$(OPENJ9OMR_SHA)
+
+# Default version numbers to use unless overridden by configure
+
+COMPANY_NAME="Eclipse OpenJ9"
+VENDOR_URL=http://www.eclipse.org/openj9
+VENDOR_URL_BUG=https://github.com/eclipse/openj9/issues
