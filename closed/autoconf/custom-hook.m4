@@ -272,10 +272,10 @@ AC_DEFUN_ONCE([OPENJ9_PLATFORM_SETUP],
       fi
     elif test "x$OPENJDK_BUILD_OS" = xmacosx ; then
       OPENJ9_PLATFORM_CODE=oa64
-      if test "x$OPENJ9_LIBS_SUBDIR" = xdefault; then
-        OPENJ9_BUILDSPEC="osx_x86-64"
+      if test "x$OPENJ9_LIBS_SUBDIR" = xdefault ; then
+        OPENJ9_BUILDSPEC=osx_x86-64
       else
-        OPENJ9_BUILDSPEC="osx_x86-64_cmprssptrs"
+        OPENJ9_BUILDSPEC=osx_x86-64_cmprssptrs
       fi
     else
       AC_MSG_ERROR([Unsupported OpenJ9 platform ${OPENJDK_BUILD_OS}!])
@@ -370,6 +370,9 @@ AC_DEFUN_ONCE([OPENJ9_THIRD_PARTY_REQUIREMENTS],
 
 AC_DEFUN_ONCE([CUSTOM_LATE_HOOK],
 [
+  # Configure for openssl build
+  CONFIGURE_OPENSSL
+
   CLOSED_AUTOCONF_DIR="$TOPDIR/closed/autoconf"
 
   # Create the custom-spec.gmk
@@ -380,4 +383,138 @@ AC_DEFUN_ONCE([CUSTOM_LATE_HOOK],
 
   # explicitly disable classlist generation
   ENABLE_GENERATE_CLASSLIST=false
+])
+
+AC_DEFUN([CONFIGURE_OPENSSL],
+[
+  AC_ARG_WITH(openssl, [AS_HELP_STRING([--with-openssl],
+    [Use either fetched | system | <path to openssl 1.0.2 (and above)])])
+  AC_ARG_ENABLE(openssl-bundling, [AS_HELP_STRING([--enable-openssl-bundling],
+    [enable bundling of the openssl crypto library with the jdk build])])
+  WITH_OPENSSL=yes
+  if test "x$with_openssl" = x; then
+    # User doesn't want to build with OpenSSL. No need to build openssl libraries
+    WITH_OPENSSL=no
+  else
+    AC_MSG_CHECKING([for OPENSSL])
+    BUNDLE_OPENSSL="$enable_openssl_bundling"
+    BUILD_OPENSSL=no
+    # If not specified, default is to not bundle openssl
+    if test "x$BUNDLE_OPENSSL" = x; then
+      BUNDLE_OPENSSL=no
+    fi
+    # Process --with-openssl=fetched
+    if test "x$with_openssl" = xfetched ; then
+      if test "x$OPENJDK_BUILD_OS" = xwindows ; then
+        AC_MSG_RESULT([no])
+        printf "On Windows, value of \"fetched\" is currently not supported with --with-openssl. Please build OpenSSL using VisualStudio outside cygwin and specify the path with --with-openssl\n"
+        AC_MSG_ERROR([Cannot continue])
+      fi
+      if test -d "$TOPDIR/openssl" ; then
+        OPENSSL_DIR="$TOPDIR/openssl"
+        OPENSSL_CFLAGS="-I${OPENSSL_DIR}/include"
+        if test "x$BUNDLE_OPENSSL" != x ; then
+            if  ! test -s "$OPENSSL_DIR/${LIBRARY_PREFIX}crypto${SHARED_LIBRARY_SUFFIX}" ; then
+                BUILD_OPENSSL=yes
+            fi
+        fi
+        if test "x$BUNDLE_OPENSSL" = xyes ; then
+          OPENSSL_BUNDLE_LIB_PATH="${OPENSSL_DIR}"
+        fi
+        AC_MSG_RESULT([yes])
+      else
+        AC_MSG_RESULT([no])
+        printf "$TOPDIR/openssl is not found.\n"
+        printf "  run get_source.sh --openssl-version=<version as 1.0.2 or later>\n"
+        printf "  Then, run configure with '--with-openssl=fetched'\n"
+        AC_MSG_ERROR([Cannot continue])
+      fi
+    # Process --with-openssl=system
+    elif test "x$with_openssl" = xsystem ; then
+      if test "x$OPENJDK_BUILD_OS" = xwindows ; then
+        AC_MSG_RESULT([no])
+        printf "On Windows, value of \"system\" is currently not supported with --with-openssl. Please build OpenSSL using VisualStudio outside cygwin and specify the path with --with-openssl\n"
+        AC_MSG_ERROR([Cannot continue])
+      fi
+      # We can use the system installed openssl only when it is package installed.
+      # If not package installed, fail with an error message.
+      # PKG_CHECK_MODULES will setup the variable OPENSSL_CFLAGS and OPENSSL_LIB when successful.
+      PKG_CHECK_MODULES(OPENSSL, openssl >= 1.0.2, [FOUND_OPENSSL=yes], [FOUND_OPENSSL=no])
+      if test "x$FOUND_OPENSSL" != xyes ; then
+        AC_MSG_ERROR([Unable to find openssl 1.0.2(and above) installed on System. Please use other options for '--with-openssl'])
+      fi
+      # The crypto library bundling option is not available when --with-openssl=system.
+      if test "x$BUNDLE_OPENSSL" = xyes ; then
+        AC_MSG_RESULT([no])
+        printf "The option --enable_openssl_bundling is not available with --with-openssl=system. Use option fetched or openssl-custom-path to bundle crypto library\n"
+        AC_MSG_ERROR([Cannot continue])
+      fi
+    # Process --with-openssl=/custom/path/where/openssl/is/present
+    # As the value is not fetched or system, assume user specified the
+    # path where openssl is installed
+    else
+      OPENSSL_DIR=$with_openssl
+      BASIC_FIXUP_PATH(OPENSSL_DIR)
+      if test -s "$OPENSSL_DIR/include/openssl/evp.h" ; then
+        OPENSSL_CFLAGS="-I${OPENSSL_DIR}/include"
+        if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin ; then
+            if test "x$BUNDLE_OPENSSL" = xyes ; then
+              if test -d "$OPENSSL_DIR/bin" ; then
+                OPENSSL_BUNDLE_LIB_PATH="${OPENSSL_DIR}/bin"
+              else
+                OPENSSL_BUNDLE_LIB_PATH="${OPENSSL_DIR}"
+              fi
+            fi
+        else
+          if test -s "$OPENSSL_DIR/lib/${LIBRARY_PREFIX}crypto${SHARED_LIBRARY_SUFFIX}" ; then
+            OPENSSL_CFLAGS="-I${OPENSSL_DIR}/include"
+            if test "x$BUNDLE_OPENSSL" = xyes ; then
+              # On Mac OSX, create local copy of the crypto library to update @rpath
+              # as the default is /usr/local/lib.
+              if test "x$OPENJDK_BUILD_OS" = xmacosx ; then
+                LOCAL_CRYPTO="$TOPDIR/openssl"
+                $MKDIR -p "${LOCAL_CRYPTO}"
+                $CP "${OPENSSL_DIR}/libcrypto.1.1.dylib" "${LOCAL_CRYPTO}"
+                $CP "${OPENSSL_DIR}/libcrypto.1.0.0.dylib" "${LOCAL_CRYPTO}"
+                $CP -a "${OPENSSL_DIR}/libcrypto.dylib" "${LOCAL_CRYPTO}"
+                OPENSSL_BUNDLE_LIB_PATH="${LOCAL_CRYPTO}"
+              else
+                OPENSSL_BUNDLE_LIB_PATH="${OPENSSL_DIR}/lib"
+              fi
+            fi
+          elif test -s "$OPENSSL_DIR/${LIBRARY_PREFIX}crypto${SHARED_LIBRARY_SUFFIX}" ; then
+            OPENSSL_CFLAGS="-I${OPENSSL_DIR}/include"
+            if test "x$BUNDLE_OPENSSL" = xyes ; then
+              # On Mac OSX, create local copy of the crypto library to update @rpath
+              # as the default is /usr/local/lib.
+              if test "x$OPENJDK_BUILD_OS" = xmacosx ; then
+                LOCAL_CRYPTO="$TOPDIR/openssl"
+                $MKDIR -p "${LOCAL_CRYPTO}"
+                $CP "${OPENSSL_DIR}/libcrypto.1.1.dylib" "${LOCAL_CRYPTO}"
+                $CP "${OPENSSL_DIR}/libcrypto.1.0.0.dylib" "${LOCAL_CRYPTO}"
+                $CP -a "${OPENSSL_DIR}/libcrypto.dylib" "${LOCAL_CRYPTO}"
+                OPENSSL_BUNDLE_LIB_PATH="${LOCAL_CRYPTO}"
+              else
+                OPENSSL_BUNDLE_LIB_PATH="${OPENSSL_DIR}"
+              fi
+            fi
+          fi
+        fi
+      else
+        #openssl is not found in user specified location. Abort.
+        AC_MSG_RESULT([no])
+        AC_MSG_ERROR([Unable to find openssl in specified location $OPENSSL_DIR])
+      fi
+      AC_MSG_RESULT([yes])
+    fi
+
+    AC_MSG_CHECKING([if we should bundle openssl])
+    AC_MSG_RESULT([$BUNDLE_OPENSSL])
+  fi
+
+  AC_SUBST(OPENSSL_BUNDLE_LIB_PATH)
+  AC_SUBST(OPENSSL_DIR)
+  AC_SUBST(WITH_OPENSSL)
+  AC_SUBST(BUILD_OPENSSL)
+  AC_SUBST(OPENSSL_CFLAGS)
 ])
