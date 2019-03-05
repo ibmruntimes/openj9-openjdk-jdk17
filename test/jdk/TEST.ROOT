@@ -72,7 +72,7 @@ requires.properties= \
 requires.extraPropDefns = [../../closed/test/jtreg-ext/requires/OpenJ9PropsExt.java]
 
 # Minimum jtreg version
-requiredVersion=4.2 b13
+requiredVersion=4.2 b14
 
 # Path to libraries in the topmost test directory. This is needed so @library
 # does not need ../../ notation to reach them
@@ -83,3 +83,6 @@ useNewOptions=true
 
 # Use --patch-module instead of -Xmodule:
 useNewPatchModule=true
+
+# disabled till JDK-8219408 is fixed
+allowSmartActionArgs=false
