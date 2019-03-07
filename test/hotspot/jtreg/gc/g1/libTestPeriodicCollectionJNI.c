@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,35 +22,49 @@
  */
 
 /*
- * @test
- * @bug      4904036
- * @summary  Document a class that does not have any methods to document.  The
- *           "Method Summary" heading should still show up since the class
- *           inherits methods.
- * @author   jamieh
- * @library  ../../lib
- * @modules jdk.javadoc/jdk.javadoc.internal.tool
- * @build    javadoc.tester.*
- * @run main TestSummaryHeading
+ * Native support for TestPeriodicCollectionJNI test.
  */
 
-import javadoc.tester.JavadocTester;
+#include "jni.h"
 
-public class TestSummaryHeading extends JavadocTester {
+#ifdef WINDOWS
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
-    public static void main(String... args) throws Exception {
-        TestSummaryHeading tester = new TestSummaryHeading();
-        tester.runTests();
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+static volatile int release_critical = 0;
+
+JNIEXPORT jboolean JNICALL
+Java_gc_g1_TestPeriodicCollectionJNI_blockInNative(JNIEnv* env, jobject obj, jintArray dummy) {
+    void* native_array = (*env)->GetPrimitiveArrayCritical(env, dummy, 0);
+
+    if (native_array == NULL) {
+        return JNI_FALSE;
     }
 
-    @Test
-    public void test() {
-        javadoc("-d", "out",
-                "-sourcepath", testSrc,
-                testSrc("C.java"));
-        checkExit(Exit.OK);
-
-        checkOutput("C.html", true,
-                "<h2>Method Summary</h2>");
+    while (!release_critical) {
+#ifdef WINDOWS
+        Sleep(1);
+#else
+        usleep(1000);
+#endif
     }
+
+    (*env)->ReleasePrimitiveArrayCritical(env, dummy, native_array, 0);
+
+    return JNI_TRUE;
 }
+
+JNIEXPORT void JNICALL Java_gc_g1_TestPeriodicCollectionJNI_unblock(JNIEnv *env, jobject obj)
+{
+    release_critical = 1;
+}
+
+#ifdef __cplusplus
+}
+#endif
