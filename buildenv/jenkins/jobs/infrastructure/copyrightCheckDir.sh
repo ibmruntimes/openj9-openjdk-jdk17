@@ -310,6 +310,9 @@ check () {
     nashorn/make/*)
       trace  "$1 deemed not to be in the built JDK because it matches case parameter expansion nashorn/make/*"
       IN_JDK=0;;
+    src/java.base/share/classes/sun/security/util/math/intpoly/FieldGen.jsh)
+      trace  "$1 is not part of the built JDK"
+      IN_JDK=0;;
     *) IN_JDK=1;;
   esac
 
@@ -555,7 +558,6 @@ TEMPFILE=$PWD/copyrightCheck.known.failures
 echo "Currently excluded files......." >$TEMPFILE
 
 echo "\n# openj9-openjdk-jdk known failures" >>$TEMPFILE
-echo "src/java.base/share/classes/sun/security/util/math/intpoly/FieldGen.jsh" >>$TEMPFILE
 echo "src/java.base/solaris/native/libjvm_db/libjvm_db.c" >>$TEMPFILE
 echo "src/java.base/solaris/native/libjvm_db/libjvm_db.h" >>$TEMPFILE
 echo "src/java.base/solaris/native/libjvm_dtrace/jvm_dtrace.c" >>$TEMPFILE
