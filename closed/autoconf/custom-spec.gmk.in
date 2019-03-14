@@ -1,5 +1,5 @@
 # ===========================================================================
-# (c) Copyright IBM Corp. 2017, 2018 All Rights Reserved
+# (c) Copyright IBM Corp. 2017, 2019 All Rights Reserved
 # ===========================================================================
 # This code is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 only, as
@@ -107,3 +107,10 @@ ifeq ($(OPENJDK_BUILD_OS), macosx)
   # Set page zero size to 4KB for mapping memory below 4GB.
   LDFLAGS_JDKEXE += -pagezero_size 0x1000
 endif
+
+# OPENSSL
+BUILD_OPENSSL:=@BUILD_OPENSSL@
+OPENSSL_BUNDLE_LIB_PATH:=@OPENSSL_BUNDLE_LIB_PATH@
+OPENSSL_CFLAGS:=@OPENSSL_CFLAGS@
+OPENSSL_DIR:=@OPENSSL_DIR@
+WITH_OPENSSL:=@WITH_OPENSSL@
