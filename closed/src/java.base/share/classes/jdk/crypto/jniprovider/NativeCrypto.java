@@ -32,15 +32,19 @@ import jdk.internal.misc.Unsafe;
 import jdk.internal.reflect.Reflection;
 import jdk.internal.reflect.CallerSensitive;
 
+import sun.security.action.GetPropertyAction;
+
 public class NativeCrypto {
 
+    private static final String nativeCryptTrace = GetPropertyAction.privilegedGetProperty("jdk.nativeCryptoTrace");
     private static final boolean loaded = AccessController.doPrivileged(
             (PrivilegedAction<Boolean>) () -> {
             Boolean isLoaded = Boolean.FALSE;
             try {
                 System.loadLibrary("jncrypto"); // check for native library
+
                 // load OpenSSL crypto library dynamically.
-                if (loadCrypto() == 0) {
+                if (loadCrypto(Boolean.valueOf(nativeCryptTrace)) == 0) {
                     isLoaded = Boolean.TRUE;
                 }
             } catch (UnsatisfiedLinkError usle) { 
@@ -70,7 +74,7 @@ public class NativeCrypto {
     }
 
     /* Native digest interfaces */
-    static final native int loadCrypto();
+    static final native int loadCrypto(boolean useCryptoTrace);
 
     public final native long DigestCreateContext(long nativeBuffer,
                                                  int algoIndex);
