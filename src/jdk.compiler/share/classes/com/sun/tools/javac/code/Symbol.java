@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -32,6 +32,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -64,9 +65,12 @@ import com.sun.tools.javac.util.Name;
 import static com.sun.tools.javac.code.Flags.*;
 import static com.sun.tools.javac.code.Kinds.*;
 import static com.sun.tools.javac.code.Kinds.Kind.*;
+import com.sun.tools.javac.code.MissingInfoHandler;
 import static com.sun.tools.javac.code.Scope.LookupKind.NON_RECURSIVE;
 import com.sun.tools.javac.code.Scope.WriteableScope;
+import com.sun.tools.javac.code.Symbol;
 import static com.sun.tools.javac.code.Symbol.OperatorSymbol.AccessCode.FIRSTASGOP;
+import com.sun.tools.javac.code.Type;
 import static com.sun.tools.javac.code.TypeTag.CLASS;
 import static com.sun.tools.javac.code.TypeTag.FORALL;
 import static com.sun.tools.javac.code.TypeTag.TYPEVAR;
@@ -75,6 +79,7 @@ import static com.sun.tools.javac.jvm.ByteCodes.ishll;
 import static com.sun.tools.javac.jvm.ByteCodes.lushrl;
 import static com.sun.tools.javac.jvm.ByteCodes.lxor;
 import static com.sun.tools.javac.jvm.ByteCodes.string_add;
+import com.sun.tools.javac.util.Name;
 
 /** Root class for Java symbols. It contains subclasses
  *  for specific sorts of symbols, such as variables, methods and operators,
@@ -1188,6 +1193,16 @@ public abstract class Symbol extends AnnoConstruct implements Element {
 
     }
 
+    public static class RootPackageSymbol extends PackageSymbol {
+        public final MissingInfoHandler missingInfoHandler;
+
+        public RootPackageSymbol(Name name, Symbol owner, MissingInfoHandler missingInfoHandler) {
+            super(name, owner);
+            this.missingInfoHandler = missingInfoHandler;
+        }
+
+    }
+
     /** A class for class symbols
      */
     public static class ClassSymbol extends TypeSymbol implements TypeElement {
@@ -1631,6 +1646,32 @@ public abstract class Symbol extends AnnoConstruct implements Element {
         public <R, P> R accept(Symbol.Visitor<R, P> v, P p) {
             return v.visitVarSymbol(this, p);
         }
+    }
+
+    public static class ParamSymbol extends VarSymbol {
+        public ParamSymbol(long flags, Name name, Type type, Symbol owner) {
+            super(flags, name, type, owner);
+        }
+
+        @Override
+        public Name getSimpleName() {
+            if ((flags_field & NAME_FILLED) == 0) {
+                flags_field |= NAME_FILLED;
+                Symbol rootPack = this;
+                while (rootPack != null && !(rootPack instanceof RootPackageSymbol)) {
+                    rootPack = rootPack.owner;
+                }
+                if (rootPack != null) {
+                    Name inferredName =
+                            ((RootPackageSymbol) rootPack).missingInfoHandler.getParameterName(this);
+                    if (inferredName != null) {
+                        this.name = inferredName;
+                    }
+                }
+            }
+            return super.getSimpleName();
+        }
+
     }
 
     /** A class for method symbols.
@@ -2131,32 +2172,42 @@ public abstract class Symbol extends AnnoConstruct implements Element {
 
         /** A diagnostic object describing the failure
          */
-        public JCDiagnostic diag;
+        private JCDiagnostic diag;
 
-        public CompletionFailure(Symbol sym, JCDiagnostic diag, DeferredCompletionFailureHandler dcfh) {
+        private Supplier<JCDiagnostic> diagSupplier;
+
+        public CompletionFailure(Symbol sym, Supplier<JCDiagnostic> diagSupplier, DeferredCompletionFailureHandler dcfh) {
             this.dcfh = dcfh;
             this.sym = sym;
-            this.diag = diag;
+            this.diagSupplier = diagSupplier;
 //          this.printStackTrace();//DEBUG
         }
 
         public JCDiagnostic getDiagnostic() {
+            if (diag == null && diagSupplier != null) {
+                diag = diagSupplier.get();
+            }
             return diag;
         }
 
         @Override
         public String getMessage() {
-            return diag.getMessage(null);
+            return getDiagnostic().getMessage(null);
         }
 
         public JCDiagnostic getDetailValue() {
-            return diag;
+            return getDiagnostic();
         }
 
         @Override
         public CompletionFailure initCause(Throwable cause) {
             super.initCause(cause);
             return this;
+        }
+
+        public void resetDiagnostic(Supplier<JCDiagnostic> diagSupplier) {
+            this.diagSupplier = diagSupplier;
+            this.diag = null;
         }
 
     }
