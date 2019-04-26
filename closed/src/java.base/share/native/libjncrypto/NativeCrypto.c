@@ -36,6 +36,8 @@
 #include "jdk_crypto_jniprovider_NativeCrypto.h"
 #include "NativeCrypto_md.h"
 
+#define OPENSSL_VERSION_1_0 "OpenSSL 1.0."
+#define OPENSSL_VERSION_1_1 "OpenSSL 1.1."
 
 //Header for RSA algorithm using 1.0.2 OpenSSL
 int OSSL102_RSA_set0_key(RSA *, BIGNUM *, BIGNUM *, BIGNUM *);
@@ -157,7 +159,7 @@ static void printErrors(void) {
  * Signature: ()V
  */
 JNIEXPORT jint JNICALL Java_jdk_crypto_jniprovider_NativeCrypto_loadCrypto
-  (JNIEnv *env, jclass thisObj){
+  (JNIEnv *env, jclass thisObj, jboolean useCryptoTrace){
 
     void *handle;
     char *error;
@@ -171,47 +173,40 @@ JNIEXPORT jint JNICALL Java_jdk_crypto_jniprovider_NativeCrypto_loadCrypto
     // Load OpenSSL Crypto library
     handle = load_crypto_library();
     if (handle == NULL) {
-        //fprintf(stderr, " :FAILED TO LOAD OPENSSL CRYPTO LIBRARY\n");
-        //fflush(stderr);
+        if (useCryptoTrace) {
+            fprintf(stderr, "Error loading OpenSSL: FAILED TO LOAD OPENSSL CRYPTO LIBRARY\n");
+        }
         return -1;
     }
 
     // Different symbols are used by OpenSSL with 1.0 and 1.1.
     // The symbol 'OpenSSL_version' is used by OpenSSL 1.1 where as
     // the symbol "SSLeay_version" is used by OpenSSL 1.0.
-    // Currently only openssl 1.0.2 and 1.1.0 and 1.1.1 are supported.
+    // Currently only openssl 1.0.x and 1.1.x are supported.
     OSSL_version = (OSSL_version_t*)find_crypto_symbol(handle, "OpenSSL_version");
-
     if (OSSL_version == NULL)  {
         OSSL_version = (OSSL_version_t*)find_crypto_symbol(handle, "SSLeay_version");
+    }
 
-        if (OSSL_version == NULL)  {
-            //fprintf(stderr, "Only openssl 1.0.2 and 1.1.0 and 1.1.1 are supported\n");
-            //fflush(stderr);
+    if (OSSL_version != NULL)  {
+        openssl_version = (*OSSL_version)(0); //get OPENSSL_VERSION
+        if (0 == strncmp(openssl_version, OPENSSL_VERSION_1_0, strlen(OPENSSL_VERSION_1_0))) {
+            ossl_ver = 0;
+        } else if (0 == strncmp(openssl_version, OPENSSL_VERSION_1_1, strlen(OPENSSL_VERSION_1_1))) {
+            ossl_ver = 1;
+        } else {
+            if (useCryptoTrace) {
+                fprintf(stderr, "Error loading OpenSSL: Incompatible OpenSSL version found: %s\n", openssl_version);
+            }
             unload_crypto_library(handle);
             return -1;
-        } else {
-            openssl_version = (*OSSL_version)(0); //get OPENSSL_VERSION
-            //Ensure the OpenSSL version is "OpenSSL 1.0.2"
-            if (strncmp(openssl_version, "OpenSSL 1.0.2", 13) != 0) {
-                //fprintf(stderr, "Incompatable OpenSSL version: %s\n", openssl_version);
-                //fflush(stderr);
-                unload_crypto_library(handle);
-                return -1;
-            }
-            ossl_ver = 0;
         }
     } else {
-        openssl_version = (*OSSL_version)(0); //get OPENSSL_VERSION
-        //Ensure the OpenSSL version is "OpenSSL 1.1.0" or "OpenSSL 1.1.0".
-        if (strncmp(openssl_version, "OpenSSL 1.1.0", 13) != 0 &&
-            strncmp(openssl_version, "OpenSSL 1.1.1", 13) != 0) {
-            //fprintf(stderr, "Incompatable OpenSSL version: %s\n", openssl_version);
-            //fflush(stderr);
-            unload_crypto_library(handle);
-            return -1;
+        if (useCryptoTrace) {
+            fprintf(stderr, "Error loading OpenSSL: Error finding the OpenSSL version symbol in the crypto library\n");
         }
-        ossl_ver = 1;
+        unload_crypto_library(handle);
+        return -1;
     }
 
     // Load the function symbols for OpenSSL errors.
@@ -319,11 +314,18 @@ JNIEXPORT jint JNICALL Java_jdk_crypto_jniprovider_NativeCrypto_loadCrypto
         (OSSL_BN_bin2bn == NULL) ||
         (OSSL_BN_set_negative == NULL) ||
         (OSSL_BN_free == NULL)) {
-        //fprintf(stderr, "One or more of the required symbols are missing in the crypto library\n");
-        //fflush(stderr);
+        if (useCryptoTrace) {
+            fprintf(stderr, "Error loading OpenSSL: One or more of the required symbols are missing in the crypto library: %s\n", openssl_version);
+        }
         unload_crypto_library(handle);
         return -1;
     } else {
+        char * library_path =  malloc(4096);
+        get_library_path(handle, library_path);
+        if (useCryptoTrace) {
+            fprintf(stderr, "Using OpenSSL version: %s (%s)\n", openssl_version, library_path);
+        }
+        free(library_path);
         return 0;
     }
  }

@@ -54,3 +54,11 @@ void * find_crypto_symbol(void *handle, const char *symname) {
 
     return symptr;
 }
+
+
+/* Find the path that the library was loaded from */
+void get_library_path(void * handle, char * library_path) {
+    if (0 == GetModuleFileName(handle, library_path, 4096)) {
+        strcpy(library_path, "Unknown path");
+    }
+}
