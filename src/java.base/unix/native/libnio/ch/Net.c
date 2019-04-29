@@ -216,8 +216,10 @@ Java_sun_nio_ch_Net_socket0(JNIEnv *env, jclass cl, jboolean preferIPv6,
         return handleSocketError(env, errno);
     }
 
-    /* Disable IPV6_V6ONLY to ensure dual-socket support */
-    if (domain == AF_INET6) {
+    /*
+     * If IPv4 is available, disable IPV6_V6ONLY to ensure dual-socket support.
+     */
+    if (domain == AF_INET6 && ipv4_available()) {
         int arg = 0;
         if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&arg,
                        sizeof(int)) < 0) {
@@ -804,7 +806,7 @@ Java_sun_nio_ch_Net_poll(JNIEnv* env, jclass this, jobject fdo, jint events, jlo
     }
 }
 
-JNIEXPORT jint JNICALL
+JNIEXPORT jboolean JNICALL
 Java_sun_nio_ch_Net_pollConnect(JNIEnv *env, jobject this, jobject fdo, jlong timeout)
 {
     jint fd = fdval(env, fdo);
@@ -828,23 +830,22 @@ Java_sun_nio_ch_Net_pollConnect(JNIEnv *env, jobject this, jobject fdo, jlong ti
         errno = 0;
         result = getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &n);
         if (result < 0) {
-            return handleSocketError(env, errno);
+            handleSocketError(env, errno);
+            return JNI_FALSE;
         } else if (error) {
-            return handleSocketError(env, error);
+            handleSocketError(env, error);
+            return JNI_FALSE;
         } else if ((poller.revents & POLLHUP) != 0) {
-            return handleSocketError(env, ENOTCONN);
+            handleSocketError(env, ENOTCONN);
+            return JNI_FALSE;
         }
         // connected
-        return 1;
-    } else if (result == 0) {
-        return 0;
+        return JNI_TRUE;
+    } else if (result == 0 || errno == EINTR) {
+        return JNI_FALSE;
     } else {
-        if (errno == EINTR) {
-            return IOS_INTERRUPTED;
-        } else {
-            JNU_ThrowIOExceptionWithLastError(env, "poll failed");
-            return IOS_THROWN;
-        }
+        JNU_ThrowIOExceptionWithLastError(env, "poll failed");
+        return JNI_FALSE;
     }
 }
 

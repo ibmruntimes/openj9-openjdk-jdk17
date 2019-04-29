@@ -25,11 +25,13 @@
 
 package jdk.javadoc.internal.doclets.formats.html;
 
-import jdk.javadoc.internal.doclets.formats.html.markup.Head;
-import jdk.javadoc.internal.doclets.formats.html.markup.HtmlAttr;
-import jdk.javadoc.internal.doclets.formats.html.markup.TableHeader;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,8 +71,10 @@ import com.sun.source.doctree.SummaryTree;
 import com.sun.source.doctree.SystemPropertyTree;
 import com.sun.source.doctree.TextTree;
 import com.sun.source.util.SimpleDocTreeVisitor;
-
 import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder;
+import jdk.javadoc.internal.doclets.formats.html.markup.Entity;
+import jdk.javadoc.internal.doclets.formats.html.markup.Head;
+import jdk.javadoc.internal.doclets.formats.html.markup.HtmlAttr;
 import jdk.javadoc.internal.doclets.formats.html.markup.HtmlDocument;
 import jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle;
 import jdk.javadoc.internal.doclets.formats.html.markup.HtmlTag;
@@ -79,6 +83,7 @@ import jdk.javadoc.internal.doclets.formats.html.markup.Links;
 import jdk.javadoc.internal.doclets.formats.html.markup.RawHtml;
 import jdk.javadoc.internal.doclets.formats.html.markup.Script;
 import jdk.javadoc.internal.doclets.formats.html.markup.StringContent;
+import jdk.javadoc.internal.doclets.formats.html.markup.TableHeader;
 import jdk.javadoc.internal.doclets.toolkit.AnnotationTypeWriter;
 import jdk.javadoc.internal.doclets.toolkit.ClassWriter;
 import jdk.javadoc.internal.doclets.toolkit.Content;
@@ -97,7 +102,12 @@ import jdk.javadoc.internal.doclets.toolkit.util.DocletConstants;
 import jdk.javadoc.internal.doclets.toolkit.util.Utils;
 import jdk.javadoc.internal.doclets.toolkit.util.VisibleMemberTable;
 
-import static com.sun.source.doctree.DocTree.Kind.*;
+import static com.sun.source.doctree.DocTree.Kind.CODE;
+import static com.sun.source.doctree.DocTree.Kind.COMMENT;
+import static com.sun.source.doctree.DocTree.Kind.LINK;
+import static com.sun.source.doctree.DocTree.Kind.LINK_PLAIN;
+import static com.sun.source.doctree.DocTree.Kind.SEE;
+import static com.sun.source.doctree.DocTree.Kind.TEXT;
 import static jdk.javadoc.internal.doclets.toolkit.util.CommentHelper.SPACER;
 
 
@@ -202,6 +212,7 @@ public class HtmlDocletWriter {
         this.pathToRoot = path.parent().invert();
         this.filename = path.basename();
         this.docPaths = configuration.docPaths;
+        this.mainBodyScript = new Script();
 
         messages.notice("doclet.Generating_0",
             DocFile.createFileForOutput(configuration, path).getPath());
@@ -375,47 +386,6 @@ public class HtmlDocletWriter {
     }
 
     /**
-     * Get Package link, with target frame.
-     *
-     * @param pkg The link will be to the "package-summary.html" page for this package
-     * @param target name of the target frame
-     * @param label tag for the link
-     * @return a content for the target package link
-     */
-    public Content getTargetPackageLink(PackageElement pkg, String target,
-            Content label) {
-        return links.createLink(pathString(pkg, DocPaths.PACKAGE_SUMMARY), label, "", target);
-    }
-
-    /**
-     * Get Module Package link, with target frame.
-     *
-     * @param pkg the PackageElement
-     * @param target name of the target frame
-     * @param label tag for the link
-     * @param mdle the module being documented
-     * @return a content for the target module packages link
-     */
-    public Content getTargetModulePackageLink(PackageElement pkg, String target,
-            Content label, ModuleElement mdle) {
-        return links.createLink(pathString(pkg, DocPaths.PACKAGE_SUMMARY),
-                label, "", target);
-    }
-
-    /**
-     * Get Module link, with target frame.
-     *
-     * @param target name of the target frame
-     * @param label tag for the link
-     * @param mdle the module being documented
-     * @return a content for the target module link
-     */
-    public Content getTargetModuleLink(String target, Content label, ModuleElement mdle) {
-        return links.createLink(pathToRoot.resolve(
-                docPaths.moduleSummary(mdle)), label, "", target);
-    }
-
-    /**
      * Generates the HTML document tree and prints it out.
      *
      * @param metakeywords Array of String keywords for META tag. Each element
@@ -457,7 +427,6 @@ public class HtmlDocletWriter {
                 .setCharset(configuration.charset)
                 .addKeywords(metakeywords)
                 .setStylesheets(configuration.getMainStylesheet(), configuration.getAdditionalStylesheets())
-                .setUseModuleDirectories(configuration.useModuleDirectories)
                 .setIndex(configuration.createindex, mainBodyScript)
                 .addContent(extraHeadContent);
 
@@ -543,7 +512,7 @@ public class HtmlDocletWriter {
      */
     public Content getTableCaption(Content title) {
         Content captionSpan = HtmlTree.SPAN(title);
-        Content space = Contents.SPACE;
+        Content space = Entity.NO_BREAK_SPACE;
         Content tabSpan = HtmlTree.SPAN(HtmlStyle.tabEnd, space);
         Content caption = HtmlTree.CAPTION(captionSpan);
         caption.add(tabSpan);
@@ -1267,7 +1236,7 @@ public class HtmlDocletWriter {
             htmltree.add(div);
         }
         if (tags.isEmpty()) {
-            htmltree.add(Contents.SPACE);
+            htmltree.add(Entity.NO_BREAK_SPACE);
         }
     }
 
@@ -2190,24 +2159,19 @@ public class HtmlDocletWriter {
     /**
      * Returns an HtmlTree for the BODY tag.
      *
-     * @param includeScript  set true if printing windowtitle script
      * @param title title for the window
      * @return an HtmlTree for the BODY tag
      */
-    public HtmlTree getBody(boolean includeScript, String title) {
+    public HtmlTree getBody(String title) {
         HtmlTree body = new HtmlTree(HtmlTag.BODY);
         body.put(HtmlAttr.CLASS, getBodyClass());
 
-        // Set window title string which is later printed
         this.winTitle = title;
         // Don't print windowtitle script for overview-frame, allclasses-frame
         // and package-frame
-        if (includeScript) {
-            this.mainBodyScript = getWinTitleScript();
-            body.add(mainBodyScript.asContent());
-            Content noScript = HtmlTree.NOSCRIPT(HtmlTree.DIV(contents.noScriptMessage));
-            body.add(noScript);
-        }
+        body.add(mainBodyScript.asContent());
+        Content noScript = HtmlTree.NOSCRIPT(HtmlTree.DIV(contents.noScriptMessage));
+        body.add(noScript);
         return body;
     }
 
