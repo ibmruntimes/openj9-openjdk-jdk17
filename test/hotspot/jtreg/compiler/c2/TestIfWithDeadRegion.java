@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,31 +21,37 @@
  * questions.
  */
 
-import jdk.test.lib.process.ProcessTools;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 /**
  * @test
- * @bug 6449565
- * @library /test/lib
- * @build jdk.test.lib.Utils
- *        jdk.test.lib.Asserts
- *        jdk.test.lib.JDKToolFinder
- *        jdk.test.lib.JDKToolLauncher
- *        jdk.test.lib.Platform
- *        jdk.test.lib.process.*
- * @run main OldSocketImplTestDriver
- * @summary Test driver for OdlSocketImpl
+ * @bug 8219807
+ * @summary Test IfNode::up_one_dom() with dead regions.
+ * @compile -XDstringConcat=inline TestIfWithDeadRegion.java
+ * @run main/othervm -XX:CompileCommand=compileonly,compiler.c2.TestIfWithDeadRegion::test
+ *                   compiler.c2.TestIfWithDeadRegion
  */
-public class OldSocketImplTestDriver {
-    public static void main(String[] args) throws Throwable {
-        Path jar = Paths.get(System.getProperty("test.src"),
-                "OldSocketImpl.jar");
-        ProcessTools.executeTestJava("-cp", jar.toString(), "OldSocketImpl")
-                    .outputTo(System.out)
-                    .errorTo(System.out)
-                    .shouldHaveExitValue(0);
+
+package compiler.c2;
+
+import java.util.function.Supplier;
+
+public class TestIfWithDeadRegion {
+
+    static String msg;
+
+    static String getString(String s, int i) {
+        String current = s + String.valueOf(i);
+        System.nanoTime();
+        return current;
+    }
+
+    static void test(Supplier<String> supplier) {
+        msg = supplier.get();
+    }
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 20_000; ++i) {
+            test(() -> getString("Test1", 42));
+            test(() -> getString("Test2", 42));
+        }
     }
 }
