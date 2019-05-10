@@ -62,7 +62,7 @@ void * find_crypto_symbol(void *handle, const char *symname) {
 
 /* Find the path that the library was loaded from */
 void get_library_path(void * handle, char * library_path) {
-    if (0 != dlinfo(handle, RTLD_DI_ORIGIN, library_path)) {
-        strcpy(library_path, "Unknown path");
-    }
+    /* There doesnt seem to be an easy way to find  */
+    /* the library path, so return "Unknown path"   */
+    strcpy(library_path, "Unknown path");
 }
