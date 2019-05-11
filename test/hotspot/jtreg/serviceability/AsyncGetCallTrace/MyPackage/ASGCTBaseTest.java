@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 1998, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Google and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,33 +22,32 @@
  * questions.
  */
 
+package MyPackage;
+
 /**
  * @test
- * @bug 4163126
- * @library /test/lib
- * @summary  test to see if timeout hangs
- * @run main/timeout=15 Timeout
- * @run main/othervm/timeout=15 -Djava.net.preferIPv4Stack=true Timeout
+ * @summary Verifies that AsyncGetCallTrace is call-able and provides sane information.
+ * @compile ASGCTBaseTest.java
+ * @requires (os.family == "linux")
+ * @run main/othervm/native -agentlib:AsyncGetCallTraceTest MyPackage.ASGCTBaseTest
  */
-import java.net.*;
-import java.io.*;
-import jdk.test.lib.net.IPSupport;
 
-public class Timeout {
-    public static void main(String[] args) throws Exception {
-        IPSupport.throwSkippedExceptionIfNonOperational();
-
-        boolean success = false;
-        ServerSocket sock = new ServerSocket(0);
-        try {
-            sock.setSoTimeout(2);
-            sock.accept();
-        } catch (InterruptedIOException e) {
-            success = true;
-        } finally {
-            sock.close();
-        }
-        if (!success)
-            throw new RuntimeException("Socket timeout failure.");
+public class ASGCTBaseTest {
+  static {
+    try {
+      System.loadLibrary("AsyncGetCallTraceTest");
+    } catch (UnsatisfiedLinkError ule) {
+      System.err.println("Could not load AsyncGetCallTrace library");
+      System.err.println("java.library.path: " + System.getProperty("java.library.path"));
+      throw ule;
     }
+  }
+
+  private static native boolean checkAsyncGetCallTraceCall();
+
+  public static void main(String[] args) {
+    if (!checkAsyncGetCallTraceCall()) {
+      throw new RuntimeException("AsyncGetCallTrace call failed.");
+    }
+  }
 }
