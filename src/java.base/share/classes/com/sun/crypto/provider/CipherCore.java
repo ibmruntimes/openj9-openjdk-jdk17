@@ -70,7 +70,7 @@ final class CipherCore {
      * The property 'jdk.nativeCBC' is used to disable Native CBC alone,
      * 'jdk.nativeGCM' is used to disable Native GCM alone and
      * 'jdk.nativeCrypto' is used to disable all native cryptos (Digest,
-     * CBC, GCM, and RSA).
+     * CBC, GCM, RSA and ChaCha20).
      */
     private static boolean useNativeCrypto = true;
     private static boolean useNativeCBC = true;
@@ -371,7 +371,7 @@ final class CipherCore {
         case GCM_MODE:
             if (isDoFinal) {
                 int tagLen = 0;
-                 if (useNativeGCM) {
+                if (useNativeGCM) {
                     tagLen = ((NativeGaloisCounterMode) cipher).getTagLen();
                 } else {
                     tagLen = ((GaloisCounterMode) cipher).getTagLen();
@@ -463,13 +463,12 @@ final class CipherCore {
             }
 
         } else {
-           if (algName.equals("RC2")) {
-               RC2Crypt rawImpl = (RC2Crypt) cipher.getEmbeddedCipher();
-               spec = new RC2ParameterSpec
-                   (rawImpl.getEffectiveKeyBits(), iv);
-           } else {
-               spec = new IvParameterSpec(iv);
-           }
+            if (algName.equals("RC2")) {
+                RC2Crypt rawImpl = (RC2Crypt) cipher.getEmbeddedCipher();
+                spec = new RC2ParameterSpec(rawImpl.getEffectiveKeyBits(), iv);
+            } else {
+                spec = new IvParameterSpec(iv);
+            }
         }
         try {
             params = AlgorithmParameters.getInstance(algName,
@@ -572,7 +571,7 @@ final class CipherCore {
                 } else {
                     throw new InvalidAlgorithmParameterException
                         ("Unsupported parameter: " + params);
-               }
+                }
             } else {
                 if (params instanceof IvParameterSpec) {
                     ivBytes = ((IvParameterSpec)params).getIV();
@@ -829,11 +828,11 @@ final class CipherCore {
                     // process 'buffer'. When finished we can null out 'buffer'
                     // Only necessary to null out if buffer holds data for encryption
                     if (decrypting) {
-                         outLen = cipher.decrypt(buffer, 0, buffered, output, outputOffset);
+                        outLen = cipher.decrypt(buffer, 0, buffered, output, outputOffset);
                     } else {
-                         outLen = cipher.encrypt(buffer, 0, buffered, output, outputOffset);
-                         //encrypt mode. Zero out internal (input) buffer
-                         Arrays.fill(buffer, (byte) 0x00);
+                        outLen = cipher.encrypt(buffer, 0, buffered, output, outputOffset);
+                        //encrypt mode. Zero out internal (input) buffer
+                        Arrays.fill(buffer, (byte) 0x00);
                     }
                     outputOffset = Math.addExact(outputOffset, outLen);
                     buffered = 0;
@@ -1320,19 +1319,19 @@ final class CipherCore {
                 useNativeCBC = false;
                 useNativeGCM = false;
 
-               if (nativeCryptTrace != null) {
-                   System.err.println("Warning: Native crypto library load failed." +
-                                   " Using Java crypto implementation");
-               }
+                if (nativeCryptTrace != null) {
+                    System.err.println("Warning: Native crypto library load failed." +
+                            " Using Java crypto implementation");
+                }
             } else {
                 if (nativeCryptTrace != null) {
-                   System.err.println("CipherCore Load - using native crypto library.");
+                    System.err.println("CipherCore Load - using native crypto library.");
                 }
             }
         } else {
-                if (nativeCryptTrace != null) {
-                   System.err.println("CipherCore Load - native crypto library disabled.");
-                }
-       }
+            if (nativeCryptTrace != null) {
+                System.err.println("CipherCore Load - native crypto library disabled.");
+            }
+        }
     }
 }
