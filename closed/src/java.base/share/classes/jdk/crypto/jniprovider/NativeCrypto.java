@@ -21,7 +21,6 @@
  *
  * ===========================================================================
  */
-
 package jdk.crypto.jniprovider;
 
 import java.security.*;
@@ -32,49 +31,53 @@ import jdk.internal.misc.Unsafe;
 import jdk.internal.reflect.Reflection;
 import jdk.internal.reflect.CallerSensitive;
 
-import sun.security.action.GetPropertyAction;
-
 public class NativeCrypto {
 
-    private static final String nativeCryptTrace = GetPropertyAction.privilegedGetProperty("jdk.nativeCryptoTrace");
-    private static final boolean loaded = AccessController.doPrivileged(
-            (PrivilegedAction<Boolean>) () -> {
-            Boolean isLoaded = Boolean.FALSE;
-            try {
-                System.loadLibrary("jncrypto"); // check for native library
-
-                // load OpenSSL crypto library dynamically.
-                if (loadCrypto(Boolean.valueOf(nativeCryptTrace)) == 0) {
-                    isLoaded = Boolean.TRUE;
+    //ossl_vers:
+    // -1 : library load failed
+    //  0 : openssl 1.0.x
+    //  1 : openssl 1.1.x
+    private static final int ossl_ver = AccessController.doPrivileged(
+            (PrivilegedAction<Integer>) () -> {
+                int ossl_ver;
+                try {
+                    System.loadLibrary("jncrypto"); // check for native library
+                    // load OpenSSL crypto library dynamically
+                    ossl_ver = loadCrypto(Boolean.getBoolean("jdk.nativeCryptoTrace"));
+                } catch (UnsatisfiedLinkError e) {
+                    // signal load failure
+                    ossl_ver = -1;
                 }
-            } catch (UnsatisfiedLinkError usle) { 
-                // Return that isLoaded is false (default set above)
-            }
-            
-            return isLoaded;
-        }).booleanValue();
+
+                return ossl_ver;
+            }).intValue();
 
     public static final boolean isLoaded() {
-        return loaded;
+        return ossl_ver != -1;
+    }
+
+    public static final int getVersion() {
+        return ossl_ver;
     }
 
     private NativeCrypto() {
-        //empty
+        // empty
     }
 
     @CallerSensitive
     public static NativeCrypto getNativeCrypto() {
-
         ClassLoader callerClassLoader = Reflection.getCallerClass().getClassLoader();
 
-        if ((callerClassLoader != null) && (callerClassLoader != VM.getVMLangAccess().getExtClassLoader())) {
-            throw new SecurityException("NativeCrypto");
+        if ((callerClassLoader == null) || (callerClassLoader == VM.getVMLangAccess().getExtClassLoader())) {
+            return new NativeCrypto();
         }
-        return new NativeCrypto();
+
+        throw new SecurityException("NativeCrypto");
     }
 
     /* Native digest interfaces */
-    static final native int loadCrypto(boolean useCryptoTrace);
+
+    private static final native int loadCrypto(boolean trace);
 
     public final native long DigestCreateContext(long nativeBuffer,
                                                  int algoIndex);
@@ -96,10 +99,13 @@ public class NativeCrypto {
 
     public final native void DigestReset(long context);
 
-    /* Native CBC interfaces */
-    public final native long CBCCreateContext();
+    /* Native interfaces shared by CBC and ChaCha20 */
 
-    public final native int CBCDestroyContext(long context);
+    public final native long CreateContext();
+
+    public final native int DestroyContext(long context);
+
+    /* Native CBC interfaces */
 
     public final native int CBCInit(long context,
                                     int mode,
@@ -123,6 +129,7 @@ public class NativeCrypto {
                                              int outputOffset);
 
     /* Native GCM interfaces */
+
     public final native int GCMEncrypt(byte[] key,
                                        int keylen,
                                        byte[] iv,
@@ -150,6 +157,7 @@ public class NativeCrypto {
                                        int tagLen);
 
     /* Native RSA interfaces */
+
     public final native long createRSAPublicKey(byte[] n,
                                                 int nLen,
                                                 byte[] e,
@@ -184,5 +192,38 @@ public class NativeCrypto {
                                   int kLen,
                                   byte[] m,
                                   long RSAPublicKey);
+
+    /* Native ChaCha20 interfaces */
+
+    public final native int ChaCha20Init(long context,
+                                    int mode,
+                                    byte[] iv,
+                                    int ivlen,
+                                    byte[] key,
+                                    int keylen);
+
+    public final native int ChaCha20Update(long context,
+                                       byte[] input,
+                                       int inputOffset,
+                                       int inputLen,
+                                       byte[] output,
+                                       int outputOffset,
+                                       byte[] aad,
+                                       int aadLen);
+
+    public final native int ChaCha20FinalEncrypt(long context,
+                                             byte[] output,
+                                             int outputOffset,
+                                             int tagLen);
+
+    public final native int ChaCha20FinalDecrypt(long context,
+                                       byte[] input,
+                                       int inOffset,
+                                       int inputLen,
+                                       byte[] output,
+                                       int outOffset,
+                                       byte[] aad,
+                                       int aadLen,
+                                       int tagLen);
 
 }

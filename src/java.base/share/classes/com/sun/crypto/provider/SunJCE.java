@@ -22,6 +22,11 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2018, 2019 All Rights Reserved
+ * ===========================================================================
+ */
 
 package com.sun.crypto.provider;
 
@@ -34,6 +39,10 @@ import java.util.List;
 import static sun.security.util.SecurityConstants.PROVIDER_VER;
 import static sun.security.provider.SunEntries.createAliases;
 import static sun.security.provider.SunEntries.createAliasesWithOid;
+
+import jdk.crypto.jniprovider.NativeCrypto;
+import jdk.internal.util.StaticProperty;
+import sun.security.action.GetPropertyAction;
 
 /**
  * The "SunJCE" Cryptographic Service Provider.
@@ -78,6 +87,74 @@ import static sun.security.provider.SunEntries.createAliasesWithOid;
  */
 
 public final class SunJCE extends Provider {
+
+    /*
+     * Check system properties to see whether native crypto should be enabled.
+     * By default, the native crypto is enabled and uses the native library.
+     * The property 'jdk.nativeChaCha20' is used to control native ChaCha20 alone
+     * and 'jdk.nativeCrypto' is used to control all native crypto implementations
+     * (Digest, CBC, GCM, and ChaCha20).
+     */
+    private static final boolean useNativeChaCha20Cipher = nativeChaCha20Init();
+
+    private static boolean nativeChaCha20Init() {
+        boolean nativeChaCha20 = true;
+        String nativeCryptTrace = GetPropertyAction.privilegedGetProperty("jdk.nativeCryptoTrace");
+        String nativeCryptStr = GetPropertyAction.privilegedGetProperty("jdk.nativeCrypto");
+
+        if ((nativeCryptStr != null) && !Boolean.parseBoolean(nativeCryptStr)) {
+            /* nativeCrypto is explicitly disabled */
+            nativeChaCha20 = false;
+        } else {
+            String nativeChaCha20Str = GetPropertyAction.privilegedGetProperty("jdk.nativeChaCha20");
+
+            if ((nativeChaCha20Str != null) && !Boolean.parseBoolean(nativeChaCha20Str)) {
+                /* nativeChaCha20 is explicitly disabled */
+                nativeChaCha20 = false;
+            }
+        }
+
+        if (!nativeChaCha20) {
+            if (nativeCryptTrace != null) {
+                System.err.println("NativeChaCha20Cipher load - Native crypto library disabled.");
+            }
+        } else {
+            /*
+             * User wants to use the native crypto implementation.
+             * Make sure the native crypto library is loaded successfully.
+             * Otherwise, issue a warning message and fall back to the built-in
+             * java crypto implementation.
+             *
+             * ChaCha20 is only supported in OpenSSL 1.1.0 and above.
+             */
+            if (!NativeCrypto.isLoaded()) {
+                nativeChaCha20 = false;
+
+                if (nativeCryptTrace != null) {
+                    System.err.println("Warning: Native crypto library load failed." +
+                            " Using Java crypto implementation");
+                }
+            } else {
+                final int ossl_ver = NativeCrypto.getVersion();
+
+                if (ossl_ver < 1) {
+                    nativeChaCha20 = false;
+
+                    if (nativeCryptTrace != null) {
+                        System.err.println("Warning: Native ChaCha20 load failed." +
+                                " Need OpenSSL 1.1.0 or above for ChaCha20 support." +
+                                " Using Java crypto implementation");
+                    }
+                } else {
+                    if (nativeCryptTrace != null) {
+                        System.err.println("NativeChaCha20Cipher load - using Native crypto library.");
+                    }
+                }
+            }
+        }
+
+        return nativeChaCha20;
+    }
 
     private static final long serialVersionUID = 6812507587804302833L;
 
@@ -304,12 +381,22 @@ public final class SunJCE extends Provider {
 
         attrs.clear();
         attrs.put("SupportedKeyFormats", "RAW");
-        ps("Cipher",  "ChaCha20",
-                "com.sun.crypto.provider.ChaCha20Cipher$ChaCha20Only",
-                null, attrs);
-        ps("Cipher",  "ChaCha20-Poly1305",
-                "com.sun.crypto.provider.ChaCha20Cipher$ChaCha20Poly1305",
-                chachaPolyAliases, attrs);
+
+        if (useNativeChaCha20Cipher) {
+            ps("Cipher", "ChaCha20",
+                    "com.sun.crypto.provider.NativeChaCha20Cipher$ChaCha20Only",
+                    null, attrs);
+            ps("Cipher", "ChaCha20-Poly1305",
+                    "com.sun.crypto.provider.NativeChaCha20Cipher$ChaCha20Poly1305",
+                    chachaPolyAliases, attrs);
+        } else {
+            ps("Cipher", "ChaCha20",
+                    "com.sun.crypto.provider.ChaCha20Cipher$ChaCha20Only",
+                    null, attrs);
+            ps("Cipher", "ChaCha20-Poly1305",
+                    "com.sun.crypto.provider.ChaCha20Cipher$ChaCha20Poly1305",
+                    chachaPolyAliases, attrs);
+        }
 
         // PBES1
         ps("Cipher", "PBEWithMD5AndDES",
