@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2019, Google and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,33 +21,38 @@
  * questions.
  */
 
-package MyPackage;
-
-/**
+/*
  * @test
- * @summary Verifies that AsyncGetCallTrace is call-able and provides sane information.
- * @compile ASGCTBaseTest.java
- * @requires os.family == "linux"
- * @requires os.arch=="x86" | os.arch=="i386" | os.arch=="amd64" | os.arch=="x86_64" | os.arch=="arm" | os.arch=="sparc" | os.arch=="aarch64"
- * @run main/othervm/native -agentlib:AsyncGetCallTraceTest MyPackage.ASGCTBaseTest
+ * @bug 8222169
+ * @summary post inc operator inside compute function of HashMap results in Exception
+ * @compile ConditionalAndPostfixOperator.java
+ * @run main ConditionalAndPostfixOperator
  */
 
-public class ASGCTBaseTest {
-  static {
-    try {
-      System.loadLibrary("AsyncGetCallTraceTest");
-    } catch (UnsatisfiedLinkError ule) {
-      System.err.println("Could not load AsyncGetCallTrace library");
-      System.err.println("java.library.path: " + System.getProperty("java.library.path"));
-      throw ule;
-    }
-  }
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
-  private static native boolean checkAsyncGetCallTraceCall();
+public class ConditionalAndPostfixOperator {
+    public static void main(String... args) {
+        Map<String, Integer> m = new HashMap<>();
+        String key = "a";
+        m.put(key, val());
+        assertEquals(2, m.compute(key, (k, v) -> (v > 5) ? v-- : v++));
 
-  public static void main(String[] args) {
-    if (!checkAsyncGetCallTraceCall()) {
-      throw new RuntimeException("AsyncGetCallTrace call failed.");
+        Integer v = val();
+
+        assertEquals(2, (v > 5) ? v-- : v++);
+        assertEquals(3, v);
     }
-  }
+
+    static void assertEquals(Integer expected, Integer actual) {
+        if (!Objects.equals(expected, actual)) {
+            throw new AssertionError("Expected: " + expected + ", " +
+                                     "actual: " + actual);
+        }
+    }
+
+    static int val() { return 2; }
+
 }
