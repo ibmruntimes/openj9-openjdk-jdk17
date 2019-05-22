@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2014, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -24,15 +22,26 @@
  */
 
 /**
- * Defines the <em>{@index rmic rmic}</em> compiler for generating stubs and
- * skeletons using the Java Remote Method Protocol (JRMP) for remote objects.
- *
- * @toolGuide rmic
- *
- * @moduleGraph
- * @since 9
+ * @test
+ * @bug 8206879
+ * @summary Currency decimal marker incorrect for Peru.
+ * @modules jdk.localedata
+ * @run main/othervm -Djava.locale.providers=JRE TestPeruCurrencyFormat
  */
-module jdk.rmic {
-    requires jdk.compiler;
-    requires jdk.javadoc;
+
+import java.text.NumberFormat;
+import java.util.Locale;
+
+public class TestPeruCurrencyFormat {
+
+    public static void main(String[] args) {
+        final String expected = "S/.1,234.56";
+        NumberFormat currencyFmt =
+                NumberFormat.getCurrencyInstance(new Locale("es", "PE"));
+        String s = currencyFmt.format(1234.56);
+
+        if (!s.equals(expected)) {
+            throw new RuntimeException("Currency format for Peru failed, expected " + expected + ", got " + s);
+        }
+    }
 }
