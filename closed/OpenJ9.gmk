@@ -221,8 +221,6 @@ endif
 
 $(call openj9_add_jdk_lib, java.base, \
 	$(notdir $(wildcard $(OUTPUTDIR)/vm/java*.properties)) \
-	J9TraceFormat.dat \
-	OMRTraceFormat.dat \
 	options.default \
 	)
 
@@ -245,14 +243,12 @@ $(eval $(call openj9_add_jdk_rules, \
 	$(call FindLibDirForModule, java.base)/openj9-notices.html, \
 	$(TOPDIR)/openj9/longabout.html))
 
-# java.base (internal)
-#   gdb_j929
-
-# libraries for other modules
+# contributions to other modules
 $(call openj9_add_jdk_shlibs, java.management, management management_ext)
 $(call openj9_add_jdk_shlibs, openj9.cuda, cuda4j29)
 $(call openj9_add_jdk_shlibs, openj9.dtfj, j9jextract)
 $(call openj9_add_jdk_shlibs, openj9.sharedclasses, j9shr29)
+$(call openj9_add_jdk_lib, openj9.traceformat, J9TraceFormat.dat OMRTraceFormat.dat)
 
 # openj9_test_image_rules
 # -----------------------
