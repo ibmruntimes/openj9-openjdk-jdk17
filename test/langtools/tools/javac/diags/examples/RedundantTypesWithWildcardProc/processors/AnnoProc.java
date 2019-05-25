@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,31 +21,19 @@
  * questions.
  */
 
-package jdk.test.lib.security;
+import java.util.*;
+import javax.annotation.processing.*;
+import javax.lang.model.*;
+import javax.lang.model.element.*;
 
-import java.util.List;
-import java.security.Security;
+@SupportedAnnotationTypes({"java.lang.SuppressWarnings", "*"})
+public class AnnoProc extends AbstractProcessor {
+    public boolean process(Set<? extends TypeElement> elems, RoundEnvironment renv) {
+        return true;
+    }
 
-public final class JDKSecurityProperties {
-
-    public static final List<String> jdkProps = List.of(
-        "crypto.policy",
-        "jceks.key.serialFilter",
-        "jdk.certpath.disabledAlgorithms",
-        "keystore.type",
-        "krb5.kdc.bad.policy",
-        "login.config",
-        "networkaddress.cache.ttl",
-        "ocsp.responderURL",
-        "package.access",
-        "policy.allowSystemProperty",
-        "securerandom.drbg.config",
-        "security.provider.1",
-        "ssl.KeyManagerFactory.algorithm",
-        "sun.rmi.registry.registryFilter"
-    );
-
-    public static List getKeys() {
-        return jdkProps;
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latest();
     }
 }
