@@ -652,6 +652,7 @@ com/sun/nio/sctp/SctpChannel/SocketOptionTests.java             8141694 linux-al
 sun/security/pkcs11/ec/TestKeyFactory.java                      8026976 generic-all
 sun/security/pkcs11/Secmod/AddTrustedCert.java                  8180837 generic-all
 sun/security/pkcs11/tls/TestKeyMaterial.java                    8180837 generic-all
+sun/security/pkcs11/tls/tls12/FipsModeTLS12.java                8224954 windows-all
 
 sun/security/tools/keytool/ListKeychainStore.sh                 8156889 macosx-all
 sun/security/tools/keytool/KeyToolTest.java                     8224644 solaris-all
@@ -659,6 +660,8 @@ sun/security/tools/keytool/WeakAlg.java                         8224644 solaris-
 
 sun/security/tools/jarsigner/warnings/BadKeyUsageTest.java      8026393 generic-all
 
+javax/net/ssl/ServerName/SSLEngineExplorerMatchedSNI.java       8212096 generic-all
+javax/net/ssl/SSLSocket/Tls13PacketSize.java                    8224718 generic-all
 javax/net/ssl/DTLS/PacketLossRetransmission.java                8169086 macosx-x64
 javax/net/ssl/DTLS/RespondToRetransmit.java                     8169086 macosx-x64
 javax/net/ssl/DTLS/CipherSuite.java                             8202059 macosx-x64
