@@ -345,7 +345,7 @@ check () {
       # into the extensions repository and should not have a copyright.
       case "$1" in
         closed/openjdk-tag.gmk)
-          trace "$1 has no copyright which is correct;;
+          trace "$1 has no copyright which is correct";;
       *)
         log "E002: $1: Basic IBM Copyright is missing"
         ERROR=1;;
