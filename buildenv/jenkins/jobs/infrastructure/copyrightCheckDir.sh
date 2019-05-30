@@ -337,37 +337,45 @@ check () {
     *) CLOSED=0;;
   esac
 
+
   if [ "$CLOSED" -eq 1 ]; then
     trace "$1 is in the closed directory"
-    if [ "$FOUND_NON_IBM_COPYRIGHT" -gt 0 ] && [ "$FOUND_GPLV2" -gt 0 ] && [ "$FOUND_CPE" -gt 0 ]; then
-      if [ "$FOUND_IBM_COPYRIGHT" -gt 0 ]; then
+    if [ "$FOUND_IBM_COPYRIGHT" -eq 0 ]; then
+      # closed/openjdk-tag.gmk is updated by the automated jobs which merge the openjdk repositories
+      # into the extensions repository and should not have a copyright.
+      case "$1" in
+        closed/openjdk-tag.gmk)
+          trace "$1 has no copyright which is correct;;
+      *)
+        log "E002: $1: Basic IBM Copyright is missing"
+        ERROR=1;;
+      esac
+    else
+      if [ "$FOUND_NON_IBM_COPYRIGHT" -gt 0 ] && [ "$FOUND_GPLV2" -gt 0 ] && [ "$FOUND_CPE" -gt 0 ]; then
         if [ "$FOUND_IBM_COPYRIGHT" -lt "$FOUND_ORACLE_COPYRIGHT" ] || [ "$FOUND_IBM_COPYRIGHT" -lt "$FOUND_BSD_OR_MIT_COPYRIGHT" ] || [ "$FOUND_IBM_COPYRIGHT" -lt "$FOUND_APACHE_COPYRIGHT" ] || [ "$FOUND_IBM_COPYRIGHT" -lt "$FOUND_COPYRIGHT" ]; then
           log "E001: $1: IBM Copyright is not after the existing copyright"
           ERROR=1
         fi
       else
-        log "E002: $1: Basic IBM Copyright is missing"
-        ERROR=1
-      fi
-    else
-      # The file is in the 'closed' directory and doesn't contain 
-      # Oracle copyright with GPLv2 and Classpath Exception so should
-      # have IBM copyright with GPLv2 and CE at the top of the file
-      if [ "$FOUND_IBM_COPYRIGHT" -gt 5 ]; then
-        log "E003: $1: IBM Copyright with GPLv2 and IBM Classpath Exception should be at the top of the file"
-        ERROR=1
-      fi
-      if [ "$FOUND_GPLV2" -eq 0 ]; then
-        log "E004: $1: IBM Copyright should contain the GPLv2 license"
-        ERROR=1
-      fi
-      if [ "$FOUND_IBM_CPE" -eq 0 ]; then
-        log "E005: $1: IBM Copyright should contain the IBM Classpath Exception"
-        ERROR=1
-      fi
-      if [ "$FOUND_ORACLE_CPE" -gt 0 ]; then
-        log "E006: $1: IBM Copyright should not contain the Oracle Classpath Exception"
-        ERROR=1
+        # The file is in the 'closed' directory and doesn't contain 
+        # Oracle copyright with GPLv2 and Classpath Exception so should
+        # have IBM copyright with GPLv2 and CE at the top of the file
+        if [ "$FOUND_IBM_COPYRIGHT" -gt 5 ]; then
+          log "E003: $1: IBM Copyright with GPLv2 and IBM Classpath Exception should be at the top of the file"
+          ERROR=1
+        fi
+        if [ "$FOUND_GPLV2" -eq 0 ]; then
+          log "E004: $1: IBM Copyright should contain the GPLv2 license"
+          ERROR=1
+        fi
+        if [ "$FOUND_IBM_CPE" -eq 0 ]; then
+          log "E005: $1: IBM Copyright should contain the IBM Classpath Exception"
+          ERROR=1
+        fi
+        if [ "$FOUND_ORACLE_CPE" -gt 0 ]; then
+          log "E006: $1: IBM Copyright should not contain the Oracle Classpath Exception"
+          ERROR=1
+        fi
       fi
     fi
   fi
