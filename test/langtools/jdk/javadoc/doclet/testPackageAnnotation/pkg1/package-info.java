@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 1998, 1999, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,25 +21,7 @@
  * questions.
  */
 
-/************************************************************************
- * AwtRectangle class
- */
+// Contains no javadoc comment, but should still be honored by javadoc.
 
-#ifndef AWT_RECTANGLE_H
-#define AWT_RECTANGLE_H
-
-#include <jni.h>
-#include <jni_util.h>
-
-class AwtRectangle {
-public:
-
-    /* java.awt.Rectangle field ids */
-    static jfieldID xID;
-    static jfieldID yID;
-    static jfieldID widthID;
-    static jfieldID heightID;
-
-};
-
-#endif // AWT_RECTANGLE_H
+@Deprecated(since="1<2>3")
+package pkg1;

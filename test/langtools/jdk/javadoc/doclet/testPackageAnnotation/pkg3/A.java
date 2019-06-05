@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 1998, 2015, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -22,22 +20,8 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-/***
- *** THIS IMPLEMENTS ONLY THE OBSOLETE java.awt.Event CLASS! SEE
- *** awt_AWTEvent.[ch] FOR THE NEWER EVENT CLASSES.
- ***
- ***/
-#ifndef _AWT_EVENT_H_
-#define _AWT_EVENT_H_
 
-#include "jni_util.h"
+package pkg3;
 
-struct EventIDs {
-  jfieldID data;
-  jfieldID consumed;
-  jfieldID id;
-};
-
-extern struct EventIDs eventIDs;
-
-#endif /* _AWT_EVENT_H_ */
+public class A {
+}
