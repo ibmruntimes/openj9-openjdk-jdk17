@@ -24,6 +24,12 @@
  */
 
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2019, 2019 All Rights Reserved
+ * ===========================================================================
+ */
+
+/*
  * Machine Dependent implementation of the dynamic linking support
  * for java.  This routine is Unix specific.
  */
@@ -45,6 +51,7 @@
 static void dll_build_name(char* buffer, size_t buflen,
                            const char* paths, const char* fname) {
     char *path, *paths_copy, *next_token;
+    *buffer = '\0';
 
     paths_copy = strdup(paths);
     if (paths_copy == NULL) {
@@ -55,8 +62,10 @@ static void dll_build_name(char* buffer, size_t buflen,
     path = strtok_r(paths_copy, PATH_SEPARATOR, &next_token);
 
     while (path != NULL) {
-        snprintf(buffer, buflen, "%s/lib%s." LIB_SUFFIX, path, fname);
-        if (access(buffer, F_OK) == 0) {
+        size_t result_len = (size_t)snprintf(buffer, buflen, "%s/lib%s." LIB_SUFFIX, path, fname);
+        if (result_len >= buflen) {
+            /* Ignore this path that doesn't fit in the supplied buffer. */
+        } else if (access(buffer, F_OK) == 0) {
             break;
         }
         *buffer = '\0';
@@ -84,19 +93,17 @@ dbgsysBuildFunName(char *name, int nameLen, int args_size, int encodingIndex)
  * appropriate pre and extensions to a filename and the path
  */
 void
-dbgsysBuildLibName(char *holder, int holderlen, const char *pname,
+dbgsysBuildLibName(char *holder, size_t holderlen, const char *pname,
                    const char *fname)
 {
     const int pnamelen = pname ? strlen(pname) : 0;
 
-    *holder = '\0';
-    // Quietly truncate on buffer overflow.  Should be an error.
-    if (pnamelen + (int)strlen(fname) + 10 > holderlen) {
-        return;
-    }
-
     if (pnamelen == 0) {
-        (void)snprintf(holder, holderlen, "lib%s." LIB_SUFFIX, fname);
+        size_t result_len = (size_t)snprintf(holder, holderlen, "lib%s." LIB_SUFFIX, fname);
+        if (result_len >= holderlen) {
+            /* Ignore this path that doesn't fit in the supplied buffer. */
+            *holder = '\0';
+        }
     } else {
       dll_build_name(holder, holderlen, pname, fname);
     }
