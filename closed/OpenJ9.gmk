@@ -265,6 +265,7 @@ $(foreach file, \
 		glaunch \
 		invtest \
 		jsigjnitest \
+		nativevmargs \
 		pltest \
 		propstest \
 		shrtest \
