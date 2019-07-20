@@ -63,7 +63,6 @@ import java.util.StringTokenizer;                                               
 
 import jdk.internal.loader.Resource;
 import jdk.internal.loader.URLClassPath;
-import jdk.internal.access.JavaNetURLClassLoaderAccess;
 import jdk.internal.access.SharedSecrets;
 import jdk.internal.perf.PerfCounter;
 import sun.net.www.ParseUtil;
@@ -1030,14 +1029,6 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
     }
 
     static {
-        SharedSecrets.setJavaNetURLClassLoaderAccess(
-            new JavaNetURLClassLoaderAccess() {
-                @Override
-                public AccessControlContext getAccessControlContext(URLClassLoader u) {
-                    return u.acc;
-                }
-            }
-        );
         ClassLoader.registerAsParallelCapable();
     }
                                                                                 //OpenJ9-shared_classes_misc
