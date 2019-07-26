@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,31 +21,34 @@
  * questions.
  */
 
-/*
- * @test
- * @bug 8048601
- * @library ../
- * @summary Test DES/DESede cipher with different MODES and padding
+/* @test
+ * @bug 8184157
+ * @summary Ensure that correct PendingFuture is used in Iocp completion status event handler
+ * @requires (os.family == "windows")
  */
 
-public class TestCipherDESede extends TestCipher {
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousFileChannel;
+import java.nio.channels.FileLock;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-    TestCipherDESede(String[] modes, String[] paddings) {
-        super("DESede", modes, paddings);
-    }
+import static java.nio.file.StandardOpenOption.*;
 
+public class LockReadWriteStressTest {
     public static void main(String[] args) throws Exception {
-        new TestCipherDESede(
-            new String[]{ "CBC", "ECB", "PCBC",
-                //CFBx
-                "CFB", "CFB8", "CFB16", "CFB24", "CFB32", "CFB40",
-                "CFB48", "CFB56", "CFB64",
-                //OFBx
-                "OFB", "OFB8", "OFB16", "OFB24", "OFB32", "OFB40",
-                "OFB48", "OFB56", "OFB64"},
-                new String[]{ "NoPaDDing", "PKCS5Padding" }).runAll();
-        new TestCipherDESede(
-            new String[]{ "CTR", "CTS" },
-            new String[]{ "NoPaDDing" }).runAll();
+        Path path = Path.of("blah");
+        ByteBuffer buf = ByteBuffer.allocate(16);
+        for (int i=0; i < 1000; i++) {
+            try (AsynchronousFileChannel ch = AsynchronousFileChannel.open(path,READ, WRITE, CREATE)) {
+                FileLock lock = ch.lock().get();
+                ch.read(buf, 0).get();
+                buf.rewind();
+                ch.write(buf, 0).get();
+                lock.release();
+                buf.clear();
+            }
+        }
     }
 }
