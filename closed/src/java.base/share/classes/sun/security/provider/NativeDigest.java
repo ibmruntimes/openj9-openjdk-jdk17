@@ -38,6 +38,8 @@ import java.security.ProviderException;
 import static sun.security.provider.ByteArrayAccess.*;
 
 import jdk.crypto.jniprovider.NativeCrypto;
+import jdk.internal.ref.CleanerFactory;
+import java.lang.ref.Cleaner;
 
 abstract class NativeDigest extends MessageDigestSpi implements Cloneable {
 
@@ -55,10 +57,25 @@ abstract class NativeDigest extends MessageDigestSpi implements Cloneable {
     //  0: is already reset
     private long bytesProcessed;
 
-    private static NativeCrypto nativeCrypto;
+    private static final NativeCrypto nativeCrypto;
+    private static final Cleaner digestCleaner;
 
     static {
         nativeCrypto = NativeCrypto.getNativeCrypto();
+        digestCleaner = CleanerFactory.cleaner();
+    }
+
+    private static final class DigestCleanerRunnable implements Runnable {
+        private final long digestCtx;
+        
+        public DigestCleanerRunnable(long context) {
+            this.digestCtx = context;
+        }
+        
+        @Override
+        public void run() {
+            nativeCrypto.DigestDestroyContext(digestCtx);
+        }
     }
 
     /**
@@ -70,24 +87,25 @@ abstract class NativeDigest extends MessageDigestSpi implements Cloneable {
         this.digestLength = digestLength;
         this.algIndx = algIndx;
         this.context = nativeCrypto.DigestCreateContext(0, algIndx);
+
         if (this.context == -1) {
             throw new ProviderException("Error in Native Digest");
         }
 
+        digestCleaner.register(this, new DigestCleanerRunnable(this.context));
     }
 
     // return digest length. See JCA doc.
     protected final int engineGetDigestLength() {
-
         return digestLength;
     }
 
     // single byte update. See JCA doc.
     protected final void engineUpdate(byte b) {
-
         if (oneByte == null) {
             oneByte = new byte[1];
         }
+
         oneByte[0] = b;
         engineUpdate(oneByte, 0, 1);
     }
@@ -161,18 +179,13 @@ abstract class NativeDigest extends MessageDigestSpi implements Cloneable {
 
     synchronized public Object clone() throws CloneNotSupportedException {
         NativeDigest copy = (NativeDigest) super.clone();
-        copy.context    = nativeCrypto.DigestCreateContext(context, algIndx);
+        copy.context = nativeCrypto.DigestCreateContext(context, algIndx);
+
         if (copy.context == -1) {
             throw new ProviderException("Error in Native Digest");
         }
-        return copy;
-    }
 
-    /*
-     * Finalize method to release the Digest contexts.
-     */
-    @Override
-    public void finalize() {
-        nativeCrypto.DigestDestroyContext(context);
+        digestCleaner.register(copy, new DigestCleanerRunnable(copy.context));
+        return copy;
     }
 }
