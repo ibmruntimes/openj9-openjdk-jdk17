@@ -811,7 +811,7 @@ public class URLClassPath {
     /*
      * Nested class used to represent a Loader of resources from a JAR URL.
      */
-    static class JarLoader extends Loader {
+    private static class JarLoader extends Loader {
         private JarFile jar;
         private final URL csu;
         private JarIndex index;
@@ -827,7 +827,7 @@ public class URLClassPath {
          * Creates a new JarLoader for the specified URL referring to
          * a JAR file.
          */
-        JarLoader(URL url, URLStreamHandler jarHandler,
+        private JarLoader(URL url, URLStreamHandler jarHandler,
                   HashMap<String, Loader> loaderMap,
                   AccessControlContext acc, boolean usingSharedClasses)   //OpenJ9-shared_classes_misc
             throws IOException
@@ -1312,11 +1312,11 @@ public class URLClassPath {
         /* Canonicalized File */
         private File dir;
 
-        FileLoader(URL url) throws IOException {
+        /*
+         * Creates a new FileLoader for the specified URL with a file protocol.
+         */
+        private FileLoader(URL url) throws IOException {
             super(url);
-            if (!"file".equals(url.getProtocol())) {
-                throw new IllegalArgumentException("url");
-            }
             String path = url.getFile().replace('/', File.separatorChar);
             path = ParseUtil.decode(path);
             dir = (new File(path)).getCanonicalFile();
