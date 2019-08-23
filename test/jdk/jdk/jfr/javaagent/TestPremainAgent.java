@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,25 +21,28 @@
  * questions.
  */
 
-import java.net.MulticastSocket;
-import java.net.BindException;
-
-/*
+/**
  * @test
- * @summary Check if MulticastSocket sets SO_REUSEADDR
+ * @key jfr
+ * @summary Tests emitting event before main using a Java agent
+ * @requires vm.hasJFR
+ *
+ * @library /test/lib
+ * @modules java.instrument
+ *
+ * @build jdk.jfr.javaagent.EventEmitterAgent
+ *
+ * @run driver jdk.test.lib.util.JavaAgentBuilder
+ *             jdk.jfr.javaagent.EventEmitterAgent EventEmitterAgent.jar
+ *
+ * @run main/othervm -javaagent:EventEmitterAgent.jar jdk.jfr.javaagent.TestPremainAgent
  */
 
-public class Reuse {
-    public static void main(String[] args) throws Exception {
-        MulticastSocket s1, s2;
+package jdk.jfr.javaagent;
 
-        try {
-            s1 = new MulticastSocket(4160);
-            s2 = new MulticastSocket(4160);
-            s1.close();
-            s2.close();
-        } catch (BindException e) {
-            throw new RuntimeException("MulticastSocket do no set SO_REUSEADDR");
-        }
+
+public class TestPremainAgent {
+    public static void main(String... arg) throws Exception {
+        EventEmitterAgent.validateRecording();
     }
 }
