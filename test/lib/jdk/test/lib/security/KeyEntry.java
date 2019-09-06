@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,21 +21,35 @@
  * questions.
  */
 
-#include "precompiled.hpp"
-#include "gc/shared/collectedHeap.hpp"
-#include "memory/universe.hpp"
-#include "unittest.hpp"
+package jdk.test.lib.security;
 
-TEST_VM(CollectedHeap, is_in) {
-  CollectedHeap* heap = Universe::heap();
+/*
+ * An entry in key store.
+ */
+public class KeyEntry {
 
-  uintptr_t epsilon = (uintptr_t) MinObjAlignment;
-  uintptr_t outside_heap = (uintptr_t) &epsilon;
+    // The key algorithm
+    public final String keyAlgo;
 
-  // Test that NULL is not in the heap.
-  ASSERT_FALSE(heap->is_in(NULL)) << "NULL is unexpectedly in the heap";
+    // The PEM-encoded PKCS8 key string
+    public final String keyStr;
 
-  // Test that a pointer to outside the heap start is reported as outside the heap.
-  ASSERT_FALSE(heap->is_in((void*)outside_heap)) << "outside_heap: " << outside_heap
-          << " is unexpectedly in the heap";
+    // The password to protect the key
+    public final String password;
+
+    // The certificate chain
+    // Every certificate is a PEM-encoded string
+    public final String[] certStrs;
+
+    public KeyEntry(String keyAlgo, String keyStr, String password,
+            String[] certStrs) {
+        this.keyAlgo = keyAlgo;
+        this.keyStr = keyStr;
+        this.password = password;
+        this.certStrs = certStrs;
+    }
+
+    public KeyEntry(String keyAlgo, String keyStr, String[] certStrs) {
+        this(keyAlgo, keyStr, null, certStrs);
+    }
 }
