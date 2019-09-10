@@ -224,13 +224,19 @@ $(call openj9_add_jdk_lib, java.base, \
 	)
 
 ifeq (true,$(OPENJ9_ENABLE_DDR))
-$(call openj9_add_jdk_bin, java.base, j9ddr.dat)
+
+$(call openj9_add_jdk_basic, \
+	$(addsuffix /$(OPENJ9_LIBS_SUBDIR), $(JDK_OUTPUTDIR)/lib $(call FindLibDirForModule, java.base)), \
+	j9ddr.dat)
 
 .PHONY : run-ddrgen
+
 $(OUTPUTDIR)/vm/j9ddr.dat : run-ddrgen
+
 run-ddrgen :
 	export CC="$(CC)" CXX="$(CXX)" $(EXPORT_MSVS_ENV_VARS) \
 		&& $(MAKE) -C $(OUTPUTDIR)/vm/ddr -f run_omrddrgen.mk
+
 endif # OPENJ9_ENABLE_DDR
 
 $(eval $(call openj9_add_jdk_rules, \
