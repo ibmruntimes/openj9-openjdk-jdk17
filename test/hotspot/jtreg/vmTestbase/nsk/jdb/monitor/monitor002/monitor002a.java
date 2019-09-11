@@ -1,13 +1,10 @@
 /*
- * Copyright (c) 2000, 2019, Oracle and/or its affiliates. All rights reserved.
- *
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -22,38 +19,34 @@
  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
  * or visit www.oracle.com if you need additional information or have any
  * questions.
- *
  */
 
-// -- This file was mechanically generated: Do not edit! -- //
+package nsk.jdb.monitor.monitor002;
 
-package sun.nio.cs.ext;
+import nsk.share.*;
+import nsk.share.jpda.*;
+import nsk.share.jdb.*;
 
-import java.nio.charset.Charset;
-import java.nio.charset.spi.CharsetProvider;
+import java.io.*;
 
-/**
- * Provider for extended charsets.
- */
+//    THIS TEST IS LINE NUMBER SENSITIVE
 
-public class ExtendedCharsets extends AbstractCharsetProvider {
+/* This is debuggee aplication */
+public class monitor002a {
+    static monitor002a _monitor002a = new monitor002a();
 
-    static volatile ExtendedCharsets instance = null;
-
-    public ExtendedCharsets() {
-
-        super("sun.nio.cs.ext");  // identify provider pkg name.
-
-        _CHARSETS_DEF_LIST_
-
-        instance = this;
-
+    public static void main(String args[]) {
+        System.exit(monitor002.JCK_STATUS_BASE + _monitor002a.runIt(args, System.out));
     }
 
-    public static String[] aliasesFor(String charsetName) {
-        if (instance == null)
-            return null;
-        return instance.aliases(charsetName);
-    }
+    static void lastBreak () {}
 
+    public int runIt(String args[], PrintStream out) {
+        JdbArgumentHandler argumentHandler = new JdbArgumentHandler(args);
+        Log log = new Log(out, argumentHandler);
+        int localInt = 0; // monitor002.LINE_NUMBER
+        localInt++; // dummy breakpoint
+        log.display("Debuggee PASSED");
+        return monitor002.PASSED;
+    }
 }
