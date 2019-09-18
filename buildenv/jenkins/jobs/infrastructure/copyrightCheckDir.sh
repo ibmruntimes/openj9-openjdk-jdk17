@@ -310,7 +310,7 @@ check () {
     nashorn/make/*)
       trace  "$1 deemed not to be in the built JDK because it matches case parameter expansion nashorn/make/*"
       IN_JDK=0;;
-    share/classes/sun/security/util/math/intpoly/FieldGen.jsh)
+    */share/classes/sun/security/util/math/intpoly/FieldGen.jsh)
       trace  "$1 is not part of the built JDK"
       IN_JDK=0;;
     *) IN_JDK=1;;
