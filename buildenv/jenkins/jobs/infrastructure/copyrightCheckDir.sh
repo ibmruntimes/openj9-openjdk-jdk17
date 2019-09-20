@@ -605,7 +605,8 @@ echo "jdk/src/share/classes/org/jcp/xml/dsig/internal/dom/XMLDSigRI.java" >>$TEM
 echo "src/java.smartcardio/unix/native/libj2pcsc/MUSCLE/COPYING" >>$TEMPFILE
 # The following file was written by IBM, and then later some oracle code has been added to this file, 
 # After legal consideration, decesion was top add oracle copyrights where ever the oracle code is written which result IBM copyrights on top and later oracle.
-echo "src/windows/native/jdk/crypto/jniprovider/NativeCrypto_md.c" >>$TEMPFILE
+echo "closed/adds/jdk/src/windows/native/jdk/crypto/jniprovider/NativeCrypto_md.c" >>$TEMPFILE
+
 
 cat $TEMPFILE
 
