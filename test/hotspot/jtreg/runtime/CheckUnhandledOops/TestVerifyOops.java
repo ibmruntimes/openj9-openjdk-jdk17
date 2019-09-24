@@ -4,9 +4,7 @@
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,22 +21,16 @@
  * questions.
  */
 
-package sun.tools.common;
-
-/**
- * A helper class to retrieve the main class name for a running
- * Java process. Default implementation returns null. Platform specific
- * implementation currently available for Linux only.
+/*
+ * @test
+ * @bug 8231058
+ * @requires vm.debug & (os.arch != "sparc") & (os.arch != "sparcv9")
+ * @run main/othervm -XX:+VerifyOops TestVerifyOops
  */
-final class ProcessHelper {
 
-    /**
-     * Returns the main class name for the given Java process
-     *
-     * @param pid - process ID (pid)
-     * @return main class name or null if the main class could not be retrieved
-     */
-    static String getMainClass(String pid) {
-        return null;
+public class TestVerifyOops {
+
+    public static void main(String[] args) {
+        System.out.println("Test passed");
     }
 }
