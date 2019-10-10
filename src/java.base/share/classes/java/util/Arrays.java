@@ -4370,6 +4370,7 @@ public class Arrays {
     {
         @java.io.Serial
         private static final long serialVersionUID = -2764017481108945198L;
+        @SuppressWarnings("serial") // Conditionally serializable
         private final E[] a;
 
         ArrayList(E[] array) {
