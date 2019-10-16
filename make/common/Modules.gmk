@@ -23,6 +23,11 @@
 # questions.
 #
 
+# ===========================================================================
+# (c) Copyright IBM Corp. 2019, 2019 All Rights Reserved
+# ===========================================================================
+
+
 ifndef _MODULES_GMK
 _MODULES_GMK := 1
 
@@ -344,6 +349,7 @@ $(MODULE_DEPS_MAKEFILE): $(MODULE_INFOS) \
 	                          sub(/\/\*.*\*\//, ""); \
 	                          gsub(/^ +\*.*/, ""); \
 	                          gsub(/ /, ""); \
+	                          gsub(/\r/, ""); \
 	                          printf(" %s", $$0) } \
 	          END           { printf("\n") }' $m && \
 	      $(PRINTF) "TRANSITIVE_MODULES_$(call GetModuleNameFromModuleInfo, $m) :=" && \
@@ -357,6 +363,7 @@ $(MODULE_DEPS_MAKEFILE): $(MODULE_INFOS) \
 	                          sub(/\/\*.*\*\//, ""); \
 	                          gsub(/^ +\*.*/, ""); \
 	                          gsub(/ /, ""); \
+	                          gsub(/\r/, ""); \
 	                          printf(" %s", $$0) } \
 	          END           { printf("\n") }' $m \
 	    ) >> $@ $(NEWLINE))
