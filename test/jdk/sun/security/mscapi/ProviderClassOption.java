@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 1994, 2003, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,29 +21,20 @@
  * questions.
  */
 
-/*-
- *      Implementation of class Object
- *
- *      former threadruntime.c, Sun Sep 22 12:09:39 1991
+/*
+ * @test
+ * @bug 8231598
+ * @requires os.family == "windows"
+ * @library /test/lib
+ * @summary keytool does not export sun.security.mscapi
  */
 
-#include <stdio.h>
-#include <signal.h>
-#include <limits.h>
+import jdk.test.lib.SecurityTools;
 
-#include "jni.h"
-#include "jni_util.h"
-#include "jvm.h"
-
-#include "java_lang_Object.h"
-
-JNIEXPORT jclass JNICALL
-Java_java_lang_Object_getClass(JNIEnv *env, jobject this)
-{
-    if (this == NULL) {
-        JNU_ThrowNullPointerException(env, NULL);
-        return 0;
-    } else {
-        return (*env)->GetObjectClass(env, this);
+public class ProviderClassOption {
+    public static void main(String[] args) throws Throwable {
+        SecurityTools.keytool("-v -storetype Windows-ROOT -list"
+                + " -providerClass sun.security.mscapi.SunMSCAPI")
+            .shouldHaveExitValue(0);
     }
 }
