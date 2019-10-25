@@ -336,12 +336,12 @@ public class ObjectInputStream
     }
   
 
-    /** if true LUDCL/forName results would be cached, false by default starting Java8 */
+    /** if true LUDCL/forName results would be cached, true by default starting Java8 */
     private static final class GetClassCachingSettingAction
     implements PrivilegedAction<Boolean> {
         public Boolean run() {
             String property =
-                System.getProperty("com.ibm.enableClassCaching", "false");
+                System.getProperty("com.ibm.enableClassCaching", "true");
             return property.equalsIgnoreCase("true");
         }
     }
@@ -2336,7 +2336,7 @@ public class ObjectInputStream
                         curContext = new SerialCallbackContext(obj, slotDesc);
 
                         bin.setBlockDataMode(true);
-                        
+
                         /* user code is invoked */
                         refreshLudcl = true;
                         slotDesc.invokeReadObject(obj, this);
