@@ -21,25 +21,36 @@
  * questions.
  */
 
-// The test fails on sparc because there are errors in VerifyOops.
-/*
+/**
  * @test
- * @bug 8231058
- * @requires vm.debug & vm.bits == "64"
- * @requires (os.arch != "sparcv9")
- * @run main/othervm -XX:+VerifyOops -XX:+UseCompressedOops TestVerifyOops
- * @run main/othervm -XX:+VerifyOops -XX:-UseCompressedOops TestVerifyOops
- */
-/*
- * @test
- * @bug 8231058
- * @requires vm.debug & vm.bits == "32"
- * @run main/othervm -XX:+VerifyOops TestVerifyOops
+ * @bug 8229694
+ * @summary Tests the case where there is only 1 pack and no operations left when calling SuperWord::find_align_to_ref() to find the best alignment again.
+ *
+ * @run main/othervm -Xbatch -XX:CompileCommand=compileonly,compiler.loopopts.superword.AlignmentOnePack::test
+ *      compiler.loopopts.superword.AlignmentOnePack
  */
 
-public class TestVerifyOops {
+package compiler.loopopts.superword;
 
-    public static void main(String[] args) {
-        System.out.println("Test passed");
+public class AlignmentOnePack {
+    static int iFld;
+
+    public static void test(int[] intArr, short[] shortArr) {
+        for (int j = 8; j < intArr.length;j++) {
+            shortArr[10] = 10;
+            shortArr[j] = 30;
+            intArr[7] = 260;
+            intArr[j-1] = 400;
+            iFld = intArr[j];
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        int[] a = new int[16];
+        short[] c = new short[16];
+
+        for (int i = 0; i < 10000; i++) {
+            test(a, c);
+        }
     }
 }
