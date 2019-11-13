@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Loongson Technology Co. Ltd. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,6 +21,19 @@
  * questions.
  */
 
-// key: compiler.warn.restricted.type.not.allowed.preview
+/*
+ * @test
+ * @bug 8233885
+ * @summary CompLevel_initial_compile should be CompLevel_full_optimization for high-only mode
+ * @run main/othervm -XX:+IgnoreUnrecognizedVMOptions -Xcomp -XX:CompilationMode=high-only
+ *                   compiler.compilercontrol.CompilationModeHighOnlyTest
+ *
+ */
 
-class yield { }
+package compiler.compilercontrol;
+
+public class CompilationModeHighOnlyTest{
+    public static void main(String[] args) {
+        System.out.println("Passed");
+    }
+}
