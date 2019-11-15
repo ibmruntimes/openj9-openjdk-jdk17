@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Loongson Technology Co. Ltd. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -22,21 +20,20 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package jdk.jfr.event.gc.stacktrace;
 
-/**
+/*
  * @test
- * @key jfr
- * @requires vm.hasJFR
+ * @bug 8233885
+ * @summary CompLevel_initial_compile should be CompLevel_full_optimization for high-only mode
+ * @run main/othervm -XX:+IgnoreUnrecognizedVMOptions -Xcomp -XX:CompilationMode=high-only
+ *                   compiler.compilercontrol.CompilationModeHighOnlyTest
  *
- * @requires (vm.gc == "null" | vm.gc == "ConcMarkSweep") & !vm.graal.enabled
- * @requires !(vm.compMode == "Xcomp" & os.arch == "aarch64")
- * @library /test/lib /test/jdk
- * @run main/othervm -XX:+UseConcMarkSweepGC -XX:MaxMetaspaceSize=64M -Xlog:gc* jdk.jfr.event.gc.stacktrace.TestMetaspaceConcMarkSweepGCAllocationPendingStackTrace
  */
-public class TestMetaspaceConcMarkSweepGCAllocationPendingStackTrace {
 
-    public static void main(String[] args) throws Exception {
-        AllocationStackTrace.testMetaspaceConcMarkSweepGCAllocEvent();
+package compiler.compilercontrol;
+
+public class CompilationModeHighOnlyTest{
+    public static void main(String[] args) {
+        System.out.println("Passed");
     }
 }

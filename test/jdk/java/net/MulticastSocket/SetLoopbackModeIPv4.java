@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2013, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,20 +21,25 @@
  * questions.
  */
 
-package jdk.jfr.event.gc.objectcount;
-import jdk.test.lib.jfr.GCHelper;
-
-/**
+/*
  * @test
- * @key jfr
- * @requires vm.hasJFR
- * @requires (vm.gc == "ConcMarkSweep" | vm.gc == null) & !vm.graal.enabled
- *           & vm.opt.ExplicitGCInvokesConcurrent != true
- * @library /test/lib /test/jdk
- * @run main/othervm -XX:+UnlockExperimentalVMOptions -XX:-UseFastUnorderedTimeStamps -XX:+UseConcMarkSweepGC -XX:MarkSweepDeadRatio=0 -XX:-UseCompressedOops -XX:+IgnoreUnrecognizedVMOptions jdk.jfr.event.gc.objectcount.TestObjectCountAfterGCEventWithCMSMarkSweep
+ * @bug 4686717
+ * @summary Test MulticastSocket.setLoopbackMode with IPv4 addresses
+ * @library /test/lib
+ * @build jdk.test.lib.NetworkConfiguration
+ *        jdk.test.lib.Platform
+ *        SetLoopbackMode
+ *        SetLoopbackModeIPv4
+ * @run main/othervm -Djava.net.preferIPv4Stack=true SetLoopbackModeIPv4
  */
-public class TestObjectCountAfterGCEventWithCMSMarkSweep {
+
+import jdk.test.lib.net.IPSupport;
+
+public class SetLoopbackModeIPv4 {
     public static void main(String[] args) throws Exception {
-        ObjectCountAfterGCEvent.test(GCHelper.gcSerialOld);
+        IPSupport.throwSkippedExceptionIfNonOperational();
+        SetLoopbackMode.main(args);
     }
 }
+
+
