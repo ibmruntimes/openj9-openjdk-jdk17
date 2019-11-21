@@ -447,6 +447,11 @@ endif
 ifneq (,$(OPENJ9_DEVELOPER_DIR))
   CUSTOM_COMPILER_ENV_VARS += DEVELOPER_DIR="$(OPENJ9_DEVELOPER_DIR)"
 endif
+ifeq (true,$(OPENJ9_ENABLE_JITSERVER))
+  ifneq (true,$(OPENJ9_ENABLE_CMAKE))
+    CUSTOM_COMPILER_ENV_VARS += JITSERVER_SUPPORT=1
+  endif
+endif
 
 run-preprocessors-j9 : stage-j9 \
 		$(OUTPUTDIR)/vm/omr/OMR_VERSION_STRING \
