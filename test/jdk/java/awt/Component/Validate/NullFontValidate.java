@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,7 +21,25 @@
  * questions.
  */
 
-package pkg;
+import java.awt.Frame;
 
-public class Test { }
+/**
+ * @test
+ * @bug 8233657
+ * @key headful
+ * @summary tests that no NPE is thrown when calling Component.validate()
+ *          with null font
+ */
+public final class NullFontValidate {
 
+    public static void main(final String[] args) {
+        final Frame frame = new Frame();
+        try {
+            frame.pack();
+            frame.setFont(null);
+            frame.validate();
+        } finally {
+            frame.dispose();
+        }
+    }
+}
