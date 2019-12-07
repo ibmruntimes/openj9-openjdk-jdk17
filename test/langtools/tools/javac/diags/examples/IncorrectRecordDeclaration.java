@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,34 +21,9 @@
  * questions.
  */
 
-/*
- * @test
- * @bug 4681599
- * @summary Test to make sure that constant values page does not get
- * generated when doclet has nothing to document.
- * @library ../../lib
- * @modules jdk.javadoc/jdk.javadoc.internal.tool
- * @build javadoc.tester.*
- * @run main TestConstantValuesPage
- */
+// key: compiler.err.record.header.expected
+// key: compiler.note.preview.filename
+// key: compiler.note.preview.recompile
+// options: --enable-preview -source ${jdk.version}
 
-import javadoc.tester.JavadocTester;
-
-public class TestConstantValuesPage extends JavadocTester {
-
-    public static void main(String... args) throws Exception {
-        TestConstantValuesPage tester = new TestConstantValuesPage();
-        tester.runTests();
-    }
-
-    @Test
-    public void test() {
-        javadoc("-d", "out",
-                "-sourcepath", testSrc,
-                "foo");
-        checkExit(Exit.CMDERR);
-
-        checkOutput(Output.OUT, false,
-                "constant-values.html...");
-    }
-}
+record R {}
