@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2004, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,32 +21,31 @@
  * questions.
  */
 
-#ifndef JDK_UTIL_H
-#define JDK_UTIL_H
-
-#include "jni.h"
-#include "jvm.h"
-#include "jdk_util_md.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/*-------------------------------------------------------
- * Exported interfaces for both JDK and JVM to use
- *-------------------------------------------------------
- */
-
 /*
- * Export the platform dependent path canonicalization so that
- * the VM can find it when loading system classes.
- * This function is also used by the instrumentation agent.
+ * @test
+ * @summary load/store elimination will print out instructions without bcis.
+ * @bug 8235383
+ * @requires vm.debug == true
+ * @run main/othervm -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Xcomp -XX:+PrintIRDuringConstruction -XX:+Verbose compiler.c1.TestPrintIRDuringConstruction
  */
-JNIEXPORT int
-JDK_Canonicalize(const char *orig, char *out, int len);
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif /* __cplusplus */
+package compiler.c1;
 
-#endif /* JDK_UTIL_H */
+public class TestPrintIRDuringConstruction {
+    static class Dummy {
+        public int value;
+    }
+
+    static int foo() {
+        Dummy obj = new Dummy();       // c1 doesn't have Escape Analysis
+
+        obj.value = 0;                 // dummy store an initial value.
+        return obj.value + obj.value;  // redundant load
+    }
+
+    public static void main(String[] args) {
+        for (int i=0; i<5_000; ++i) {
+            foo();
+        }
+    }
+ }
