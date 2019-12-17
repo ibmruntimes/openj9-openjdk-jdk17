@@ -134,7 +134,6 @@ endif
 JRE_TOOL_MODULES += \
     jdk.jdwp.agent \
     jdk.incubator.jpackage \
-    jdk.pack \
     jdk.scripting.nashorn.shell \
     #
 
@@ -175,7 +174,6 @@ DOCS_MODULES += \
     jdk.naming.dns \
     jdk.naming.rmi \
     jdk.net \
-    jdk.pack \
     jdk.rmic \
     jdk.scripting.nashorn \
     jdk.sctp \
