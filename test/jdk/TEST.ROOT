@@ -93,6 +93,3 @@ useNewOptions=true
 
 # Use --patch-module instead of -Xmodule:
 useNewPatchModule=true
-
-# disabled till JDK-8219408 is fixed
-allowSmartActionArgs=false
