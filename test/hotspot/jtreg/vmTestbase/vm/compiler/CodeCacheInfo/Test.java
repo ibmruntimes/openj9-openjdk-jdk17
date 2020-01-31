@@ -25,55 +25,51 @@
 /*
  * @test
  *
- * @summary converted from VM Testbase jit/tiered.
- * VM Testbase keywords: [jit, quick]
+ * @summary converted from VM Testbase vm/compiler/CodeCacheInfo.
  * VM Testbase readme:
- * Description
- *     The test verifies that JVM prints tiered events with -XX:+PrintTieredEvents
- *     for tiered compilation explicitly enabled with -XX:+TieredCompilation.
- *     If tiered compilation is explicitly disabled the test verifies that there are no
- *     output from PrintTieredEvents.
- *
- * @comment the test can't be run w/ jvmci compiler enabled as it enforces tiered compilation
- * @requires vm.opt.UseJVMCICompiler != true
+ * DESCRIPTION
+ *     Test calls java -version and checks enhanced output format of the
+ *     -XX:+PrintCodeCache vm option.
  *
  * @library /vmTestbase
  *          /test/lib
- * @run driver vmTestbase.jit.tiered.Test
+ * @run driver vm.compiler.CodeCacheInfo.Test
  */
 
-package vmTestbase.jit.tiered;
+package vm.compiler.CodeCacheInfo;
 
-import jtreg.SkippedException;
 import jdk.test.lib.process.OutputAnalyzer;
 import jdk.test.lib.process.ProcessTools;
 
 public class Test {
-    private static String UNSUPPORTED_OPTION_MESSAGE = "-XX:TieredCompilation not supported in this VM";
-    private static String REGEXP = "^[0-9.]+: \\[compile level=\\d";
+    private static String p1 = " size=\\d+Kb used=\\d+Kb max_used=\\d+Kb free=\\d+Kb\\n";
+    private static String p2 = " bounds \\[0x[0-9a-f]+, 0x[0-9a-f]+, 0x[0-9a-f]+\\]\\n";
+    private static String p3 = " total_blobs=\\d+ nmethods=\\d+ adapters=\\d+\\n";
+    private static String p4 = " compilation: enabled\\n";
+
+    private static String SEG_REGEXP = "^(CodeHeap '[^']+':" + p1 + p2 + ")+" + p3 + p4;
+    private static String NOSEG_REGEXP = "^CodeCache:" + p1 + p2 + p3 + p4;
+
     public static void main(String[] args) throws Exception {
         {
-            System.out.println("TieredCompilation is enabled");
+            System.out.println("SegmentedCodeCache is enabled");
             var pb = ProcessTools.createJavaProcessBuilder(true,
-                    "-XX:+TieredCompilation",
-                    "-XX:+PrintTieredEvents",
+                    "-XX:+SegmentedCodeCache",
+                    "-XX:+PrintCodeCache",
                     "-version");
             var output = new OutputAnalyzer(pb.start());
-            if (output.getStdout().contains(UNSUPPORTED_OPTION_MESSAGE)) {
-                throw new SkippedException(UNSUPPORTED_OPTION_MESSAGE);
-            }
-            output.shouldHaveExitValue(0)
-                  .stdoutShouldMatch(REGEXP);
+            output.shouldHaveExitValue(0);
+            output.stdoutShouldMatch(SEG_REGEXP);
         }
         {
-            System.out.println("TieredCompilation is disabled");
+            System.out.println("SegmentedCodeCache is disabled");
             var pb = ProcessTools.createJavaProcessBuilder(true,
-                    "-XX:-TieredCompilation",
-                    "-XX:+PrintTieredEvents",
+                    "-XX:-SegmentedCodeCache",
+                    "-XX:+PrintCodeCache",
                     "-version");
-            var output = new OutputAnalyzer(pb.start())
-                    .shouldHaveExitValue(0)
-                    .stdoutShouldNotMatch(REGEXP);
+            var output = new OutputAnalyzer(pb.start());
+            output.shouldHaveExitValue(0);
+            output.stdoutShouldMatch(NOSEG_REGEXP);
         }
     }
 }
