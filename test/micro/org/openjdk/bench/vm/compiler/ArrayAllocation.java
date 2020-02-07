@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,33 +21,36 @@
  * questions.
  */
 
-import jdk.test.lib.JDKToolLauncher;
-import jdk.test.lib.process.OutputAnalyzer;
-import jdk.test.lib.process.ProcessTools;
+package org.openjdk.bench.vm.compiler;
 
-/*
- * @test
- * @bug 4990825
- * @library /test/lib
- * @modules java.management
- * @run main TestJstatdUsage
- */
-public class TestJstatdUsage {
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.State;
+import java.util.concurrent.TimeUnit;
 
-    public static void main(String[] args) throws Exception {
-        testUsage("-?");
-        testUsage("-h");
-        testUsage("--help");
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@State(Scope.Thread)
+
+public class ArrayAllocation {
+    @Param("128") private int size;
+
+    @Fork(value = 1, warmups = 1)
+    @Benchmark
+    public int eliminateArrayConstLength() {
+        byte z[] = new byte[128];
+        return z.length;
     }
 
-    private static void testUsage(String option) throws Exception {
-        JDKToolLauncher launcher = JDKToolLauncher.createUsingTestJDK("jstatd");
-        launcher.addToolArg(option);
-        ProcessBuilder processBuilder = new ProcessBuilder(launcher.getCommand());
-        OutputAnalyzer output = ProcessTools.executeProcess(processBuilder);
-
-        output.shouldContain("usage: jstatd [-nr] [-p port] [-r rmiport] [-n rminame]");
-        output.shouldHaveExitValue(0);
+    @Fork(value = 1, warmups = 1)
+    @Benchmark
+    public int eliminateArrayVarLength() {
+        byte z[] = new byte[size];
+        return z.length;
     }
-
 }
