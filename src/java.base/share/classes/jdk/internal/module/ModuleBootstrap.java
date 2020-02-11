@@ -376,7 +376,12 @@ public final class ModuleBootstrap {
         // loader.
 
         // mapping of modules to class loaders
-        Function<String, ClassLoader> clf = ModuleLoaderMap.mappingFunction(cf);
+        Function<String, ClassLoader> clf;
+        if (archivedModuleGraph != null) {
+            clf = archivedModuleGraph.classLoaderFunction();
+        } else {
+            clf = ModuleLoaderMap.mappingFunction(cf);
+        }
 
         // check that all modules to be mapped to the boot loader will be
         // loaded from the runtime image
@@ -451,13 +456,14 @@ public final class ModuleBootstrap {
         // Module graph can be archived at CDS dump time. Only allow the
         // unnamed module case for now.
         if (canArchive && (mainModule == null)) {
-            ArchivedModuleGraph.archive(mainModule,
-                                        hasSplitPackages,
-                                        hasIncubatorModules,
-                                        systemModuleFinder,
-                                        cf,
-                                        concealedPackagesToOpen,
-                                        exportedPackagesToOpen);
+            ArchivedModuleGraph.archive(
+                    new ArchivedModuleGraph(hasSplitPackages,
+                                            hasIncubatorModules,
+                                            systemModuleFinder,
+                                            cf,
+                                            clf,
+                                            concealedPackagesToOpen,
+                                            exportedPackagesToOpen));
         }
 
         // total time to initialize
@@ -748,7 +754,6 @@ public final class ModuleBootstrap {
                         Modules.addExports(m, pn, other);
                     }
                 }
-
             }
         }
     }
