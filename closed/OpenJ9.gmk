@@ -88,9 +88,7 @@ endif
 	clean-j9 \
 	clean-j9-dist \
 	clean-openj9-thirdparty-binaries \
-	create_build_jdk \
 	generate-j9jcl-sources \
-	openj9_build_jdk \
 	run-preprocessors-j9 \
 	stage-j9 \
 	#
@@ -111,177 +109,6 @@ define openj9_copy_tree_impl
 	@$(TOUCH) $1/$(OPENJ9_MARKER_FILE)
 endef
 
-openj9_build_jdk : build-j9
-	+$(MAKE) -f $(TOPDIR)/closed/OpenJ9.gmk create_build_jdk
-
-# openj9_joinall
-# --------------
-# yields all possible concatenations taking one word from each of up to 4 lists
-# e.g. $(call openj9_joinall, A B, 1 2) = A1 A2 B1 B2
-openj9_joinall = \
-	$(if $(firstword $5),$(error openj9_joinall handles at most 4 lists),$(strip \
-	$(if $(firstword $2),$(foreach word, $1,$(addprefix $(word), $(call openj9_joinall,$2,$3,$4))),$1)))
-
-openj9_install_copy = $(call install-file)
-
-define openj9_install_copy_and_sign
-	$(openj9_install_copy)
-	$(call CodesignFile,"$@")
-endef
-
-# openj9_install_rule
-# -------------------
-# $1 - suffix of install action macro (copy or copy_and_sign)
-# $2 - source file path
-# $3 - target file path
-define openj9_install_rule
-$3 : $2
-	$$(openj9_install_$1)
-endef
-
-# openj9_install_files
-# --------------------
-# $1 - suffix of install action macro (copy or copy_and_sign; default is copy)
-# $2 - sequence of file paths
-openj9_install_files = \
-	$(if $(word 2,$2), \
-		$(eval $(call openj9_install_rule,$(if $1,$(strip $1),copy),$(word 1,$2),$(word 2,$2))) \
-		$(call openj9_install_files,,$(wordlist 2,$(words $2),$2)), \
-		$(eval create_build_jdk : $2) \
-	)
-
-# openj9_install_exes
-# -------------------
-# $1 = module name
-# $2 = list of executable names without $(EXE_SUFFIX)
-openj9_install_exes = \
-	$(foreach file, $(addsuffix $(EXE_SUFFIX), $2), \
-		$(call openj9_install_files,copy_and_sign, \
-			$(addsuffix /$(file), \
-				$(OUTPUTDIR)/vm \
-				$(call FindExecutableDirForModule, $1) \
-				$(JDK_OUTPUTDIR)/bin)))
-
-# openj9_install_shlibs
-# ---------------------
-# $1 = module name
-# $2 = list of shared library names without $(LIBRARY_PREFIX) or $(SHARED_LIBRARY_SUFFIX)
-openj9_install_shlibs = \
-	$(foreach file, $(foreach name, $2, $(call SHARED_LIBRARY,$(name))), \
-		$(call openj9_install_files,copy_and_sign, \
-			$(addsuffix /$(file), \
-				$(OUTPUTDIR)/vm \
-				$(call FindLibDirForModule, $1)/$(OPENJ9_LIBS_SUBDIR) \
-				$(JDK_OUTPUTDIR)/$(OPENJ9_BIN_OR_LIB_DIR)/$(OPENJ9_LIBS_SUBDIR))))
-
-# jitserver
-
-ifeq (true,$(OPENJ9_ENABLE_JITSERVER))
-  $(call openj9_install_exes, java.base, jitserver)
-endif
-
-# redirector
-
-$(call openj9_install_files,copy_and_sign, \
-	$(addsuffix /$(call SHARED_LIBRARY,jvm), \
-		$(OUTPUTDIR)/vm/redirector \
-		$(call openj9_joinall, \
-			$(call FindLibDirForModule, java.base) $(JDK_OUTPUTDIR)/$(OPENJ9_BIN_OR_LIB_DIR), \
-			/j9vm /server)))
-
-# jsig
-
-$(call openj9_install_files,copy_and_sign, \
-	$(addsuffix $(call SHARED_LIBRARY,jsig), \
-		$(OUTPUTDIR)/vm/ \
-		$(call openj9_joinall, \
-			$(call FindLibDirForModule, java.base) $(JDK_OUTPUTDIR)/$(OPENJ9_BIN_OR_LIB_DIR), \
-			/ /j9vm/ /server/)))
-
-# CPU targets without JIT support.
-NO_JIT_CPUS :=
-
-# java.base
-
-$(call openj9_install_shlibs, java.base, \
-	j9dmp29 \
-	j9gc29 \
-	j9gcchk29 \
-	j9hookable29 \
-	$(if $(filter $(NO_JIT_CPUS),$(OPENJDK_TARGET_CPU)),,j9jit29) \
-	j9jnichk29 \
-	j9jvmti29 \
-	j9prt29 \
-	j9thr29 \
-	j9trc29 \
-	j9vm29 \
-	j9vmchk29 \
-	j9vrb29 \
-	j9zlib29 \
-	jclse29 \
-	jvm \
-	omrsig \
-	)
-
-ifeq (windows,$(OPENJDK_TARGET_OS))
-  $(call openj9_install_files,, \
-	$(addsuffix /$(call STATIC_LIBRARY,jsig), \
-		$(OUTPUTDIR)/vm/lib \
-		$(call FindLibDirForModule, java.base) \
-		$(JDK_OUTPUTDIR)/lib))
-
-  $(call openj9_install_files,, \
-	$(OUTPUTDIR)/vm/redirector/$(call STATIC_LIBRARY,redirector_jvm) \
-	$(addsuffix /$(call STATIC_LIBRARY,jvm), \
-		$(call FindLibDirForModule, java.base) \
-		$(JDK_OUTPUTDIR)/lib))
-endif # windows
-
-$(foreach file, \
-		$(notdir $(wildcard $(OUTPUTDIR)/vm/java*.properties)) \
-		options.default, \
-	$(call openj9_install_files,, \
-		$(addsuffix /$(file), \
-			$(OUTPUTDIR)/vm \
-			$(call FindLibDirForModule, java.base) \
-			$(JDK_OUTPUTDIR)/lib)))
-
-ifeq (true,$(OPENJ9_ENABLE_DDR))
-
-$(call openj9_install_files,, \
-	$(addsuffix /j9ddr.dat, \
-		$(OUTPUTDIR)/vm \
-		$(addsuffix /$(OPENJ9_LIBS_SUBDIR), \
-			$(call FindLibDirForModule, java.base) \
-			$(JDK_OUTPUTDIR)/lib)))
-
-.PHONY : run-ddrgen
-
-$(OUTPUTDIR)/vm/j9ddr.dat : run-ddrgen
-
-run-ddrgen :
-	export CC="$(CC)" CXX="$(CXX)" $(EXPORT_MSVS_ENV_VARS) \
-		&& $(MAKE) -C $(OUTPUTDIR)/vm/ddr -f run_omrddrgen.mk
-
-endif # OPENJ9_ENABLE_DDR
-
-$(call openj9_install_files,, \
-	$(OPENJ9_TOPDIR)/longabout.html \
-	$(call FindLibDirForModule, java.base)/openj9-notices.html)
-
-# contributions to other modules
-$(call openj9_install_shlibs, java.management, management management_ext)
-$(call openj9_install_shlibs, openj9.cuda, cuda4j29)
-$(call openj9_install_shlibs, openj9.dtfj, j9jextract)
-$(call openj9_install_shlibs, openj9.sharedclasses, j9shr29)
-
-$(foreach file, J9TraceFormat.dat OMRTraceFormat.dat, \
-	$(call openj9_install_files,, \
-		$(addsuffix /$(file), \
-			$(OUTPUTDIR)/vm \
-			$(call FindLibDirForModule, openj9.traceformat) \
-			$(JDK_OUTPUTDIR)/lib)))
-
 # openj9_test_image_rules
 # -----------------------
 # $1 = absolute library path
@@ -289,11 +116,12 @@ define openj9_test_image_rules
   openj9_test_image : $(TEST_IMAGE_DIR)/openj9/$(notdir $(strip $1))
 
   $(TEST_IMAGE_DIR)/openj9/$(notdir $(strip $1)) : $(strip $1)
-	$$(openj9_install_copy_and_sign)
+	$$(call install-file)
+	$$(call CodesignFile,"$$@")
 endef
 
 $(foreach file, \
-	$(patsubst %, $(OUTPUTDIR)/vm/%$(EXE_SUFFIX), \
+	$(patsubst %, $(OPENJ9_VM_BUILD_DIR)/%$(EXE_SUFFIX), \
 		algotest \
 		bcvunit \
 		cfdump \
@@ -313,7 +141,7 @@ $(foreach file, \
 		vmLifecyleTests \
 		vmtest \
 		) \
-	$(patsubst %, $(OUTPUTDIR)/vm/$(call SHARED_LIBRARY,%), \
+	$(patsubst %, $(OPENJ9_VM_BUILD_DIR)/$(call SHARED_LIBRARY,%), \
 		balloon29 \
 		bcuwhite \
 		bcvrelationships \
@@ -342,7 +170,7 @@ $(foreach file, \
 		testlibB \
 		vmruntimestateagent29 \
 		) \
-	$(patsubst %, $(OUTPUTDIR)/vm/lib%.jnilib, \
+	$(patsubst %, $(OPENJ9_VM_BUILD_DIR)/lib%.jnilib, \
 		loadLibraryTest \
 		), \
 	$(if $(wildcard $(file)), \
@@ -457,7 +285,7 @@ OPENJ9_VERSION_VARS := \
 OPENJ9_VERSION_SCRIPT := \
 	$(foreach var,$(OPENJ9_VERSION_VARS),-e 's|@$(var)@|$(value $(var))|g')
 
-$(OUTPUTDIR)/vm/include/openj9_version_info.h : $(TOPDIR)/closed/openj9_version_info.h.in
+$(OPENJ9_VM_BUILD_DIR)/include/openj9_version_info.h : $(TOPDIR)/closed/openj9_version_info.h.in
 	@$(MKDIR) -p $(@D)
 	@$(SED) $(OPENJ9_VERSION_SCRIPT) > $@ < $<
 
@@ -465,14 +293,14 @@ $(OUTPUTDIR)/vm/include/openj9_version_info.h : $(TOPDIR)/closed/openj9_version_
 OPENJ9_VERSION_MAP := $(foreach var,$(sort $(OPENJ9_VERSION_VARS)),$(var)='$(value $(var))')
 
 # update if the map changes
-$(OUTPUTDIR)/vm/include/openj9_version_info.h : $(call DependOnVariable,OPENJ9_VERSION_MAP)
+$(OPENJ9_VM_BUILD_DIR)/include/openj9_version_info.h : $(call DependOnVariable,OPENJ9_VERSION_MAP)
 
 # Only update version files when the SHAs change.
-$(OUTPUTDIR)/vm/compiler/jit.version : $(call DependOnVariable, OPENJ9_SHA)
+$(OPENJ9_VM_BUILD_DIR)/compiler/jit.version : $(call DependOnVariable, OPENJ9_SHA)
 	@$(MKDIR) -p $(@D)
 	$(ECHO) '#define TR_LEVEL_NAME "$(OPENJ9_SHA)"' > $@
 
-$(OUTPUTDIR)/vm/omr/OMR_VERSION_STRING : $(call DependOnVariable, OPENJ9OMR_SHA)
+$(OPENJ9_VM_BUILD_DIR)/omr/OMR_VERSION_STRING : $(call DependOnVariable, OPENJ9OMR_SHA)
 	@$(MKDIR) -p $(@D)
 	$(ECHO) '#define OMR_VERSION_STRING "$(OPENJ9OMR_SHA)"' > $@
 
@@ -506,9 +334,9 @@ ifeq (true,$(OPENJ9_ENABLE_JITSERVER))
 endif # OPENJ9_ENABLE_JITSERVER
 
 run-preprocessors-j9 : stage-j9 \
-		$(OUTPUTDIR)/vm/omr/OMR_VERSION_STRING \
-		$(OUTPUTDIR)/vm/compiler/jit.version \
-		$(OUTPUTDIR)/vm/include/openj9_version_info.h
+		$(OPENJ9_VM_BUILD_DIR)/omr/OMR_VERSION_STRING \
+		$(OPENJ9_VM_BUILD_DIR)/compiler/jit.version \
+		$(OPENJ9_VM_BUILD_DIR)/include/openj9_version_info.h
 	@$(ECHO) Running OpenJ9 preprocessors with OPENJ9_BUILDSPEC: $(OPENJ9_BUILDSPEC)
 	export BOOT_JDK=$(BOOT_JDK) $(EXPORT_MSVS_ENV_VARS) \
 		OPENJDK_VERSION_NUMBER_FOUR_POSITIONS=$(VERSION_NUMBER_FOUR_POSITIONS) \
@@ -527,6 +355,15 @@ run-preprocessors-j9 : stage-j9 \
 			VERSION_MAJOR=$(VERSION_FEATURE) \
 			tools
 
+ifneq (true,$(OPENJ9_ENABLE_DDR))
+  DDR_COMMAND :=
+else ifeq (true,$(OPENJ9_ENABLE_CMAKE))
+  DDR_COMMAND := $(MAKE) -C $(OPENJ9_VM_BUILD_DIR) j9ddr
+else
+  DDR_COMMAND := export CC="$(CC)" CXX="$(CXX)" $(EXPORT_MSVS_ENV_VARS) \
+	&& $(MAKE) -C $(OUTPUTDIR)/vm/ddr -f run_omrddrgen.mk
+endif # OPENJ9_ENABLE_DDR
+
 build-j9 : run-preprocessors-j9
 	@$(ECHO) Compiling OpenJ9 in $(OUTPUTDIR)/vm
 ifeq (true,$(OPENJ9_ENABLE_CMAKE))
@@ -537,6 +374,7 @@ else
 		&& $(MAKE) -C $(OUTPUTDIR)/vm $(MAKEFLAGS) all
 endif
 	@$(ECHO) OpenJ9 compile complete
+	$(DDR_COMMAND)
 
 J9JCL_SOURCES_DONEFILE := $(MAKESUPPORT_OUTPUTDIR)/j9jcl_sources.done
 
