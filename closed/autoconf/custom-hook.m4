@@ -74,7 +74,7 @@ AC_DEFUN([OPENJ9_CONFIGURE_CMAKE],
 
 AC_DEFUN([OPENJ9_BASIC_SETUP_FUNDAMENTAL_TOOLS],
 [
-  BASIC_REQUIRE_PROGS(M4, m4)
+  UTIL_REQUIRE_PROGS(M4, m4)
 ])
 
 AC_DEFUN_ONCE([OPENJ9_CONFIGURE_WARNINGS],
@@ -154,11 +154,11 @@ AC_DEFUN([OPENJ9_CONFIGURE_CUDA],
   AC_ARG_WITH(cuda, [AS_HELP_STRING([--with-cuda], [use this directory as CUDA_HOME])],
     [
       cuda_home="$with_cuda"
-      BASIC_FIXUP_PATH(cuda_home)
+      UTIL_FIXUP_PATH(cuda_home)
       AC_MSG_CHECKING([CUDA_HOME])
       if test -f "$cuda_home/include/cuda.h" ; then
         if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin ; then
-          # BASIC_FIXUP_PATH yields a Unix-style path, but we need a mixed-mode path
+          # UTIL_FIXUP_PATH yields a Unix-style path, but we need a mixed-mode path
           cuda_home="`$CYGPATH -m $cuda_home`"
         fi
         if test "$cuda_home" = "$with_cuda" ; then
@@ -176,11 +176,11 @@ AC_DEFUN([OPENJ9_CONFIGURE_CUDA],
   AC_ARG_WITH(gdk, [AS_HELP_STRING([--with-gdk], [use this directory as GDK_HOME])],
     [
       gdk_home="$with_gdk"
-      BASIC_FIXUP_PATH(gdk_home)
+      UTIL_FIXUP_PATH(gdk_home)
       AC_MSG_CHECKING([GDK_HOME])
       if test -f "$gdk_home/include/nvml.h" ; then
         if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin ; then
-          # BASIC_FIXUP_PATH yields a Unix-style path, but we need a mixed-mode path
+          # UTIL_FIXUP_PATH yields a Unix-style path, but we need a mixed-mode path
           gdk_home="`$CYGPATH -m $gdk_home`"
         fi
         if test "$gdk_home" = "$with_gdk" ; then
@@ -559,7 +559,7 @@ AC_DEFUN([CONFIGURE_OPENSSL],
     # path where openssl is installed
     else
       OPENSSL_DIR=$with_openssl
-      BASIC_FIXUP_PATH(OPENSSL_DIR)
+      UTIL_FIXUP_PATH(OPENSSL_DIR)
       if test -s "$OPENSSL_DIR/include/openssl/evp.h" ; then
         OPENSSL_CFLAGS="-I${OPENSSL_DIR}/include"
         if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin ; then
