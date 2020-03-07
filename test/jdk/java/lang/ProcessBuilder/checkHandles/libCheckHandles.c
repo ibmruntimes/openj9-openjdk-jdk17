@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,30 +21,24 @@
  * questions.
  */
 
-package gc.concurrent_phase_control;
+#include <stdlib.h>
+#include <string.h>
 
-/*
- * @test TestConcurrentPhaseControlSerial
- * @bug 8169517
- * @requires vm.gc.Serial
- * @summary Verify Serial GC doesn't support WhiteBox concurrent phase control.
- * @key gc
- * @modules java.base
- * @library /test/lib /
- * @build sun.hotspot.WhiteBox
- * @run driver ClassFileInstaller sun.hotspot.WhiteBox
- *    sun.hotspot.WhiteBox$WhiteBoxPermission
- * @run main/othervm -XX:+UseSerialGC
- *   -Xbootclasspath/a:.
- *   -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI
- *   gc.concurrent_phase_control.TestConcurrentPhaseControlSerial
- */
+#ifdef _WIN32
 
-import gc.concurrent_phase_control.CheckUnsupported;
+#include "jni.h"
+#include "jni_util.h"
+#include <windows.h>
 
-public class TestConcurrentPhaseControlSerial {
-
-    public static void main(String[] args) throws Exception {
-        CheckUnsupported.check("Serial");
+JNIEXPORT jlong JNICALL Java_CheckHandles_getProcessHandleCount(JNIEnv *env)
+{
+    DWORD handleCount;
+    HANDLE handle = GetCurrentProcess();
+    if (GetProcessHandleCount(handle, &handleCount)) {
+        return (jlong)handleCount;
+    } else {
+        return -1L;
     }
 }
+
+#endif  /*  _WIN32 */
