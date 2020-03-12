@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,33 +21,9 @@
  * questions.
  */
 
-/*
- * @test
- * @bug 4253773
- * @summary test Boolean.parseBoolean
+package pkg1;
+
+/**
+ * test with {@systemProperty user.name}
  */
-
-public class ParseBoolean {
-    public static void main(String[] args) {
-        checkTrue(Boolean.parseBoolean("TRUE"));
-        checkTrue(Boolean.parseBoolean("true"));
-        checkTrue(Boolean.parseBoolean("TrUe"));
-
-        checkFalse(Boolean.parseBoolean("false"));
-        checkFalse(Boolean.parseBoolean("FALSE"));
-        checkFalse(Boolean.parseBoolean("FaLse"));
-        checkFalse(Boolean.parseBoolean(null));
-        checkFalse(Boolean.parseBoolean("garbage"));
-        checkFalse(Boolean.parseBoolean("TRUEE"));
-    }
-
-    static void checkTrue(boolean b) {
-        if (!b)
-            throw new RuntimeException("test failed");
-    }
-
-    static void checkFalse(boolean b) {
-        if (b)
-            throw new RuntimeException("test failed");
-    }
-}
+public class A { }
