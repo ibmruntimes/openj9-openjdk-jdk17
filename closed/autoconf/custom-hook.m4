@@ -54,17 +54,20 @@ AC_DEFUN([OPENJ9_CONFIGURE_CMAKE],
 [
   AC_ARG_WITH(cmake, [AS_HELP_STRING([--with-cmake], [enable building openJ9 with CMake])],
     [
-      if test "x$with_cmake" != x ; then
-        CMAKE=$with_cmake
+      if test "x$with_cmake" == xyes -o "x$with_cmake" == x ; then
+        with_cmake=cmake
       fi
-      with_cmake=yes
+      if test "x$with_cmake" != xno ; then
+        if AS_EXECUTABLE_P(["$with_cmake"]) ; then
+          CMAKE="$with_cmake"
+        else
+          UTIL_REQUIRE_PROGS([CMAKE], [$with_cmake])
+        fi
+        with_cmake=yes
+      fi
     ],
     [with_cmake=no])
   if test "$with_cmake" == yes ; then
-    AC_PATH_PROG([CMAKE], [cmake])
-    if test "x$CMAKE" == x ; then
-      AC_MSG_ERROR([Could not find CMake])
-    fi
     OPENJ9_ENABLE_CMAKE=true
   else
     OPENJ9_ENABLE_CMAKE=false
@@ -398,38 +401,40 @@ AC_DEFUN_ONCE([OPENJ9_THIRD_PARTY_REQUIREMENTS],
   AC_ARG_WITH(freemarker-jar, [AS_HELP_STRING([--with-freemarker-jar],
       [path to freemarker.jar (used to build OpenJ9 build tools)])])
 
-  if test "x$with_freemarker_jar" == x ; then
-    AC_MSG_RESULT([no])
-    printf "\n"
-    printf "The FreeMarker library is required to build the OpenJ9 build tools\n"
-    printf "and has to be provided during configure process.\n"
-    printf "\n"
-    printf "Download the FreeMarker library and unpack it into an arbitrary directory:\n"
-    printf "\n"
-    printf "wget https://sourceforge.net/projects/freemarker/files/freemarker/2.3.8/freemarker-2.3.8.tar.gz/download -O freemarker-2.3.8.tar.gz\n"
-    printf "\n"
-    printf "tar -xzf freemarker-2.3.8.tar.gz\n"
-    printf "\n"
-    printf "Then run configure with '--with-freemarker-jar=<freemarker_jar>'\n"
-    printf "\n"
-
-    AC_MSG_NOTICE([Could not find freemarker.jar])
-    AC_MSG_ERROR([Cannot continue])
-  else
-    AC_MSG_RESULT([yes])
-    AC_MSG_CHECKING([checking that '$with_freemarker_jar' exists])
-    if test -f "$with_freemarker_jar" ; then
-      AC_MSG_RESULT([yes])
-    else
+  FREEMARKER_JAR=
+  if test "x$OPENJ9_ENABLE_CMAKE" != xtrue ; then
+    if test "x$with_freemarker_jar" == x -o "x$with_freemarker_jar" == xno ; then
       AC_MSG_RESULT([no])
-      AC_MSG_ERROR([freemarker.jar not found at '$with_freemarker_jar'])
-    fi
-  fi
+      printf "\n"
+      printf "The FreeMarker library is required to build the OpenJ9 build tools\n"
+      printf "and has to be provided during configure process.\n"
+      printf "\n"
+      printf "Download the FreeMarker library and unpack it into an arbitrary directory:\n"
+      printf "\n"
+      printf "wget https://sourceforge.net/projects/freemarker/files/freemarker/2.3.8/freemarker-2.3.8.tar.gz/download -O freemarker-2.3.8.tar.gz\n"
+      printf "\n"
+      printf "tar -xzf freemarker-2.3.8.tar.gz\n"
+      printf "\n"
+      printf "Then run configure with '--with-freemarker-jar=<freemarker_jar>'\n"
+      printf "\n"
 
-  if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin ; then
-    FREEMARKER_JAR=`$CYGPATH -m "$with_freemarker_jar"`
-  else
-    FREEMARKER_JAR=$with_freemarker_jar
+      AC_MSG_ERROR([Cannot continue])
+    else
+      AC_MSG_RESULT([yes])
+      AC_MSG_CHECKING([checking that '$with_freemarker_jar' exists])
+      if test -f "$with_freemarker_jar" ; then
+        AC_MSG_RESULT([yes])
+      else
+        AC_MSG_RESULT([no])
+        AC_MSG_ERROR([freemarker.jar not found at '$with_freemarker_jar'])
+      fi
+    fi
+
+    if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin ; then
+      FREEMARKER_JAR=`$CYGPATH -m "$with_freemarker_jar"`
+    else
+      FREEMARKER_JAR=$with_freemarker_jar
+    fi
   fi
 
   AC_SUBST(FREEMARKER_JAR)
@@ -457,9 +462,9 @@ AC_DEFUN_ONCE([OPENJ9_CHECK_NASM_VERSION],
         AC_MSG_RESULT([yes])
       else
         # NASM version string is of the following format:
-        #  ---
-        #  NASM version 2.14.02 compiled on Dec 27 2018
-        #  ---
+        # ---
+        # NASM version 2.14.02 compiled on Dec 27 2018
+        # ---
         # Some builds may not contain any text after the version number
         #
         # NASM_VERSION is set within square brackets so that the sed expression would not
@@ -519,9 +524,9 @@ AC_DEFUN([CONFIGURE_OPENSSL],
         OPENSSL_DIR="$TOPDIR/openssl"
         OPENSSL_CFLAGS="-I${OPENSSL_DIR}/include"
         if test "x$BUNDLE_OPENSSL" != x ; then
-            if  ! test -s "$OPENSSL_DIR/${LIBRARY_PREFIX}crypto${SHARED_LIBRARY_SUFFIX}" ; then
-                BUILD_OPENSSL=yes
-            fi
+          if ! test -s "$OPENSSL_DIR/${LIBRARY_PREFIX}crypto${SHARED_LIBRARY_SUFFIX}" ; then
+            BUILD_OPENSSL=yes
+          fi
         fi
         if test "x$BUNDLE_OPENSSL" = xyes ; then
           OPENSSL_BUNDLE_LIB_PATH="${OPENSSL_DIR}"
@@ -563,13 +568,13 @@ AC_DEFUN([CONFIGURE_OPENSSL],
       if test -s "$OPENSSL_DIR/include/openssl/evp.h" ; then
         OPENSSL_CFLAGS="-I${OPENSSL_DIR}/include"
         if test "x$OPENJDK_BUILD_OS_ENV" = xwindows.cygwin ; then
-            if test "x$BUNDLE_OPENSSL" = xyes ; then
-              if test -d "$OPENSSL_DIR/bin" ; then
-                OPENSSL_BUNDLE_LIB_PATH="${OPENSSL_DIR}/bin"
-              else
-                OPENSSL_BUNDLE_LIB_PATH="${OPENSSL_DIR}"
-              fi
+          if test "x$BUNDLE_OPENSSL" = xyes ; then
+            if test -d "$OPENSSL_DIR/bin" ; then
+              OPENSSL_BUNDLE_LIB_PATH="${OPENSSL_DIR}/bin"
+            else
+              OPENSSL_BUNDLE_LIB_PATH="${OPENSSL_DIR}"
             fi
+          fi
         else
           if test -s "$OPENSSL_DIR/lib/${LIBRARY_PREFIX}crypto${SHARED_LIBRARY_SUFFIX}" ; then
             OPENSSL_CFLAGS="-I${OPENSSL_DIR}/include"
@@ -606,7 +611,7 @@ AC_DEFUN([CONFIGURE_OPENSSL],
           fi
         fi
       else
-        #openssl is not found in user specified location. Abort.
+        # openssl is not found in user specified location. Abort.
         AC_MSG_RESULT([no])
         AC_MSG_ERROR([Unable to find openssl in specified location $OPENSSL_DIR])
       fi
@@ -615,7 +620,6 @@ AC_DEFUN([CONFIGURE_OPENSSL],
 
     AC_MSG_CHECKING([if we should bundle openssl])
     AC_MSG_RESULT([$BUNDLE_OPENSSL])
-
   fi
 
   AC_SUBST(OPENSSL_BUNDLE_LIB_PATH)
