@@ -224,6 +224,13 @@ else
   FEATURE_SED_SCRIPT += $(call SedDisable,opt_jitserver)
 endif
 
+# Adjust Inline-Types enablement flags.
+ifeq (true,$(OPENJ9_ENABLE_INLINE_TYPES))
+  SPEC_SED_SCRIPT += $(call SedEnable,opt_valhallaValueTypes)
+else
+  SPEC_SED_SCRIPT += $(call SedDisable,opt_valhallaValueTypes)
+endif
+
 # Disable windows rebase.
 SPEC_SED_SCRIPT += $(call SedDisable,uma_windowsRebase)
 
@@ -333,10 +340,99 @@ ifeq (true,$(OPENJ9_ENABLE_JITSERVER))
   endif # OPENJ9_ENABLE_CMAKE
 endif # OPENJ9_ENABLE_JITSERVER
 
-run-preprocessors-j9 : stage-j9 \
-		$(OPENJ9_VM_BUILD_DIR)/omr/OMR_VERSION_STRING \
-		$(OPENJ9_VM_BUILD_DIR)/compiler/jit.version \
-		$(OPENJ9_VM_BUILD_DIR)/include/openj9_version_info.h
+run-preprocessors-j9 : \
+	$(OPENJ9_VM_BUILD_DIR)/omr/OMR_VERSION_STRING \
+	$(OPENJ9_VM_BUILD_DIR)/compiler/jit.version \
+	$(OPENJ9_VM_BUILD_DIR)/include/openj9_version_info.h
+
+ifeq (true,$(OPENJ9_ENABLE_CMAKE))
+
+  CMAKE_ARGS := \
+    -C $(OPENJ9_TOPDIR)/runtime/cmake/caches/$(OPENJ9_BUILDSPEC).cmake \
+    -DBOOT_JDK="$(BOOT_JDK)" \
+    -DBUILD_ID=$(BUILD_ID) \
+    -DJ9VM_OMR_DIR="$(OPENJ9OMR_TOPDIR)" \
+    -DJAVA_SPEC_VERSION=$(VERSION_FEATURE) \
+    -DOMR_DDR=$(OPENJ9_ENABLE_DDR) \
+    -DOPENJ9_BUILD=true \
+    -DOPENJ9_SHA=$(OPENJ9_SHA) \
+    #
+
+  ifeq (windows,$(OPENJDK_TARGET_OS))
+    CMAKE_ARGS += -DCMAKE_TOOLCHAIN_FILE="$(OUTPUTDIR)/toolchain-win.cmake"
+  else
+    # We grab the C/C++ compilers detected by autoconf or provided by user, not
+    # the CC/CXX variables defined by the makefiles, which potentially include
+    # the ccache command which will throw off cmake.
+    ifneq (,$(OPENJ9_CC))
+      CMAKE_ARGS += -DCMAKE_C_COMPILER="$(OPENJ9_CC)"
+    else
+      CMAKE_ARGS += -DCMAKE_C_COMPILER="$(ac_cv_prog_CC)"
+    endif
+    ifneq (,$(OPENJ9_CXX))
+      CMAKE_ARGS += -DCMAKE_CXX_COMPILER="$(OPENJ9_CXX)"
+    else
+      CMAKE_ARGS += -DCMAKE_CXX_COMPILER="$(ac_cv_prog_CXX)"
+    endif
+  endif # windows
+
+  ifneq (,$(CCACHE))
+    # openjdk makefiles add a bunch of environemnt variables to the ccache command.
+    # CMake will not parse this properly, so we wrap the whole thing in the env command.
+    # We also need to add semicolons between arguments or else cmake will treat the whole
+    # thing as one long command name.
+
+    # Note: We remove the CCACHE_COMPRESS option that openjdk adds, because it significantly
+    # slows down the build (to the point of erasing any gains from using ccache).
+    CCACHE_NOCOMPRESS := $(filter-out CCACHE_COMPRESS=1,$(CCACHE))
+    ESCAPED_CCACHE := env$(subst $(SPACE),,$(addprefix ;,$(CCACHE_NOCOMPRESS)))
+
+    CMAKE_ARGS += -DCMAKE_C_COMPILER_LAUNCHER="$(ESCAPED_CCACHE)"
+    CMAKE_ARGS += -DCMAKE_CXX_COMPILER_LAUNCHER="$(ESCAPED_CCACHE)"
+  endif # CCACHE
+
+  ifeq (true,$(OPENJ9_ENABLE_JITSERVER))
+    CMAKE_ARGS += -DJ9VM_OPT_JITSERVER=ON
+
+    ifneq (,$(OPENSSL_CFLAGS))
+      CMAKE_ARGS += -DOPENSSL_CFLAGS="$(OPENSSL_CFLAGS)"
+    endif
+
+    ifneq (,$(OPENSSL_DIR))
+      CMAKE_ARGS += -DOPENSSL_DIR="$(OPENSSL_DIR)"
+    endif
+
+    ifneq (,$(OPENSSL_BUNDLE_LIB_PATH))
+      CMAKE_ARGS += -DOPENSSL_BUNDLE_LIB_PATH="$(OPENSSL_BUNDLE_LIB_PATH)"
+    endif
+  else
+    CMAKE_ARGS += -DJ9VM_OPT_JITSERVER=OFF
+  endif # OPENJ9_ENABLE_JITSERVER
+
+  CMAKE_ARGS += $(EXTRA_CMAKE_ARGS)
+
+  ifeq (true,$(OPENJ9_ENABLE_CUDA))
+    CMAKE_ARGS += -DJ9VM_OPT_CUDA=ON -DOMR_CUDA_HOME="$(CUDA_HOME)"
+  else # OPENJ9_ENABLE_CUDA
+    CMAKE_ARGS += -DJ9VM_OPT_CUDA=OFF
+  endif # OPENJ9_ENABLE_CUDA
+
+  ifeq (true,$(OPENJ9_ENABLE_INLINE_TYPES))
+    CMAKE_ARGS += -DJ9VM_OPT_VALHALLA_VALUE_TYPES=ON
+  else # OPENJ9_ENABLE_INLINE_TYPES
+    CMAKE_ARGS += -DJ9VM_OPT_VALHALLA_VALUE_TYPES=OFF
+  endif # OPENJ9_ENABLE_INLINE_TYPES
+
+$(OUTPUTDIR)/vm/cmake.stamp :
+	@$(MKDIR) -p $(@D)
+	cd $(@D) && $(CMAKE) $(CMAKE_ARGS) $(OPENJ9_TOPDIR)
+	$(TOUCH) $@
+
+run-preprocessors-j9 : $(OUTPUTDIR)/vm/cmake.stamp
+
+else # OPENJ9_ENABLE_CMAKE
+
+run-preprocessors-j9 : stage-j9
 	@$(ECHO) Running OpenJ9 preprocessors with OPENJ9_BUILDSPEC: $(OPENJ9_BUILDSPEC)
 	export BOOT_JDK=$(BOOT_JDK) $(EXPORT_MSVS_ENV_VARS) \
 		OPENJDK_VERSION_NUMBER_FOUR_POSITIONS=$(VERSION_NUMBER_FOUR_POSITIONS) \
@@ -355,6 +451,8 @@ run-preprocessors-j9 : stage-j9 \
 			VERSION_MAJOR=$(VERSION_FEATURE) \
 			tools
 
+endif # OPENJ9_ENABLE_CMAKE
+
 ifneq (true,$(OPENJ9_ENABLE_DDR))
   DDR_COMMAND :=
 else ifeq (true,$(OPENJ9_ENABLE_CMAKE))
@@ -366,13 +464,8 @@ endif # OPENJ9_ENABLE_DDR
 
 build-j9 : run-preprocessors-j9
 	@$(ECHO) Compiling OpenJ9 in $(OUTPUTDIR)/vm
-ifeq (true,$(OPENJ9_ENABLE_CMAKE))
-	export OPENJ9_BUILD=true $(EXPORT_MSVS_ENV_VARS) $(CUSTOM_COMPILER_ENV_VARS) \
-		&& $(MAKE) -C $(OUTPUTDIR)/vm/build $(MAKEFLAGS) install
-else
 	export OPENJ9_BUILD=true $(EXPORT_MSVS_ENV_VARS) $(CUSTOM_COMPILER_ENV_VARS) \
 		&& $(MAKE) -C $(OUTPUTDIR)/vm $(MAKEFLAGS) all
-endif
 	@$(ECHO) OpenJ9 compile complete
 	$(DDR_COMMAND)
 
