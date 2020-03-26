@@ -46,6 +46,7 @@ AC_DEFUN_ONCE([CUSTOM_EARLY_HOOK],
   OPENJ9_CONFIGURE_NUMA
   OPENJ9_CONFIGURE_WARNINGS
   OPENJ9_CONFIGURE_JITSERVER
+  OPENJ9_CONFIGURE_INLINE_TYPES
   OPENJ9_THIRD_PARTY_REQUIREMENTS
   OPENJ9_CHECK_NASM_VERSION
 ])
@@ -269,6 +270,25 @@ AC_DEFUN([OPENJ9_PLATFORM_EXTRACT_VARS_FROM_CPU],
       AC_MSG_ERROR([unsupported OpenJ9 cpu $1])
       ;;
   esac
+])
+
+AC_DEFUN([OPENJ9_CONFIGURE_INLINE_TYPES],
+[
+  AC_MSG_CHECKING([for inline types])
+  AC_ARG_ENABLE([inline-types], [AS_HELP_STRING([--enable-inline-types], [enable Inline-Type support @<:@disabled@:>@])])
+  OPENJ9_ENABLE_INLINE_TYPES=false
+
+  if test "x$enable_inline_types" = xyes ; then
+    AC_MSG_RESULT([yes (explicitly enabled)])
+    OPENJ9_ENABLE_INLINE_TYPES=true
+  elif test "x$enable_inline_types" = xno ; then
+    AC_MSG_RESULT([no (explicitly disabled)])
+  elif test "x$enable_inline_types" = x ; then
+    AC_MSG_RESULT([no (default)])
+  else
+    AC_MSG_ERROR([--enable-inline-types accepts no argument])
+  fi
+  AC_SUBST(OPENJ9_ENABLE_INLINE_TYPES)
 ])
 
 AC_DEFUN([OPENJ9_CONFIGURE_JITSERVER],
