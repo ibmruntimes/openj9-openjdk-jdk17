@@ -441,8 +441,8 @@ AC_DEFUN([OPENJ9_CHECK_NASM_VERSION],
   OPENJ9_PLATFORM_EXTRACT_VARS_FROM_CPU($host_cpu)
 
   if test "x$OPENJ9_CPU" = xx86-64 ; then
-    AC_CHECK_PROG(NASM_INSTALLED,nasm,yes,no)
-    if test "x$NASM_INSTALLED" = xyes ; then
+    AC_PATH_PROG([NASM],[nasm])
+    if test "x$NASM" != x ; then
       AC_MSG_CHECKING([whether nasm version requirement is met])
 
       # Require NASM v2.11+. This is checked by trying to build conftest.c
@@ -454,7 +454,7 @@ AC_DEFUN([OPENJ9_CHECK_NASM_VERSION],
       # directives defined in confdefs.h that would cause nasm to error out
       $SED -i -e '/vdivpd/!d' conftest.c
 
-      if nasm -f elf64 conftest.c 2> /dev/null ; then
+      if $NASM -f elf64 conftest.c 2> /dev/null ; then
         AC_MSG_RESULT([yes])
       else
         # NASM version string is of the following format:
@@ -465,7 +465,7 @@ AC_DEFUN([OPENJ9_CHECK_NASM_VERSION],
         #
         # NASM_VERSION is set within square brackets so that the sed expression would not
         # require quadrigraps to represent square brackets
-        [NASM_VERSION=`nasm -v | $SED -e 's/^.* \([2-9]\.[0-9][0-9]\.[0-9][0-9]\).*$/\1/'`]
+        [NASM_VERSION=`$NASM -v | $SED -e 's/^.* \([2-9]\.[0-9][0-9]\.[0-9][0-9]\).*$/\1/'`]
         AC_MSG_ERROR([nasm version detected: $NASM_VERSION; required version 2.11+])
       fi
     else
@@ -660,7 +660,7 @@ AC_DEFUN([OPENJ9_GENERATE_TOOL_WRAPPERS],
   OPENJ9_GENERATE_TOOL_WRAPPER([ml64], [$MSVC_BIN_DIR/ml64])
   OPENJ9_GENERATE_TOOL_WRAPPER([rc], [$RC])
   OPENJ9_GENERATE_TOOL_WRAPPER([mc], [$SDK_BIN_DIR/mc])
-
+  OPENJ9_GENERATE_TOOL_WRAPPER([nasm], [$NASM])
   OPENJ9_GENERATE_TOOL_WRAPPER([java], [$JAVA])
   OPENJ9_GENERATE_TOOL_WRAPPER([jar], [$JAR])
   OPENJ9_GENERATE_TOOL_WRAPPER([javac], [$JAVAC])
