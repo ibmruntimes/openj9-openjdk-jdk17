@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,28 +21,15 @@
  * questions.
  */
 
-/*
- * @test
- * @key randomness
- * @bug 8137167
- * @summary Tests CompileCommand=log
- * @modules java.base/jdk.internal.misc
- * @library /test/lib /
- *
- * @build sun.hotspot.WhiteBox
- * @run driver ClassFileInstaller sun.hotspot.WhiteBox
- *                                sun.hotspot.WhiteBox$WhiteBoxPermission
- * @run driver compiler.compilercontrol.commands.LogTest
- */
+ // key: compiler.misc.feature.text.blocks
+ // key: compiler.err.feature.not.supported.in.source.plural
+ // key: compiler.warn.source.no.system.modules.path
+ // options: -source 14
 
-package compiler.compilercontrol.commands;
-
-import compiler.compilercontrol.share.SingleCommand;
-import compiler.compilercontrol.share.scenario.Command;
-import compiler.compilercontrol.share.scenario.Scenario;
-
-public class LogTest {
-    public static void main(String[] args) {
-        new SingleCommand(Command.LOG, Scenario.Type.OPTION).test();
+class TextBlockSource {
+    String m() {
+        return """
+               abc
+               """;
     }
 }
