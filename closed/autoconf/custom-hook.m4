@@ -393,12 +393,12 @@ AC_DEFUN([OPENJDK_VERSION_DETAILS],
 AC_DEFUN([OPENJ9_THIRD_PARTY_REQUIREMENTS],
 [
   # check 3rd party library requirement for UMA
-  AC_MSG_CHECKING([that freemarker location is set])
   AC_ARG_WITH(freemarker-jar, [AS_HELP_STRING([--with-freemarker-jar],
       [path to freemarker.jar (used to build OpenJ9 build tools)])])
 
   FREEMARKER_JAR=
   if test "x$OPENJ9_ENABLE_CMAKE" != xtrue ; then
+    AC_MSG_CHECKING([that freemarker location is set])
     if test "x$with_freemarker_jar" == x -o "x$with_freemarker_jar" == xno ; then
       AC_MSG_RESULT([no])
       printf "\n"
