@@ -441,36 +441,33 @@ AC_DEFUN([OPENJ9_CHECK_NASM_VERSION],
   OPENJ9_PLATFORM_EXTRACT_VARS_FROM_CPU($host_cpu)
 
   if test "x$OPENJ9_CPU" = xx86-64 ; then
-    AC_PATH_PROG([NASM],[nasm])
-    if test "x$NASM" != x ; then
-      AC_MSG_CHECKING([whether nasm version requirement is met])
+    UTIL_REQUIRE_PROGS([NASM], [nasm])
+    AC_MSG_CHECKING([whether nasm version requirement is met])
 
-      # Require NASM v2.11+. This is checked by trying to build conftest.c
-      # containing an instruction that makes use of zmm registers that are
-      # supported on NASM v2.11+
-      AC_LANG_CONFTEST([AC_LANG_SOURCE([vdivpd zmm0, zmm1, zmm3;])])
+    # Require NASM v2.11+. This is checked by trying to build conftest.c
+    # containing an instruction that makes use of zmm registers that are
+    # supported on NASM v2.11+
+    AC_LANG_CONFTEST([AC_LANG_SOURCE([vdivpd zmm0, zmm1, zmm3;])])
 
-      # the following hack is needed because conftest.c contains C preprocessor
-      # directives defined in confdefs.h that would cause nasm to error out
-      $SED -i -e '/vdivpd/!d' conftest.c
+    # the following hack is needed because conftest.c contains C preprocessor
+    # directives defined in confdefs.h that would cause nasm to error out
+    $SED -i -e '/vdivpd/!d' conftest.c
 
-      if $NASM -f elf64 conftest.c 2> /dev/null ; then
-        AC_MSG_RESULT([yes])
-      else
-        # NASM version string is of the following format:
-        # ---
-        # NASM version 2.14.02 compiled on Dec 27 2018
-        # ---
-        # Some builds may not contain any text after the version number
-        #
-        # NASM_VERSION is set within square brackets so that the sed expression would not
-        # require quadrigraps to represent square brackets
-        [NASM_VERSION=`$NASM -v | $SED -e 's/^.* \([2-9]\.[0-9][0-9]\.[0-9][0-9]\).*$/\1/'`]
-        AC_MSG_ERROR([nasm version detected: $NASM_VERSION; required version 2.11+])
-      fi
+    if $NASM -f elf64 conftest.c 2> /dev/null ; then
+      AC_MSG_RESULT([yes])
     else
-      AC_MSG_ERROR([nasm not found])
+      # NASM version string is of the following format:
+      # ---
+      # NASM version 2.14.02 compiled on Dec 27 2018
+      # ---
+      # Some builds may not contain any text after the version number
+      #
+      # NASM_VERSION is set within square brackets so that the sed expression would not
+      # require quadrigraps to represent square brackets
+      [NASM_VERSION=`$NASM -v | $SED -e 's/^.* \([2-9]\.[0-9][0-9]\.[0-9][0-9]\).*$/\1/'`]
+      AC_MSG_ERROR([nasm version detected: $NASM_VERSION; required version 2.11+])
     fi
+    AC_SUBST([NASM])
   fi
 ])
 
