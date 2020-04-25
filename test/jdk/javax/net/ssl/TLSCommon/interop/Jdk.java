@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,18 +21,37 @@
  * questions.
  */
 
-#ifndef UTILS_H
-#define UTILS_H
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-#include <string>
-#include "jni.h"
+/*
+ * JDK product.
+ */
+public class Jdk extends AbstractProduct {
 
-using namespace std;
+    // The default JDK build specified by jtreg option "-jdk".
+    public static final Jdk DEFAULT = new Jdk(
+            "Default JDK", Paths.get(Utilities.JAVA));
 
-wstring GetStringFromJString(JNIEnv *pEnv, jstring jstr);
-jstring GetJStringFromString(JNIEnv *pEnv, const jchar *unicodeChars,
-        jsize len);
+    private String name;
+    private Path path;
 
-wstring GetLongPath(wstring path);
+    public Jdk(String name, Path path) {
+        this.name = name;
+        this.path = path;
+    }
 
-#endif // UTILS_H
+    public Jdk(String name, String path) {
+        this(name, Paths.get(path));
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public Path getPath() {
+        return path;
+    }
+}

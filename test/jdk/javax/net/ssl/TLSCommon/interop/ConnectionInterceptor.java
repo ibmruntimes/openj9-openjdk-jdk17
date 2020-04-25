@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,35 +21,17 @@
  * questions.
  */
 
-#ifndef BYTEBUFFER_H
-#define BYTEBUFFER_H
+import java.io.IOException;
 
-#include <windows.h>
-#include <vector>
-#include <string>
+import javax.net.ssl.SSLSocket;
 
-using namespace std;
+/*
+ * Some extension points in a SSL/TLS connection.
+ */
+public interface ConnectionInterceptor {
 
-class ByteBuffer {
-public:
-    ByteBuffer();
-    ~ByteBuffer();
-
-    LPBYTE getPtr();
-    size_t getPos();
-
-    void AppendString(wstring str);
-    void AppendWORD(WORD word);
-    void AppendBytes(BYTE* ptr, size_t len);
-
-    void ReplaceWORD(size_t offset, WORD word);
-    void ReplaceBytes(size_t offset, BYTE* ptr, size_t len);
-
-    void Align(size_t bytesNumber);
-
-private:
-    vector<BYTE> buffer;
-};
-
-#endif // BYTEBUFFER_H
-
+    /*
+     * An extension point at the end of the current connection.
+     */
+    public void beforeExit(SSLSocket socket) throws IOException;
+}
