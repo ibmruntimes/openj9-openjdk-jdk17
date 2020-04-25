@@ -50,3 +50,6 @@ $(eval $(call SetupBuildLauncher, jstat, \
     MAIN_CLASS := openj9.tools.attach.diagnostics.tools.Jstat, \
     CFLAGS := -DEXPAND_CLASSPATH_WILDCARDS, \
 ))
+
+# Do not copy man pages where there is no equivalent openj9 implementation.
+TARGETS := $(filter-out %/jcmd.1 %/jinfo.1 %/jps.1 %/jstack.1 %/jstat.1, $(TARGETS))
