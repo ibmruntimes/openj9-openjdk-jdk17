@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,31 +21,31 @@
  * questions.
  */
 
-#ifndef VERSIONINFOSWAP_H
-#define VERSIONINFOSWAP_H
+/*
+ * A tuple for carrying certificates.
+ */
+public class CertTuple {
 
-#include "ByteBuffer.h"
-#include <map>
+    // Trusted CAs
+    public final Cert[] trustedCerts;
 
-using namespace std;
+    // End entity certificates
+    public final Cert[] endEntityCerts;
 
-class VersionInfoSwap {
-public:
-    VersionInfoSwap(wstring executableProperties, wstring launcher);
+    public CertTuple(Cert[] trustedCerts, Cert[] endEntityCerts) {
+        this.trustedCerts = trustedCerts;
+        this.endEntityCerts = endEntityCerts;
+    }
 
-    bool PatchExecutable();
+    public CertTuple(Cert trustedCert, Cert endEntityCert) {
+        this.trustedCerts = new Cert[] { trustedCert };
+        this.endEntityCerts = new Cert[] { endEntityCert };
+    }
 
-private:
-    wstring m_executableProperties;
-    wstring m_launcher;
-
-    map<wstring, wstring> m_props;
-
-    bool LoadFromPropertyFile();
-    bool CreateNewResource(ByteBuffer *buf);
-    bool UpdateResource(LPVOID lpResLock, DWORD size);
-    bool FillFixedFileInfo(VS_FIXEDFILEINFO *fxi);
-};
-
-#endif // VERSIONINFOSWAP_H
-
+    @Override
+    public String toString() {
+        return Utilities.join(Utilities.PARAM_DELIMITER,
+                "trustedCerts=" + Utilities.join(trustedCerts),
+                "endEntityCerts=" + Utilities.join(endEntityCerts));
+    }
+}

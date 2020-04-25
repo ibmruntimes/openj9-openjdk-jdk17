@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,9 +22,18 @@
  */
 
 /*
- * Test case result status.
+ * Hash algorithms.
  */
-public enum Status {
+public enum HashAlgorithm {
 
-    SUCCESS, UNEXPECTED_SUCCESS, FAIL, EXPECTED_FAIL, TIMEOUT;
+    SHA1("SHA-1"),
+    SHA256("SHA-256"),
+    SHA384("SHA-384"),
+    SHA512("SHA-512");
+
+    public final String name;
+
+    private HashAlgorithm(String name) {
+        this.name = name;
+    }
 }
