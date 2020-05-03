@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,28 +21,18 @@
  * questions.
  */
 
-import jdk.test.lib.process.ProcessTools;
-import jdk.test.lib.process.OutputAnalyzer;
+import javax.sound.sampled.ReverbType;
 
-/*
- * @test MaxMetaspaceSizeTest
- * @requires vm.bits == 64 & vm.opt.final.UseCompressedOops == true
- * @bug 8087291
- * @library /test/lib
- * @run driver MaxMetaspaceSizeTest
+/**
+ * @test
+ * @bug 4385060 8236980
  */
+public final class ToString {
 
-public class MaxMetaspaceSizeTest {
-    public static void main(String... args) throws Exception {
-        ProcessBuilder pb = ProcessTools.createJavaProcessBuilder(
-            "-Xmx1g",
-            "-XX:InitialBootClassLoaderMetaspaceSize=4195328",
-            "-XX:MaxMetaspaceSize=4195328",
-            "-XX:+UseCompressedClassPointers",
-            "-XX:CompressedClassSpaceSize=1g",
-            "--version");
-        OutputAnalyzer output = new OutputAnalyzer(pb.start());
-        output.shouldContain("MaxMetaspaceSize is too small.");
-        output.shouldNotHaveExitValue(0);
+    public static void main(String[] args) {
+        ReverbType type = new ReverbType("nameToTest", 0, 0, 0, 0, 0) {};
+        if (!type.toString().startsWith("nameToTest")) {
+            throw new RuntimeException("wrong string: " + type);
+        }
     }
 }
