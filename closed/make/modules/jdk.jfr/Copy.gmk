@@ -18,5 +18,5 @@
 # 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
 # ===========================================================================
 
-# This overrides make/copy/Copy-jdk.jfr.gmk and should copy the OpenJ9
+# This overrides make/modules/jdk.jfr/Copy.gmk and should copy the OpenJ9
 # JFR metadata and config when/if we have one.
