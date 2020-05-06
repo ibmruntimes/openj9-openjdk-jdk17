@@ -18,6 +18,5 @@
 # 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
 # ===========================================================================
 
-################################################################################
-# We don't want to build openjdk Lib-jdk.management
+# We don't want to build the management_ext shared library from openjdk.
 TARGETS := $(filter-out $(BUILD_LIBMANAGEMENT_EXT),$(TARGETS))

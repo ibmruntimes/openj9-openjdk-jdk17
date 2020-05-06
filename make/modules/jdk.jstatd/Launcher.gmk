@@ -23,8 +23,15 @@
 # questions.
 #
 
+# ===========================================================================
+# (c) Copyright IBM Corp. 2020, 2020 All Rights Reserved
+# ===========================================================================
+
 include LauncherCommon.gmk
 
 $(eval $(call SetupBuildLauncher, jstatd, \
     MAIN_CLASS := sun.tools.jstatd.Jstatd, \
 ))
+
+# Hook to include the corresponding custom file, if present.
+$(eval $(call IncludeCustomExtension, modules/jdk.jstatd/Launcher-post.gmk))

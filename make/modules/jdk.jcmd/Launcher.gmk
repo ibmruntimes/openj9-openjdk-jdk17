@@ -23,6 +23,10 @@
 # questions.
 #
 
+# ===========================================================================
+# (c) Copyright IBM Corp. 2020, 2020 All Rights Reserved
+# ===========================================================================
+
 include LauncherCommon.gmk
 
 $(eval $(call SetupBuildLauncher, jinfo, \
@@ -60,3 +64,6 @@ $(eval $(call SetupBuildLauncher, jstat, \
 $(eval $(call SetupBuildLauncher, jcmd, \
     MAIN_CLASS := sun.tools.jcmd.JCmd, \
 ))
+
+# Hook to include the corresponding custom file, if present.
+$(eval $(call IncludeCustomExtension, modules/jdk.jcmd/Launcher-post.gmk))

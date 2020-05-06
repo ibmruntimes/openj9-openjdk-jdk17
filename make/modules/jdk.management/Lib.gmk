@@ -23,6 +23,10 @@
 # questions.
 #
 
+# ===========================================================================
+# (c) Copyright IBM Corp. 2020, 2020 All Rights Reserved
+# ===========================================================================
+
 include LibCommon.gmk
 
 ################################################################################
@@ -57,3 +61,6 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBMANAGEMENT_EXT, \
 $(BUILD_LIBMANAGEMENT_EXT): $(call FindLib, java.base, java)
 
 TARGETS += $(BUILD_LIBMANAGEMENT_EXT)
+
+# Hook to include the corresponding custom file, if present.
+$(eval $(call IncludeCustomExtension, modules/jdk.management/Lib-post.gmk))

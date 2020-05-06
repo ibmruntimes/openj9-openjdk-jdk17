@@ -37,10 +37,12 @@
 no_default :
 	$(error DDR.gmk has no default target)
 
+# ignore warnings in Java code - see JavaCompilation.gmk
+JAVA_WARNINGS_ARE_ERRORS :=
+
 include $(SPEC)
 include $(TOPDIR)/make/common/MakeBase.gmk
 include $(TOPDIR)/make/common/JavaCompilation.gmk
-include $(TOPDIR)/make/common/SetupJavaCompilers.gmk
 
 # The main source directory.
 DDR_VM_SRC_ROOT := $(OPENJ9_TOPDIR)/debugtools/DDR_VM/src
@@ -73,7 +75,7 @@ DDR_TOOLS_MARKER := $(DDR_SUPPORT_DIR)/tools.marker
 
 # Build the tools we will need.
 $(eval $(call SetupJavaCompilation,BUILD_DDR_TOOLS, \
-	SETUP := GENERATE_OLDBYTECODE, \
+	TARGET_RELEASE := $(TARGET_RELEASE_BOOTJDK), \
 	BIN := $(DDR_TOOLS_BIN), \
 	CLASSPATH := $(addprefix $(JDK_OUTPUTDIR)/modules/, java.base openj9.dtfj), \
 	SRC := $(DDR_VM_SRC_ROOT), \
@@ -162,7 +164,6 @@ else # OPENJDK_TARGET_OS
 
 # Compile the stub classes.
 $(eval $(call SetupJavaCompilation,BUILD_DDR_STUBS, \
-	SETUP := GENERATE_USINGJDKBYTECODE, \
 	BIN := $(DDR_STUBS_BIN), \
 	CLASSPATH := $(JDK_OUTPUTDIR)/modules/java.base, \
 	SRC := $(OPENJ9_TOPDIR)/jcl/src/ibm.jzos/share/classes \
@@ -184,7 +185,6 @@ DDR_ALIAS_FILES := \
 
 # Compile the Java sources.
 $(eval $(call SetupJavaCompilation,BUILD_J9DDR_MAIN_CLASSES, \
-	SETUP := GENERATE_JDKBYTECODE, \
 	ADD_JAVAC_FLAGS := --upgrade-module-path $(JDK_OUTPUTDIR)/modules --system none, \
 	BIN := $(DDR_MAIN_BIN), \
 	CLASSPATH := $(DDR_CLASSPATH), \
@@ -197,7 +197,6 @@ $(eval $(call SetupJavaCompilation,BUILD_J9DDR_MAIN_CLASSES, \
 # Compile DDR code again, to ensure compatibility with class files
 # as they would be dynamically generated from the blob.
 $(eval $(call SetupJavaCompilation,BUILD_J9DDR_TEST_CLASSES, \
-	SETUP := GENERATE_JDKBYTECODE, \
 	ADD_JAVAC_FLAGS := --upgrade-module-path $(JDK_OUTPUTDIR)/modules --system none, \
 	BIN := $(DDR_TEST_BIN), \
 	CLASSPATH := $(DDR_CLASSES_BIN) $(DDR_CLASSPATH), \
