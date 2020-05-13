@@ -112,3 +112,11 @@ openj9.dtfj-ddr-jar : openj9.dtfj-ddr-gen
 openj9.dtfj-launchers : openj9.dtfj-ddr-jar
 
 endif # OPENJ9_ENABLE_DDR
+
+# An unconditional dependency is declared in make/Main.gmk:
+#   test-image : test-image-failure-handler
+# If BUILD_FAILURE_HANDLER is not true, test-image-failure-handler
+# is not even declared as a .PHONY target: this fixes that.
+ifneq (true,$(BUILD_FAILURE_HANDLER))
+  .PHONY : test-image-failure-handler
+endif
