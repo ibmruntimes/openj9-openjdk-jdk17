@@ -36,6 +36,7 @@
 /build/
 /dist/
 /.idea/
+/.vscode/
 nbproject/private/
 /webrev
 /.src-rev
