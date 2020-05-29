@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -20,31 +20,33 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package org.openjdk.bench.java.lang;
 
-package jdk.test.lib.security;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
 
-import java.util.List;
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 
-public final class JDKSecurityProperties {
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+public class SystemTime {
 
-    public static final List<String> jdkProps = List.of(
-        "crypto.policy",
-        "jceks.key.serialFilter",
-        "jdk.certpath.disabledAlgorithms",
-        "keystore.type",
-        "krb5.kdc.bad.policy",
-        "login.config",
-        "networkaddress.cache.ttl",
-        "ocsp.responderURL",
-        "package.access",
-        "policy.allowSystemProperty",
-        "securerandom.drbg.config",
-        "security.provider.1",
-        "ssl.KeyManagerFactory.algorithm",
-        "sun.rmi.registry.registryFilter"
-    );
+    @Benchmark
+    public long currentTimeMillis() {
+        return System.currentTimeMillis();
+    }
 
-    public static List<String> getKeys() {
-        return jdkProps;
+    @Benchmark
+    public long nanoTime() {
+        return System.nanoTime();
+    }
+
+    @Benchmark
+    public long instantNowAsEpochNanos() {
+        Instant now = Instant.now();
+        return now.getEpochSecond() * 1_000_000_000L + now.getNano();
     }
 }
