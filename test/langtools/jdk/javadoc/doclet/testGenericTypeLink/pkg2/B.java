@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -20,27 +20,21 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.openjdk.bench.java.lang;
 
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.OutputTimeUnit;
+package pkg2;
 
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
-@BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.NANOSECONDS)
-public class Systems {
+/**
+ * {@link java.util.Foo<String>}
+ * {@linkplain Baz<Object>}
+ * {@link #b(List<Integer>)}
+ *
+ * @see java.util.List<Bar>
+ * @see Baz<Object, String>
+ * @see B#b(List<Baz>)
+ */
+public class B {
 
-    @Benchmark
-    public long currentTimeMillis() {
-        return System.currentTimeMillis();
-    }
-
-    @Benchmark
-    public long nanoTime() {
-        return System.nanoTime();
-    }
-
+    public static void b(List<? extends CharSequence> l) {}
 }
