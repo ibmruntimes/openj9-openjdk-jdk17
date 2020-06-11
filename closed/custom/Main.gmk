@@ -120,3 +120,14 @@ endif # OPENJ9_ENABLE_DDR
 ifneq (true,$(BUILD_FAILURE_HANDLER))
   .PHONY : test-image-failure-handler
 endif
+
+clean-docs : clean-openj9-only-docs
+.PHONY : clean-openj9-only-docs
+clean-openj9-only-docs :
+	@$(PRINTF) "Cleaning $(SUPPORT_OUTPUTDIR)/openj9-docs ...\n"
+	$(RM) -rf $(SUPPORT_OUTPUTDIR)/openj9-docs
+	@$(PRINTF) "Cleaning $(IMAGES_OUTPUTDIR)/openj9-docs ...\n"
+	$(RM) -rf $(IMAGES_OUTPUTDIR)/openj9-docs
+	@$(PRINTF) " done\n"
+
+ALL_TARGETS += clean-openj9-only-docs
