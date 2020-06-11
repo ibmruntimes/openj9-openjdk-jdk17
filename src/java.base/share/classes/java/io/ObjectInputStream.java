@@ -2309,7 +2309,8 @@ public class ObjectInputStream
         if (isRecord) {
             assert obj == null;
             obj = readRecord(desc);
-            handles.setObject(passHandle, obj);
+            if (!unshared)
+                handles.setObject(passHandle, obj);
         } else if (desc.isExternalizable()) {
             readExternalData((Externalizable) obj, desc);
         } else {
