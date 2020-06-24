@@ -23,6 +23,10 @@
 # questions.
 #
 
+# ===========================================================================
+# (c) Copyright IBM Corp. 2020, 2020 All Rights Reserved
+# ===========================================================================
+
 ################################################################################
 # This is the main makefile containing most actual top level targets. It needs
 # to be called with a SPEC file defined.
@@ -1118,7 +1122,12 @@ endif
 docs-image: docs-jdk
 
 # This target builds the test image
-test-image: prepare-test-image test-image-jdk-jtreg-native test-image-demos-jdk test-image-libtest-jtreg-native
+test-image: prepare-test-image test-image-jdk-jtreg-native test-image-demos-jdk
+
+# OpenJ9 builds don't have the sources required to build test-image-libtest-jtreg-native.
+ifeq ($(OPENJ9_TOPDIR),)
+test-image: test-image-libtest-jtreg-native
+endif
 
 ifneq ($(JVM_TEST_IMAGE_TARGETS), )
   # If JVM_TEST_IMAGE_TARGETS is externally defined, use it instead of the

@@ -87,7 +87,7 @@ OPENJDK_SHA             := @OPENJDK_SHA@
 
 include $(TOPDIR)/closed/openjdk-tag.gmk
 
-J9JDK_EXT_VERSION       := ${VERSION_NUMBER_FOUR_POSITIONS}
+J9JDK_EXT_VERSION       := $(VERSION_NUMBER_FOUR_POSITIONS)
 J9JDK_EXT_VERSION       := HEAD
 J9JDK_EXT_NAME          := Extensions for OpenJDK for Eclipse OpenJ9
 
@@ -155,3 +155,6 @@ ifeq (true,$(OPENJ9_ENABLE_CMAKE))
 else
   OPENJ9_VM_BUILD_DIR := $(OUTPUTDIR)/vm
 endif
+
+# Disable all hotspot features.
+JVM_FEATURES_server :=
