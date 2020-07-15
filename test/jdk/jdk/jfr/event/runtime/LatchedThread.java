@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,32 +22,42 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package jdk.jfr.event.runtime;
 
-package jdk.incubator.jpackage.internal;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import java.io.PrintWriter;
-import java.util.spi.ToolProvider;
+public class LatchedThread extends Thread {
+    public final static ThreadGroup THREAD_GROUP = new ThreadGroup("Latched Threads");
+    private final CountDownLatch latch = new CountDownLatch(1);
+    private final AtomicBoolean alive = new AtomicBoolean(true);
 
-/**
- * JPackageToolProvider
- *
- * This is the ToolProvider implementation exported
- * to java.util.spi.ToolProvider and ultimately javax.tools.ToolProvider
- */
-public class JPackageToolProvider implements ToolProvider {
-
-    public String name() {
-        return "jpackage";
+    public LatchedThread(String name) {
+        super(THREAD_GROUP, name);
     }
 
-    public synchronized int run(
-            PrintWriter out, PrintWriter err, String... args) {
-        try {
-            return new jdk.incubator.jpackage.main.Main().execute(out, err, args);
-        } catch (RuntimeException re) {
-            Log.fatalError(re.getMessage());
-            Log.verbose(re);
-            return 1;
+    public void awaitStarted() throws InterruptedException {
+        latch.await();
+    }
+
+    public void stopAndJoin() throws InterruptedException {
+        alive.set(false);
+        synchronized (alive) {
+            alive.notify();
+        }
+        join();
+    }
+
+    public void run() {
+        latch.countDown();
+        while (alive.get()) {
+            try {
+                synchronized (alive) {
+                    alive.wait(10);
+                }
+            } catch (InterruptedException e) {
+                // ignore
+            }
         }
     }
 }
