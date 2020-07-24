@@ -21,30 +21,35 @@
  * questions.
  */
 
-#include <stdio.h>
-
-#include "jni.h"
-
 /*
- * We will replace:
- *   java/lang/Thread.java:    public static native void yield();
- *
- * as it is simple and innocuous.
+ * @test
+ * @bug 8248157
+ * @summary test Unicode characters in Snippets
+ * @build KullaTesting TestingInputStream
+ * @run testng UnicodeTest
  */
-static void myYield(JNIEnv* env, jclass cls) {
-  printf("myYield executed\n");
-}
 
+import jdk.jshell.Snippet;
+import jdk.jshell.DeclarationSnippet;
+import org.testng.annotations.Test;
 
-JNIEXPORT void JNICALL
-Java_TestRegisterNativesWarning_test
-(JNIEnv *env, jclass cls, jclass jlThread) {
-  JNINativeMethod nativeMethods[] = {
-    {
-      (char*) "yield",  // name
-      (char*) "()V",    // sig
-      (void*) myYield   // native method ptr
+import jdk.jshell.Snippet.Status;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
+import static jdk.jshell.Snippet.Status.VALID;
+import static jdk.jshell.Snippet.SubKind.*;
+
+@Test
+public class UnicodeTest extends KullaTesting {
+
+    public void testVarDeclarationKey() {
+        assertVarKeyMatch("int \\u00aa;", true, "\u00aa", VAR_DECLARATION_SUBKIND, "int", added(VALID));
+        assertEval("\\u00aa", "0");
     }
-  };
-  (*env)->RegisterNatives(env, jlThread, nativeMethods, 1);
+
+    public void testVarDeclarationWithInitializerKey() {
+        assertVarKeyMatch("double \\u00ba\\u0044\\u0577 = 9.4;", true, "\u00ba\u0044\u0577",
+                          VAR_DECLARATION_WITH_INITIALIZER_SUBKIND, "double", added(VALID));
+        assertEval("\\u00ba\\u0044\\u0577", "9.4");
+    }
 }
