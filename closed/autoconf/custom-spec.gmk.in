@@ -50,10 +50,8 @@ WARNINGS_AS_ERRORS_OPENJ9 := @WARNINGS_AS_ERRORS_OPENJ9@
 WARNING_MODULES := \
 	java.base \
 	jdk.management \
-	openj9.dataaccess \
 	openj9.dtfj \
 	openj9.dtfjview \
-	openj9.jvm \
 	openj9.sharedclasses \
 	openj9.traceformat \
 	#
