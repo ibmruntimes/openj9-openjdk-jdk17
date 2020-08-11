@@ -166,7 +166,7 @@ else # OPENJDK_TARGET_OS
 $(eval $(call SetupJavaCompilation,BUILD_DDR_STUBS, \
 	BIN := $(DDR_STUBS_BIN), \
 	CLASSPATH := $(JDK_OUTPUTDIR)/modules/java.base, \
-	SRC := $(OPENJ9_TOPDIR)/jcl/src/ibm.jzos/share/classes \
+	SRC := $(OPENJ9_TOPDIR)/jcl/stubs/ibm.jzos/share/classes \
 	))
 
 # Finally, we depend upon the stub classes.
