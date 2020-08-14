@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -19,23 +19,15 @@
  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
  * or visit www.oracle.com if you need additional information or have any
  * questions.
+ *
  */
 
-package gc;
+public class LockDuringDumpApp {
+    static String LITERAL = "@@LockDuringDump@@LITERAL"; // must be the same as in LockDuringDumpAgent
 
-/*
- * @test TestFullGCALot
- * @bug 4187687 8187819 8251118
- * @summary Ensure no access violation when using FullGCALot
- * @requires vm.debug
- * @run main/othervm -XX:NewSize=10m -XX:+FullGCALot -XX:FullGCALotInterval=120 gc.TestFullGCALot
- * @run main/othervm -XX:NewSize=10m -XX:+FullGCALot -XX:FullGCALotInterval=120 -XX:+UseBiasedLocking gc.TestFullGCALot
- */
-
-public class TestFullGCALot {
-
-    public static void main(String argv[]) {
-        System.out.println("Hello world!");
+    public static void main(String args[]) {
+        synchronized (LITERAL) { // See comments in LockDuringDumpAgent.java
+            System.out.println("I am able to lock the literal string \"" + LITERAL + "\"");
+        }
     }
 }
-
