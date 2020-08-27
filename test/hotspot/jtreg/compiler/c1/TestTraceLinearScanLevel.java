@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,21 +21,17 @@
  * questions.
  */
 
-package javax.xml.stream.events;
-
-/**
- * An interface for comment events
+/*
+ * @test
+ * @bug 8251093
+ * @summary Sanity check the flag TraceLinearScanLevel with the highest level in a silent HelloWorld program.
  *
- * @version 1.0
- * @author Copyright (c) 2009 by Oracle Corporation. All Rights Reserved.
- * @since 1.6
+ * @run main/othervm -XX:TraceLinearScanLevel=4 compiler.c1.TestTraceLinearScanLevel
  */
-public interface Comment extends XMLEvent {
+package compiler.c1;
 
-  /**
-   * Return the string data of the comment, returns empty string if it
-   * does not exist.
-   * @return the string data of the comment
-   */
-  public String getText();
+public class TestTraceLinearScanLevel {
+    public static void main(String[] strArr) {
+    }
 }
+
