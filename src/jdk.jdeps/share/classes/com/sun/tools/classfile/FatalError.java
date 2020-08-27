@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,21 +23,18 @@
  * questions.
  */
 
-package javax.xml.stream.events;
+package com.sun.tools.classfile;
 
 /**
- * An interface for comment events
- *
- * @version 1.0
- * @author Copyright (c) 2009 by Oracle Corporation. All Rights Reserved.
- * @since 1.6
+ *  <p><b>This is NOT part of any supported API.
+ *  If you write code that depends on this, you do so at your own risk.
+ *  This code and its internal interfaces are subject to change or
+ *  deletion without notice.</b>
  */
-public interface Comment extends XMLEvent {
+public class FatalError extends Error {
+    private static final long serialVersionUID = 8114054446416187030L;
 
-  /**
-   * Return the string data of the comment, returns empty string if it
-   * does not exist.
-   * @return the string data of the comment
-   */
-  public String getText();
+    FatalError(String message) {
+        super(message);
+    }
 }
