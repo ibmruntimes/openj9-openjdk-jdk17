@@ -479,6 +479,11 @@ AllJclSource   = $(call recur_wildcard,$(OPENJ9_TOPDIR)/jcl/src,*.java)
 
 JPP_DEST := $(SUPPORT_OUTPUTDIR)/j9jcl_sources
 
+JPP_TAGS := PLATFORM-$(OPENJ9_PLATFORM_CODE)
+ifeq (true,$(OPENJ9_ENABLE_INLINE_TYPES))
+  JPP_TAGS := $(JPP_TAGS);INLINE-TYPES
+endif
+
 $(J9JCL_SOURCES_DONEFILE) : $(AllJclSource)
 	@$(ECHO) Generating J9JCL sources
 	@$(BOOT_JDK)/bin/java \
@@ -492,7 +497,7 @@ $(J9JCL_SOURCES_DONEFILE) : $(AllJclSource)
 			-xml jpp_configuration.xml \
 			-dest "$(call FixPath,$(JPP_DEST))" \
 			-macro:define "com.ibm.oti.vm.library.version=29" \
-			-tag:define "PLATFORM-$(OPENJ9_PLATFORM_CODE)"
+			-tag:define "$(JPP_TAGS)"
 	@$(MKDIR) -p $(@D)
 	@$(TOUCH) $@
 
