@@ -313,6 +313,9 @@ check () {
     make/ide/*)
       trace  "$1 deemed not to be in the built JDK because it matches case parameter expansion make/ide/*"
       IN_JDK=0;;
+    jdk/test/*)
+      trace  "$1 deemed not to be in the built JDK because it matches case parameter expansion jdk/test/*"
+      IN_JDK=0;;
     make/jdk/src/classes/build/tools/*)
       trace  "$1 deemed not to be in the built JDK because it matches case parameter expansion make/jdk/src/classes/build/tools/*"
       IN_JDK=0;;  
