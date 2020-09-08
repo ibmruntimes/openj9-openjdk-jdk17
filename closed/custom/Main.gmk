@@ -24,7 +24,6 @@ CLEAN_DIRS += vm
 	debug-image \
 	j9vm-build \
 	openj9-create-main-targets-include \
-	openj9-jdk.jcmd-launchers \
 	test-image-openj9 \
 	#
 
@@ -69,17 +68,6 @@ OPENJ9_VM_MODULES := \
 $(addsuffix -copy, $(OPENJ9_VM_MODULES)) : j9vm-build
 
 java.base-libs : java.base-copy
-
-jdk.jcmd-launchers : openj9-jdk.jcmd-launchers
-
-openj9-jdk.jcmd-launchers : java.base-libs
-	@+$(MAKE) $(MAKE_ARGS) -C $(TOPDIR)/make -f ModuleWrapper.gmk \
-		$(addprefix -I, \
-			$(TOPDIR)/make/common/modules \
-			$(PHASE_MAKEDIRS) \
-			$(addsuffix /modules/jdk.jcmd, $(PHASE_MAKEDIRS))) \
-		MAKEFILE_PREFIX=$(LAUNCHER_FILE_PREFIX)-openj9 \
-		MODULE=jdk.jcmd
 
 debug-image : exploded-image
 	+$(MAKE) -f $(TOPDIR)/closed/DebugImage.gmk SPEC=$(SPEC)
