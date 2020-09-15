@@ -20,6 +20,11 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+/*
+ * =======================================================================
+ * (c) Copyright IBM Corp. 2020, 2020 All Rights Reserved
+ * =======================================================================
+ */
 
 /**
  * @test
@@ -27,7 +32,7 @@
  * @summary test  StringJoiner::merge
  * @modules java.base/jdk.internal.util
  * @requires os.maxMemory > 4G
- * @run testng/othervm -Xmx4g MergeTest
+ * @run testng/othervm -Xmx4g -XX:+CompactStrings MergeTest
  */
 
 import java.util.StringJoiner;
