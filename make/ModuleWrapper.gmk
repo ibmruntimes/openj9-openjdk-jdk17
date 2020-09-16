@@ -22,6 +22,9 @@
 # or visit www.oracle.com if you need additional information or have any
 # questions.
 #
+# ===========================================================================
+# (c) Copyright IBM Corp. 2020, 2020 All Rights Reserved
+# ===========================================================================
 
 ################################################################################
 # This makefile is called from Main.gmk, through a macro in MakeHelpers.gmk
@@ -39,7 +42,7 @@ include MakeBase.gmk
 TARGETS :=
 
 # Include the file being wrapped.
-include modules/$(MODULE)/$(MAKEFILE_PREFIX).gmk
+include $(MAKEFILE_PREFIX).gmk
 
 # Setup copy rules from the modules directories to the jdk image directory.
 ifeq ($(call isTargetOs, windows), true)

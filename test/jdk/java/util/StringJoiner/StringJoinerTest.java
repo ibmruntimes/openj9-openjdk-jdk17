@@ -20,13 +20,19 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+/*
+ * =======================================================================
+ * (c) Copyright IBM Corp. 2020, 2020 All Rights Reserved
+ * =======================================================================
+ */
+
 /**
  * @test
  * @bug 5015163 7172553 8249258
  * @summary tests StringJoinerTest
  * @modules java.base/jdk.internal.util
  * @requires os.maxMemory > 4G
- * @run testng/othervm -Xmx4g StringJoinerTest
+ * @run testng/othervm -Xmx4g -XX:+CompactStrings StringJoinerTest
  * @author Jim Gish
  */
 import java.util.ArrayList;
