@@ -21,24 +21,37 @@
  * questions.
  */
 
-/*
- * @test
- * @bug 8252219
- * @requires vm.compiler2.enabled
- * @summary Tests that different combinations of the options -XX:+StressIGVN and
- *          -XX:StressSeed=N are accepted.
- * @run main/othervm -XX:+UnlockDiagnosticVMOptions -XX:+StressIGVN
- *      compiler.arguments.TestStressIGVNOptions
- * @run main/othervm -XX:+UnlockDiagnosticVMOptions -XX:+StressIGVN -XX:StressSeed=42
- *      compiler.arguments.TestStressIGVNOptions
+/* @test
+   @bug 6514600
+   @summary Verifies if AbstractAction throws NullPointerException when cloned
+   @run main AbstractActionBug
  */
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 
-package compiler.arguments;
+public final class AbstractActionBug extends AbstractAction implements Cloneable
+{
+    public static final void main(String[] args) throws Exception
+    {
+        AbstractActionBug a1 = new AbstractActionBug("a1");
+        a1 = (AbstractActionBug) a1.clone();
+        System.out.println("a1 cloned ok");
 
-public class TestStressIGVNOptions {
+        AbstractActionBug a2 = new AbstractActionBug("a2");
+        a2.putValue(NAME, "null");
+        a2 = (AbstractActionBug) a2.clone();
+        System.out.println("a2 cloned ok");
 
-    static public void main(String[] args) {
-        System.out.println("Passed");
+        AbstractActionBug a3 = new AbstractActionBug(null);
+        a3 = (AbstractActionBug) a3.clone();
+        System.out.println("a3 cloned ok");
+    }
+
+    private AbstractActionBug(String name) {
+        putValue(NAME, name);
+    }
+
+    public void actionPerformed(ActionEvent e)
+    {
     }
 }
-
