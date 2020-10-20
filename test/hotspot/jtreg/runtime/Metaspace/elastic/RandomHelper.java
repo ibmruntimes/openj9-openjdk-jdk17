@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 SAP SE. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,26 +23,25 @@
  *
  */
 
-/*
- * @test
- * @summary Basic shared string test with large pages
- * @requires vm.cds.archived.java.heap
- * @library /test/lib /test/hotspot/jtreg/runtime/cds/appcds
- * @build HelloString
- * @run driver LargePages
- */
-public class LargePages {
-    static final String CDS_LOGGING = "-Xlog:cds,cds+hashtables";
+import java.util.Random;
 
-    public static void main(String[] args) throws Exception {
-        SharedStringsUtils.run(args, LargePages::test);
+public class RandomHelper {
+
+    static Random rand;
+
+    static {
+        long seed = Long.parseLong(System.getProperty("metaspace.random.seed", "0"));
+        if (seed == 0) {
+            seed = System.currentTimeMillis();
+            System.out.println("Random seed: " + seed);
+        } else {
+            System.out.println("Random seed: " + seed + " (passed in)");
+        }
+        rand = new Random(seed);
     }
 
-    public static void test(String[] args) throws Exception {
-        SharedStringsUtils.buildJar("HelloString");
+    static Random random() { return rand; }
 
-        SharedStringsUtils.dump(TestCommon.list("HelloString"),
-            "SharedStringsBasic.txt", "-XX:+UseLargePages", CDS_LOGGING);
-        SharedStringsUtils.runWithArchive("HelloString", "-XX:+UseLargePages");
-    }
+    static boolean fiftyfifty() { return random().nextInt(10) >= 5; }
+
 }

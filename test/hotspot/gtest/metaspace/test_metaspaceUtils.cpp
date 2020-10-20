@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 SAP SE. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -19,16 +20,12 @@
  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
  * or visit www.oracle.com if you need additional information or have any
  * questions.
+ *
  */
 
 #include "precompiled.hpp"
 #include "memory/metaspace.hpp"
-#include "memory/metaspace/virtualSpaceList.hpp"
-#include "runtime/mutexLocker.hpp"
-#include "runtime/os.hpp"
 #include "unittest.hpp"
-
-using namespace metaspace;
 
 TEST_VM(MetaspaceUtils, reserved) {
   size_t reserved = MetaspaceUtils::reserved_bytes();
@@ -75,12 +72,3 @@ TEST_VM(MetaspaceUtils, committed_compressed_class_pointers) {
   EXPECT_LE(committed_class, committed);
 }
 
-TEST_VM(MetaspaceUtils, virtual_space_list_large_chunk) {
-  VirtualSpaceList* vs_list = new VirtualSpaceList(os::vm_allocation_granularity());
-  MutexLocker cl(MetaspaceExpand_lock, Mutex::_no_safepoint_check_flag);
-  // A size larger than VirtualSpaceSize (256k) and add one page to make it _not_ be
-  // vm_allocation_granularity aligned on Windows.
-  size_t large_size = (size_t)(2*256*K + (os::vm_page_size() / BytesPerWord));
-  large_size += (os::vm_page_size() / BytesPerWord);
-  vs_list->get_new_chunk(large_size, 0);
-}

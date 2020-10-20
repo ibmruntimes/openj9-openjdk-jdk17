@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 SAP SE. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,26 +23,25 @@
  *
  */
 
-/*
- * @test
- * @summary Basic shared string test with large pages
- * @requires vm.cds.archived.java.heap
- * @library /test/lib /test/hotspot/jtreg/runtime/cds/appcds
- * @build HelloString
- * @run driver LargePages
- */
-public class LargePages {
-    static final String CDS_LOGGING = "-Xlog:cds,cds+hashtables";
+public class Allocation {
 
-    public static void main(String[] args) throws Exception {
-        SharedStringsUtils.run(args, LargePages::test);
+    public long p;
+    public long word_size;
+
+    public Allocation(long p, long word_size) {
+        this.p = p;
+        this.word_size = word_size;
     }
 
-    public static void test(String[] args) throws Exception {
-        SharedStringsUtils.buildJar("HelloString");
+    public boolean isNull() {
+        return p == 0;
+    }
 
-        SharedStringsUtils.dump(TestCommon.list("HelloString"),
-            "SharedStringsBasic.txt", "-XX:+UseLargePages", CDS_LOGGING);
-        SharedStringsUtils.runWithArchive("HelloString", "-XX:+UseLargePages");
+    @Override
+    public String toString() {
+        return "Allocation{" +
+                "p=" + p +
+                ", word_size=" + word_size +
+                '}';
     }
 }

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020 SAP SE. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,26 +23,21 @@
  *
  */
 
-/*
- * @test
- * @summary Basic shared string test with large pages
- * @requires vm.cds.archived.java.heap
- * @library /test/lib /test/hotspot/jtreg/runtime/cds/appcds
- * @build HelloString
- * @run driver LargePages
- */
-public class LargePages {
-    static final String CDS_LOGGING = "-Xlog:cds,cds+hashtables";
+#include "precompiled.hpp"
+#include "memory/metaspace/internalStats.hpp"
+//#define LOG_PLEASE
+#include "metaspaceGtestCommon.hpp"
 
-    public static void main(String[] args) throws Exception {
-        SharedStringsUtils.run(args, LargePages::test);
-    }
+// Very simple test, since the VM is fired up we should see a little
+// Metaspace activity already which should show up in the stats.
+TEST_VM(metaspace, internstats) {
 
-    public static void test(String[] args) throws Exception {
-        SharedStringsUtils.buildJar("HelloString");
+  DEBUG_ONLY(ASSERT_GT(metaspace::InternalStats::num_allocs(), (uint64_t)0);)
 
-        SharedStringsUtils.dump(TestCommon.list("HelloString"),
-            "SharedStringsBasic.txt", "-XX:+UseLargePages", CDS_LOGGING);
-        SharedStringsUtils.runWithArchive("HelloString", "-XX:+UseLargePages");
-    }
+  ASSERT_GT(metaspace::InternalStats::num_arena_births(), (uint64_t)0);
+  ASSERT_GT(metaspace::InternalStats::num_vsnodes_births(), (uint64_t)0);
+  ASSERT_GT(metaspace::InternalStats::num_space_committed(), (uint64_t)0);
+  ASSERT_GT(metaspace::InternalStats::num_chunks_taken_from_freelist(), (uint64_t)0);
+
 }
+
