@@ -76,6 +76,7 @@ requires.properties= \
     vm.debug \
     vm.hasSA \
     vm.hasJFR \
+    vm.jvmci \
     docker.support \
     release.implementor
 
