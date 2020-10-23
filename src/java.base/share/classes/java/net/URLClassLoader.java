@@ -330,7 +330,6 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      *         allow creation of a class loader.
      *
      * @since 9
-     * @spec JPMS
      */
     public URLClassLoader(String name,
                           URL[] urls,
@@ -362,7 +361,6 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      *         creation of a class loader.
      *
      * @since 9
-     * @spec JPMS
      */
     public URLClassLoader(String name, URL[] urls, ClassLoader parent,
                           URLStreamHandlerFactory factory) {
@@ -739,7 +737,6 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      * @return      the newly defined {@code Package} object
      *
      * @revised 9
-     * @spec JPMS
      */
     protected Package definePackage(String name, Manifest man, URL url) {
         String specTitle = null, specVersion = null, specVendor = null;
