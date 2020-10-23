@@ -54,8 +54,21 @@ ifeq (,$(OPENJ9OMR_SHA))
   $(error Could not determine OMR SHA)
 endif
 
-# openjdk makeflags don't work with openj9/omr native compiles; override with number of CPUs which openj9 and omr need supplied
-override MAKEFLAGS := -j $(JOBS)
+ifeq (true,$(OPENJ9_ENABLE_CMAKE))
+  # If a logging level was specified that shows commands, tell cmake to do likewise.
+  ifneq (,$(or $(filter true,$(LOG_CMDLINES)),$(filter debug trace,$(LOG_LEVEL))))
+    MAKE_ARGS += VERBOSE=ON
+  endif
+else
+  # MAKEFLAGS, as inherited from openjdk, includes options (e.g. '-r' and '-R')
+  # that don't work well with OpenJ9 and OMR when not using cmake.
+  unexport MAKEFLAGS
+  # Filter out unwanted make flags.
+  MAKE_ARGS := $(filter-out -R -r -s,$(MAKE_ARGS))
+  ifneq (,$(JOBS))
+    MAKE_ARGS += -j $(JOBS)
+  endif
+endif # OPENJ9_ENABLE_CMAKE
 
 # Propagate configure option '--disable-warnings-as-errors-omr' to OMR.
 ifeq (false,$(WARNINGS_AS_ERRORS_OMR))
@@ -70,6 +83,8 @@ endif
 ifeq (windows,$(OPENJDK_TARGET_OS))
   # convert unix path to windows path
   FixPath = $(shell $(CYGPATH) -m $1)
+  # convert windows path to unix path
+  UnixPath = $(shell $(CYGPATH) -u $1)
   # set Visual Studio environment
   # wrap PATH in quotes as it contains spaces (unix path)
   # INCLUDE, LIB are already wrapped in quotes (windows paths)
@@ -78,13 +93,13 @@ ifeq (windows,$(OPENJDK_TARGET_OS))
   OPENJ9_BIN_OR_LIB_DIR := bin
 else
   FixPath = $1
+  UnixPath = $1
   EXPORT_MSVS_ENV_VARS :=
   OPENJ9_BIN_OR_LIB_DIR := lib
 endif
 
 .PHONY : \
 	build-j9 \
-	build-openj9-tools \
 	clean-j9 \
 	clean-j9-dist \
 	clean-openj9-thirdparty-binaries \
@@ -264,16 +279,6 @@ $(foreach file, \
 	$(eval $(call openj9_stage_buildspec_file,$(file))))
 
 J9TOOLS_DIR := $(SUPPORT_OUTPUTDIR)/j9tools
-JPP_JAR     := $(J9TOOLS_DIR)/jpp.jar
-
-build-openj9-tools :
-	@$(ECHO) Building OpenJ9 Java Preprocessor
-	@$(MKDIR) -p $(J9TOOLS_DIR)
-	$(MAKE) -C $(OPENJ9_TOPDIR)/sourcetools $(MAKEFLAGS) -f buildj9tools.mk \
-		BOOT_JDK=$(BOOT_JDK) \
-		DEST_DIR=$(call FixPath,$(J9TOOLS_DIR)) \
-		JAVA_HOME=$(BOOT_JDK) \
-		$(call FixPath,$(JPP_JAR))
 
 stage-j9 :
 	@$(ECHO) Staging OpenJ9 runtime in $(OUTPUTDIR)/vm
@@ -320,36 +325,8 @@ $(OPENJ9_VM_BUILD_DIR)/omr/OMR_VERSION_STRING : $(call DependOnVariable, OPENJ9O
 	@$(MKDIR) -p $(@D)
 	$(ECHO) '#define OMR_VERSION_STRING "$(OPENJ9OMR_SHA)"' > $@
 
-CUSTOM_COMPILER_ENV_VARS :=
-
-ifneq (,$(OPENJ9_CC))
-  CUSTOM_COMPILER_ENV_VARS += CC="$(OPENJ9_CC)"
-endif
-ifneq (,$(OPENJ9_CXX))
-  CUSTOM_COMPILER_ENV_VARS += CXX="$(OPENJ9_CXX)"
-endif
-ifneq (,$(OPENJ9_DEVELOPER_DIR))
-  CUSTOM_COMPILER_ENV_VARS += DEVELOPER_DIR="$(OPENJ9_DEVELOPER_DIR)"
-endif
-ifeq (true,$(OPENJ9_ENABLE_JITSERVER))
-  ifneq (true,$(OPENJ9_ENABLE_CMAKE))
-    CUSTOM_COMPILER_ENV_VARS += J9VM_OPT_JITSERVER=1
-
-    ifneq (,$(OPENSSL_CFLAGS))
-      CUSTOM_COMPILER_ENV_VARS += OPENSSL_CFLAGS="$(OPENSSL_CFLAGS)"
-    endif
-
-    ifneq (,$(OPENSSL_DIR))
-      CUSTOM_COMPILER_ENV_VARS += OPENSSL_DIR="$(OPENSSL_DIR)"
-    endif
-
-    ifneq (,$(OPENSSL_BUNDLE_LIB_PATH))
-      CUSTOM_COMPILER_ENV_VARS += OPENSSL_BUNDLE_LIB_PATH="$(OPENSSL_BUNDLE_LIB_PATH)"
-    endif
-  endif # OPENJ9_ENABLE_CMAKE
-endif # OPENJ9_ENABLE_JITSERVER
-
 run-preprocessors-j9 : \
+	generate-j9jcl-sources \
 	$(OPENJ9_VM_BUILD_DIR)/omr/OMR_VERSION_STRING \
 	$(OPENJ9_VM_BUILD_DIR)/compiler/jit.version \
 	$(OPENJ9_VM_BUILD_DIR)/include/openj9_version_info.h
@@ -357,15 +334,15 @@ run-preprocessors-j9 : \
 ifeq (true,$(OPENJ9_ENABLE_CMAKE))
 
   CMAKE_ARGS := \
-    -C $(OPENJ9_TOPDIR)/runtime/cmake/caches/$(OPENJ9_BUILDSPEC).cmake \
-    -DBOOT_JDK="$(BOOT_JDK)" \
-    -DBUILD_ID=$(BUILD_ID) \
-    -DJ9VM_OMR_DIR="$(OPENJ9OMR_TOPDIR)" \
-    -DJAVA_SPEC_VERSION=$(VERSION_FEATURE) \
-    -DOMR_DDR=$(OPENJ9_ENABLE_DDR) \
-    -DOPENJ9_BUILD=true \
-    -DOPENJ9_SHA=$(OPENJ9_SHA) \
-    #
+	-C $(OPENJ9_TOPDIR)/runtime/cmake/caches/$(OPENJ9_BUILDSPEC).cmake \
+	-DBOOT_JDK="$(BOOT_JDK)" \
+	-DBUILD_ID=$(BUILD_ID) \
+	-DJ9VM_OMR_DIR="$(OPENJ9OMR_TOPDIR)" \
+	-DJAVA_SPEC_VERSION=$(VERSION_FEATURE) \
+	-DOMR_DDR=$(OPENJ9_ENABLE_DDR) \
+	-DOPENJ9_BUILD=true \
+	-DOPENJ9_SHA=$(OPENJ9_SHA) \
+	#
 
   ifeq (windows,$(OPENJDK_TARGET_OS))
     CMAKE_ARGS += -DCMAKE_TOOLCHAIN_FILE="$(OUTPUTDIR)/toolchain-win.cmake"
@@ -421,10 +398,8 @@ ifeq (true,$(OPENJ9_ENABLE_CMAKE))
     CMAKE_ARGS += -DJ9VM_OPT_JITSERVER=OFF
   endif # OPENJ9_ENABLE_JITSERVER
 
-  CMAKE_ARGS += $(EXTRA_CMAKE_ARGS)
-
   ifeq (true,$(OPENJ9_ENABLE_CUDA))
-    CMAKE_ARGS += -DJ9VM_OPT_CUDA=ON -DOMR_CUDA_HOME="$(CUDA_HOME)"
+    CMAKE_ARGS += -DJ9VM_OPT_CUDA=ON -DOMR_CUDA_HOME="$(call UnixPath,$(CUDA_HOME))"
   else # OPENJ9_ENABLE_CUDA
     CMAKE_ARGS += -DJ9VM_OPT_CUDA=OFF
   endif # OPENJ9_ENABLE_CUDA
@@ -443,9 +418,12 @@ ifeq (true,$(OPENJ9_ENABLE_CMAKE))
     CMAKE_ARGS += -DJ9VM_OPT_OPENJDK_METHODHANDLE=OFF
   endif # OPENJ9_ENABLE_OPENJDK_METHODHANDLES
 
+  # Do this last so extra args take precedence.
+  CMAKE_ARGS += $(EXTRA_CMAKE_ARGS)
+
 $(OUTPUTDIR)/vm/cmake.stamp :
 	@$(MKDIR) -p $(@D)
-	cd $(@D) && $(CMAKE) $(CMAKE_ARGS) $(OPENJ9_TOPDIR)
+	cd $(@D) && $(EXPORT_MSVS_ENV_VARS) $(CMAKE) $(CMAKE_ARGS) $(OPENJ9_TOPDIR)
 	$(TOUCH) $@
 
 run-preprocessors-j9 : $(OUTPUTDIR)/vm/cmake.stamp
@@ -454,11 +432,9 @@ else # OPENJ9_ENABLE_CMAKE
 
 run-preprocessors-j9 : stage-j9
 	@$(ECHO) Running OpenJ9 preprocessors with OPENJ9_BUILDSPEC: $(OPENJ9_BUILDSPEC)
-	export BOOT_JDK=$(BOOT_JDK) $(EXPORT_MSVS_ENV_VARS) \
-		OPENJDK_VERSION_NUMBER_FOUR_POSITIONS=$(VERSION_NUMBER_FOUR_POSITIONS) \
-		&& $(MAKE) -C $(OUTPUTDIR)/vm $(MAKEFLAGS) -f $(OPENJ9_TOPDIR)/runtime/buildtools.mk \
+	+BOOT_JDK=$(BOOT_JDK) $(EXPORT_MSVS_ENV_VARS) OPENJDK_VERSION_NUMBER_FOUR_POSITIONS=$(VERSION_NUMBER_FOUR_POSITIONS) \
+		$(MAKE) $(MAKE_ARGS) -C $(OUTPUTDIR)/vm -f $(OPENJ9_TOPDIR)/runtime/buildtools.mk \
 			BUILD_ID=$(BUILD_ID) \
-			CMAKE=$(CMAKE) \
 			DEST_DIR=$(call FixPath,$(J9TOOLS_DIR)) \
 			EXTRA_CONFIGURE_ARGS=$(OMR_EXTRA_CONFIGURE_ARGS) \
 			FREEMARKER_JAR="$(FREEMARKER_JAR)" \
@@ -473,21 +449,50 @@ run-preprocessors-j9 : stage-j9
 
 endif # OPENJ9_ENABLE_CMAKE
 
+CUSTOM_COMPILER_ENV_VARS :=
+
+ifneq (,$(OPENJ9_CC))
+  CUSTOM_COMPILER_ENV_VARS += CC="$(OPENJ9_CC)"
+endif
+ifneq (,$(OPENJ9_CXX))
+  CUSTOM_COMPILER_ENV_VARS += CXX="$(OPENJ9_CXX)"
+endif
+ifneq (,$(OPENJ9_DEVELOPER_DIR))
+  CUSTOM_COMPILER_ENV_VARS += DEVELOPER_DIR="$(OPENJ9_DEVELOPER_DIR)"
+endif
+ifeq (true,$(OPENJ9_ENABLE_JITSERVER))
+  ifneq (true,$(OPENJ9_ENABLE_CMAKE))
+    CUSTOM_COMPILER_ENV_VARS += J9VM_OPT_JITSERVER=1
+
+    ifneq (,$(OPENSSL_CFLAGS))
+      CUSTOM_COMPILER_ENV_VARS += OPENSSL_CFLAGS="$(OPENSSL_CFLAGS)"
+    endif
+
+    ifneq (,$(OPENSSL_DIR))
+      CUSTOM_COMPILER_ENV_VARS += OPENSSL_DIR="$(OPENSSL_DIR)"
+    endif
+
+    ifneq (,$(OPENSSL_BUNDLE_LIB_PATH))
+      CUSTOM_COMPILER_ENV_VARS += OPENSSL_BUNDLE_LIB_PATH="$(OPENSSL_BUNDLE_LIB_PATH)"
+    endif
+  endif # OPENJ9_ENABLE_CMAKE
+endif # OPENJ9_ENABLE_JITSERVER
+
 ifneq (true,$(OPENJ9_ENABLE_DDR))
   DDR_COMMAND :=
 else ifeq (true,$(OPENJ9_ENABLE_CMAKE))
-  DDR_COMMAND := $(MAKE) -C $(OPENJ9_VM_BUILD_DIR) j9ddr
+  DDR_COMMAND := $(EXPORT_MSVS_ENV_VARS) $(MAKE) $(MAKE_ARGS) -C $(OPENJ9_VM_BUILD_DIR) j9ddr
 else
   DDR_COMMAND := CC="$(CC)" CXX="$(CXX)" $(EXPORT_MSVS_ENV_VARS) \
-	$(MAKE) -C $(OUTPUTDIR)/vm/ddr -f run_omrddrgen.mk
+	$(MAKE) $(MAKE_ARGS) -C $(OUTPUTDIR)/vm/ddr -f run_omrddrgen.mk
 endif # OPENJ9_ENABLE_DDR
 
 build-j9 : run-preprocessors-j9
 	@$(ECHO) Compiling OpenJ9 in $(OUTPUTDIR)/vm
-	OPENJ9_BUILD=true $(EXPORT_MSVS_ENV_VARS) $(CUSTOM_COMPILER_ENV_VARS) \
-		$(MAKE) -C $(OUTPUTDIR)/vm $(MAKEFLAGS) all
+	+OPENJ9_BUILD=true $(EXPORT_MSVS_ENV_VARS) $(CUSTOM_COMPILER_ENV_VARS) \
+		$(MAKE) $(MAKE_ARGS) -C $(OUTPUTDIR)/vm all
 	@$(ECHO) OpenJ9 compile complete
-	$(DDR_COMMAND)
+	+$(DDR_COMMAND)
 
 J9JCL_SOURCES_DONEFILE := $(MAKESUPPORT_OUTPUTDIR)/j9jcl_sources.done
 
@@ -495,18 +500,25 @@ recur_wildcard = $(foreach dir,$(wildcard $1/*),$(call recur_wildcard,$(dir),$2)
 AllJclSource   = $(call recur_wildcard,$(OPENJ9_TOPDIR)/jcl/src,*.java)
 
 JPP_DEST := $(SUPPORT_OUTPUTDIR)/j9jcl_sources
-
+JPP_JAR  := $(J9TOOLS_DIR)/jpp.jar
 JPP_TAGS := PLATFORM-$(OPENJ9_PLATFORM_CODE)
 
 ifeq (true,$(OPENJ9_ENABLE_INLINE_TYPES))
-  JPP_TAGS := $(JPP_TAGS);INLINE-TYPES
+  JPP_TAGS += INLINE-TYPES
 endif # OPENJ9_ENABLE_INLINE_TYPES
 
 ifeq (true,$(OPENJ9_ENABLE_OPENJDK_METHODHANDLES))
-  JPP_TAGS := $(JPP_TAGS);OPENJDK_METHODHANDLES
+  JPP_TAGS += OPENJDK_METHODHANDLES
 endif # OPENJ9_ENABLE_OPENJDK_METHODHANDLES
 
 $(J9JCL_SOURCES_DONEFILE) : $(AllJclSource)
+	@$(ECHO) Building OpenJ9 Java Preprocessor
+	@$(MKDIR) -p $(J9TOOLS_DIR)
+	$(MAKE) $(MAKE_ARGS) -C $(OPENJ9_TOPDIR)/sourcetools -f buildj9tools.mk \
+		BOOT_JDK=$(BOOT_JDK) \
+		DEST_DIR=$(call FixPath,$(J9TOOLS_DIR)) \
+		JAVA_HOME=$(BOOT_JDK) \
+		$(call FixPath,$(JPP_JAR))
 	@$(ECHO) Generating J9JCL sources
 	@$(BOOT_JDK)/bin/java \
 		-cp "$(call FixPath,$(JPP_JAR))" \
@@ -518,14 +530,14 @@ $(J9JCL_SOURCES_DONEFILE) : $(AllJclSource)
 			-srcRoot jcl/ \
 			-xml jpp_configuration.xml \
 			-dest "$(call FixPath,$(JPP_DEST))" \
-			-tag:define "$(JPP_TAGS)"
+			-tag:define "$(subst $(SPACE),;,$(sort $(JPP_TAGS)))"
 	@$(MKDIR) -p $(@D)
 	@$(TOUCH) $@
 
 generate-j9jcl-sources : $(J9JCL_SOURCES_DONEFILE)
 
 clean-j9 : clean-openj9-thirdparty-binaries
-	$(MAKE) -C $(OUTPUTDIR)/vm clean
+	+$(MAKE) $(MAKE_ARGS) -C $(OUTPUTDIR)/vm clean
 
 clean-j9-dist : clean-openj9-thirdparty-binaries
 	$(RM) -fdr $(OUTPUTDIR)/vm
