@@ -93,8 +93,8 @@ J9JDK_EXT_VERSION       := HEAD
 J9JDK_EXT_NAME          := Extensions for OpenJDK for Eclipse OpenJ9
 
 # required by CMake
-export CMAKE               := @CMAKE@
-export OPENJ9_ENABLE_CMAKE := @OPENJ9_ENABLE_CMAKE@
+CMAKE                   := @CMAKE@
+OPENJ9_ENABLE_CMAKE     := @OPENJ9_ENABLE_CMAKE@
 
 # required by UMA
 FREEMARKER_JAR          := @FREEMARKER_JAR@
@@ -144,17 +144,18 @@ else
 	$1
 endif
 
-# OPENSSL
+# OpenSSL
 BUILD_OPENSSL           := @BUILD_OPENSSL@
 OPENSSL_BUNDLE_LIB_PATH := @OPENSSL_BUNDLE_LIB_PATH@
 OPENSSL_CFLAGS          := @OPENSSL_CFLAGS@
 OPENSSL_DIR             := @OPENSSL_DIR@
 WITH_OPENSSL            := @WITH_OPENSSL@
 
+# Use '=' instead of ':=' because bootcycle-spec.gmk overrides OUTPUTDIR.
 ifeq (true,$(OPENJ9_ENABLE_CMAKE))
-  OPENJ9_VM_BUILD_DIR := $(OUTPUTDIR)/vm/runtime
+  OPENJ9_VM_BUILD_DIR = $(OUTPUTDIR)/vm/runtime
 else
-  OPENJ9_VM_BUILD_DIR := $(OUTPUTDIR)/vm
+  OPENJ9_VM_BUILD_DIR = $(OUTPUTDIR)/vm
 endif
 
 # Disable all hotspot features.
