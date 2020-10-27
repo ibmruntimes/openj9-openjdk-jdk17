@@ -78,7 +78,8 @@ requires.properties= \
     vm.hasJFR \
     vm.jvmci \
     docker.support \
-    release.implementor
+    release.implementor \
+    jdk.containerized
 
 # Unset Hotspot VMProps ProdDefns requires class and replace with optional OpenJ9 class
 requires.extraPropDefns = [../../closed/test/jtreg-ext/requires/OpenJ9PropsExt.java]
