@@ -560,6 +560,7 @@ java/beans/XMLEncoder/Test6570354.java 8015593 macosx-all
 # jdk_foreign
 
 java/foreign/TestMismatch.java 8249684 macosx-all
+java/foreign/TestMismatch.java 8255270 generic-i586
 
 ############################################################################
 
@@ -783,9 +784,7 @@ javax/swing/text/html/parser/Parser/HtmlCommentTagParseTest/HtmlCommentTagParseT
 javax/swing/text/StyledEditorKit/8016833/bug8016833.java 8199055 generic-all
 javax/swing/tree/DefaultTreeCellRenderer/7142955/bug7142955.java 8199076 generic-all
 javax/swing/UIDefaults/6302464/bug6302464.java 8199079 macosx-all
-javax/swing/UIDefaults/8149879/InternalResourceBundle.java 8199054 windows-all
 javax/swing/PopupFactory/8048506/bug8048506.java 8202660 windows-all
-javax/swing/JTextArea/TextViewOOM/TextViewOOM.java 8167355 generic-all
 javax/swing/JPopupMenu/8075063/ContextMenuScrollTest.java 202880 linux-all
 javax/swing/dnd/8139050/NativeErrorsInTableDnD.java 8202765  macosx-all,linux-all
 javax/swing/Popup/TaskbarPositionTest.java 8065097 macosx-all,linux-all
@@ -909,7 +908,6 @@ java/awt/TrayIcon/DblClickActionEventTest/DblClickActionEventTest.html 8203867 m
 java/awt/Frame/FrameStateTest/FrameStateTest.html 8203920 macosx-all,linux-all
 javax/swing/SwingUtilities/TestTextPosInPrint.java 8227025 windows-all
 java/awt/print/PrinterJob/ScaledText/ScaledText.java 8231226 macosx-all
-java/awt/print/bug8023392/bug8023392.html 8231231 generic-all
 java/awt/font/TextLayout/TestJustification.html 8250791 macosx-all
 javax/swing/JTabbedPane/4209065/bug4209065.java 8251177 macosx-all
 java/awt/TrayIcon/DragEventSource/DragEventSource.java 8252242 macosx-all
