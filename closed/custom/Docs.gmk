@@ -74,7 +74,7 @@ OPENJ9_JAVADOC_TEMP  := $(SUPPORT_OUTPUTDIR)/docs/_javadoc_temp.html
 JDK_API_CUSTOM_TARGETS += $(OPENJ9_JAVADOC_MARKER)
 
 ################################################################################
-# The OpenJ9 classes are built from the j9jcl_sources and closed/src
+# The OpenJ9 classes are built from the $(J9JCL_SOURCES_DIR) and closed/src
 # directories.
 # The packages are beneath directories called /share/classes (or /unix/classes,
 # /windows/classes etc.) which do not appear in the javadoc tree structure.
@@ -102,7 +102,7 @@ OPENJ9_JAVADOC_SCRIPT_BODY = \
 # replaced after the javadoc has been created.
 $(OPENJ9_JAVADOC_MARKER) : $(OPENJDK_JAVADOC_MARKER) $(OPENJ9_ONLY_JAVADOC_MARKER)
 	$(ECHO) '$(OPENJ9_JAVADOC_SCRIPT_BODY)' >$(OPENJ9_JAVADOC_SCRIPT)
-	$(CD) $(SUPPORT_OUTPUTDIR)/j9jcl_sources ; \
+	$(CD) $(J9JCL_SOURCES_DIR) ; \
 		$(FIND) . -type f -name '*.java' \
 			| $(SED) -e 's|/[^/]\+/classes/|/|' -e 's|package-info.java$$|package-summary.html|' -e 's|\.java$$|.html|' \
 			| $(XARGS) $(BASH) $(OPENJ9_JAVADOC_SCRIPT)
@@ -155,8 +155,8 @@ OPENJ9_ONLY_INDEX_HTML := $(IMAGES_OUTPUTDIR)/openj9-docs/api/index.html
 # (via OPENJ9_ONLY_JAVADOC_FILELIST) to identify when the javadoc needs
 # regenerating.
 
-OPENJ9_ONLY_FILELIST := $(shell $(FIND) $(SUPPORT_OUTPUTDIR)/j9jcl_sources -type f)
-OPENJ9_ONLY_JAVADOC_FILELIST := $(shell $(FIND) $(SUPPORT_OUTPUTDIR)/j9jcl_sources -type f  '(' -path '*/openj9.*/*.java' -o -path '*/jdk.management/*.java' ')')
+OPENJ9_ONLY_FILELIST := $(shell $(FIND) $(J9JCL_SOURCES_DIR) -type f)
+OPENJ9_ONLY_JAVADOC_FILELIST := $(shell $(FIND) $(J9JCL_SOURCES_DIR) -type f  '(' -path '*/openj9.*/*.java' -o -path '*/jdk.management/*.java' ')')
 OPENJ9_ONLY_JAVADOC_FILES := $(SUPPORT_OUTPUTDIR)/openj9-docs/_javadoc_openj9_files.txt
 
 # Set up the javadoc command line options.
@@ -283,7 +283,7 @@ OPENJ9_ONLY_JAVADOC_SCRIPT_BODY = \
 OPENJ9_ONLY_JAVADOC_SCRIPT_BODY_ESC = $(subst ','\'',$(OPENJ9_ONLY_JAVADOC_SCRIPT_BODY))
 
 # Create a stub package-info.java file for each package with source files in
-# j9jcl_sources but no package-info.java file. This is then used by javadoc
+# $(J9JCL_SOURCES_DIR) but no package-info.java file. This is then used by javadoc
 # instead of the openjdk version to direct the user to the Oracle online
 # documentation for that package.
 
