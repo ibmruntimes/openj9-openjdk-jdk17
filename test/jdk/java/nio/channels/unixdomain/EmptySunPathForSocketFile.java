@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,33 +23,27 @@
 
 /**
  * @test
- * @bug 8231988
- * @summary Unexpected test result caused by C2 IdealLoopTree::do_remove_empty_loop
- *
- * @run main/othervm -XX:-TieredCompilation -XX:-BackgroundCompilation
- *      compiler.loopopts.TestRemoveEmptyLoop
+ * @bug 8256461
+ * @modules java.base/sun.nio.fs
+ * @run testng EmptySunPathForSocketFile
  */
 
-package compiler.loopopts;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.spi.FileSystemProvider;
+import sun.nio.fs.AbstractFileSystemProvider;
 
-public class TestRemoveEmptyLoop {
+import static org.testng.Assert.assertEquals;
 
-    public void test() {
-        int i = 34;
-        for (; i > 0; i -= 11);
-        if (i < 0) {
-            // do nothing
-        } else {
-            throw new RuntimeException("Test failed.");
-        }
+/**
+ * Check that AbstractFileSystemProvider.getSunPathForSocketFile with
+ * an empty path returns an empty byte[]
+ */
+public class EmptySunPathForSocketFile {
+    public static void main(String[] args) throws Exception {
+        Path path = Path.of("");
+        FileSystemProvider provider = FileSystems.getDefault().provider();
+        byte[] bb = ((AbstractFileSystemProvider) provider).getSunPathForSocketFile(path);
+        assertEquals(bb, new byte[0]);
     }
-
-    public static void main(String[] args) {
-        TestRemoveEmptyLoop _instance = new TestRemoveEmptyLoop();
-        for (int i = 0; i < 50000; i++) {
-            _instance.test();
-        }
-        System.out.println("Test passed.");
-    }
-
 }
