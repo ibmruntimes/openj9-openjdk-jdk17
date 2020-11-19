@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,35 +21,34 @@
  * questions.
  */
 
-/**
+/*
  * @test
- * @bug 8231988
- * @summary Unexpected test result caused by C2 IdealLoopTree::do_remove_empty_loop
- *
- * @run main/othervm -XX:-TieredCompilation -XX:-BackgroundCompilation
- *      compiler.loopopts.TestRemoveEmptyLoop
+ * @bug 8256385
+ * @requires vm.debug == true & vm.flavor == "server"
+ * @summary Test for dead nodes that are not added to the IGVN worklist for removal.
+ * @run main/othervm -Xbatch compiler.c2.TestDeadNodeDuringIGVN
  */
+package compiler.c2;
 
-package compiler.loopopts;
+public class TestDeadNodeDuringIGVN {
+    static int res;
 
-public class TestRemoveEmptyLoop {
-
-    public void test() {
-        int i = 34;
-        for (; i > 0; i -= 11);
-        if (i < 0) {
-            // do nothing
-        } else {
-            throw new RuntimeException("Test failed.");
+    static void test(int len) {
+        int array[] = new int[len];
+        for (long l = 0; l < 10; l++) {
+            float e = 1;
+            do { } while (++e < 2);
+            res += l;
         }
     }
 
     public static void main(String[] args) {
-        TestRemoveEmptyLoop _instance = new TestRemoveEmptyLoop();
-        for (int i = 0; i < 50000; i++) {
-            _instance.test();
+        for (int i = 0; i < 40_000; ++i) {
+            res = 0;
+            test(1);
+            if (res != 45) {
+                throw new RuntimeException("Test failed: res = " + res);
+            }
         }
-        System.out.println("Test passed.");
     }
-
 }
