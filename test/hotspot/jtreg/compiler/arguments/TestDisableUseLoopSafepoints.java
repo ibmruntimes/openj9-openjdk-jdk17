@@ -21,16 +21,21 @@
  * questions.
  */
 
-/*
+/**
  * @test
- * @bug 8244946
- * @summary Run simple test with -XX:+Verbose and -Xlog:methodhandles.
- *
- * @run main/othervm -XX:+IgnoreUnrecognizedVMOptions -XX:+Verbose -Xlog:methodhandles TestMethodHandlesVerbose a b
+ * @bug 6232281
+ * @requires vm.debug == true & vm.compiler2.enabled
+ * @summary Tests that C2 does not crash trivially with a "remove_useless_nodes
+ *          missed this node" message when UseLoopSafepoints is disabled.
+ * @run main/othervm -Xcomp -XX:-TieredCompilation
+        -XX:CompileOnly=TestDisableUseLoopSafepoints -XX:-UseLoopSafepoints
+ *      compiler.arguments.TestDisableUseLoopSafepoints
  */
 
-public class TestMethodHandlesVerbose {
+package compiler.arguments;
+
+public class TestDisableUseLoopSafepoints {
     public static void main(String[] args) {
-        System.out.println(args[0] + args[1]);
+        System.out.println("Passed");
     }
 }
