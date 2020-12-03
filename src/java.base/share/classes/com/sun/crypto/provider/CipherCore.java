@@ -466,13 +466,13 @@ final class CipherCore {
             }
 
         } else {
-            if (algName.equals("RC2")) {
-                RC2Crypt rawImpl = (RC2Crypt) cipher.getEmbeddedCipher();
-                spec = new RC2ParameterSpec
-                    (rawImpl.getEffectiveKeyBits(), iv);
-            } else {
-                spec = new IvParameterSpec(iv);
-            }
+           if (algName.equals("RC2")) {
+               RC2Crypt rawImpl = (RC2Crypt) cipher.getEmbeddedCipher();
+               spec = new RC2ParameterSpec
+                   (rawImpl.getEffectiveKeyBits(), iv);
+           } else {
+               spec = new IvParameterSpec(iv);
+           }
         }
         try {
             params = AlgorithmParameters.getInstance(algName,
@@ -575,7 +575,7 @@ final class CipherCore {
                 } else {
                     throw new InvalidAlgorithmParameterException
                         ("Unsupported parameter: " + params);
-                }
+               }
             } else {
                 if (params instanceof IvParameterSpec) {
                     ivBytes = ((IvParameterSpec)params).getIV();
@@ -784,8 +784,7 @@ final class CipherCore {
         len = (len > 0 ? (len - (len % unitBytes)) : 0);
 
         // check output buffer capacity
-        if ((output == null) ||
-            ((output.length - outputOffset) < len)) {
+        if (output == null || (output.length - outputOffset) < len) {
             throw new ShortBufferException("Output buffer must be "
                                            + "(at least) " + len
                                            + " bytes long");
@@ -832,11 +831,11 @@ final class CipherCore {
                     // process 'buffer'. When finished we can null out 'buffer'
                     // Only necessary to null out if buffer holds data for encryption
                     if (decrypting) {
-                        outLen = cipher.decrypt(buffer, 0, buffered, output, outputOffset);
+                         outLen = cipher.decrypt(buffer, 0, buffered, output, outputOffset);
                     } else {
-                        outLen = cipher.encrypt(buffer, 0, buffered, output, outputOffset);
-                        //encrypt mode. Zero out internal (input) buffer
-                        Arrays.fill(buffer, (byte) 0x00);
+                         outLen = cipher.encrypt(buffer, 0, buffered, output, outputOffset);
+                         //encrypt mode. Zero out internal (input) buffer
+                         Arrays.fill(buffer, (byte) 0x00);
                     }
                     outputOffset = Math.addExact(outputOffset, outLen);
                     buffered = 0;
@@ -1021,7 +1020,7 @@ final class CipherCore {
             // copy the result into user-supplied output buffer
             if (internalOutput != null) {
                 System.arraycopy(internalOutput, 0, output, outputOffset, outLen);
-            // decrypt mode. Zero out output data that's not required
+                // decrypt mode. Zero out output data that's not required
                 Arrays.fill(internalOutput, (byte) 0x00);
             }
         }
