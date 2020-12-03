@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,29 +21,21 @@
  * questions.
  */
 
+import java.util.List;
 
 /*
  * @test
- * @bug 8253916
- *
- * @summary converted from VM Testbase nsk/jvmti/ResourceExhausted/resexhausted001.
- * VM Testbase keywords: [jpda, jvmti, noras, vm6, nonconcurrent, quarantine, exclude]
- * VM Testbase comments: 7013634
- * VM Testbase readme:
- * Description
- *      Test verifies that ResourceExhausted JVMTI event is generated for
- *      too many threads OOME by creating threads.
- * Comments
- *      CR 6465063
- *
- * @library /vmTestbase
- *          /test/lib
- * @run main/othervm/native/manual
- *      -agentlib:resexhausted=-waittime=5
- *      -XX:-UseGCOverheadLimit
- *      -Xms16m
- *      -Xmx16m
- *      nsk.jvmti.ResourceExhausted.resexhausted001
- *      -stressTime 220
+ * @summary Uses GCMBufferTest to run a long test with incrementing through
+ * each byte in each direct bytebuffer
+ * @run main/manual GCMIncrementDirect4
  */
 
+public class GCMIncrementDirect4 {
+
+    public static void main(String args[]) throws Exception {
+        new GCMBufferTest("AES/GCM/NoPadding",
+            List.of(GCMBufferTest.dtype.DIRECT, GCMBufferTest.dtype.DIRECT,
+                GCMBufferTest.dtype.DIRECT)).incrementalSegments().dataSet(4).
+            test();
+    }
+}
