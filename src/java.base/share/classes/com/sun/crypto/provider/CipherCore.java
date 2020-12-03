@@ -30,6 +30,7 @@
 
 package com.sun.crypto.provider;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -465,12 +466,13 @@ final class CipherCore {
             }
 
         } else {
-            if (algName.equals("RC2")) {
-                RC2Crypt rawImpl = (RC2Crypt) cipher.getEmbeddedCipher();
-                spec = new RC2ParameterSpec(rawImpl.getEffectiveKeyBits(), iv);
-            } else {
-                spec = new IvParameterSpec(iv);
-            }
+           if (algName.equals("RC2")) {
+               RC2Crypt rawImpl = (RC2Crypt) cipher.getEmbeddedCipher();
+               spec = new RC2ParameterSpec
+                   (rawImpl.getEffectiveKeyBits(), iv);
+           } else {
+               spec = new IvParameterSpec(iv);
+           }
         }
         try {
             params = AlgorithmParameters.getInstance(algName,
@@ -573,7 +575,7 @@ final class CipherCore {
                 } else {
                     throw new InvalidAlgorithmParameterException
                         ("Unsupported parameter: " + params);
-                }
+               }
             } else {
                 if (params instanceof IvParameterSpec) {
                     ivBytes = ((IvParameterSpec)params).getIV();
@@ -782,8 +784,7 @@ final class CipherCore {
         len = (len > 0 ? (len - (len % unitBytes)) : 0);
 
         // check output buffer capacity
-        if ((output == null) ||
-            ((output.length - outputOffset) < len)) {
+        if (output == null || (output.length - outputOffset) < len) {
             throw new ShortBufferException("Output buffer must be "
                                            + "(at least) " + len
                                            + " bytes long");
@@ -830,11 +831,11 @@ final class CipherCore {
                     // process 'buffer'. When finished we can null out 'buffer'
                     // Only necessary to null out if buffer holds data for encryption
                     if (decrypting) {
-                        outLen = cipher.decrypt(buffer, 0, buffered, output, outputOffset);
+                         outLen = cipher.decrypt(buffer, 0, buffered, output, outputOffset);
                     } else {
-                        outLen = cipher.encrypt(buffer, 0, buffered, output, outputOffset);
-                        //encrypt mode. Zero out internal (input) buffer
-                        Arrays.fill(buffer, (byte) 0x00);
+                         outLen = cipher.encrypt(buffer, 0, buffered, output, outputOffset);
+                         //encrypt mode. Zero out internal (input) buffer
+                         Arrays.fill(buffer, (byte) 0x00);
                     }
                     outputOffset = Math.addExact(outputOffset, outLen);
                     buffered = 0;
@@ -977,10 +978,10 @@ final class CipherCore {
         int estOutSize = getOutputSizeByOperation(inputLen, true);
         int outputCapacity = checkOutputCapacity(output, outputOffset,
                 estOutSize);
-        int offset = decrypting ? 0 : outputOffset; // 0 for decrypting
+        int offset = outputOffset;
         byte[] finalBuf = prepareInputBuffer(input, inputOffset,
                 inputLen, output, outputOffset);
-        byte[] outWithPadding = null; // for decrypting only
+        byte[] internalOutput = null; // for decrypting only
 
         int finalOffset = (finalBuf == input) ? inputOffset : 0;
         int finalBufLen = (finalBuf == input) ? inputLen : finalBuf.length;
@@ -994,11 +995,14 @@ final class CipherCore {
             if (outputCapacity < estOutSize) {
                 cipher.save();
             }
-            // create temporary output buffer so that only "real"
-            // data bytes are passed to user's output buffer.
-            outWithPadding = new byte[estOutSize];
+            if (getMode() != GCM_MODE || outputCapacity < estOutSize) {
+                // create temporary output buffer if the estimated size is larger
+                // than the user-provided buffer.
+                internalOutput = new byte[estOutSize];
+                offset = 0;
+            }
         }
-        byte[] outBuffer = decrypting ? outWithPadding : output;
+        byte[] outBuffer = (internalOutput != null) ? internalOutput : output;
 
         int outLen = fillOutputBuffer(finalBuf, finalOffset, outBuffer,
                 offset, finalBufLen, input);
@@ -1014,9 +1018,11 @@ final class CipherCore {
                                                + " bytes needed");
             }
             // copy the result into user-supplied output buffer
-            System.arraycopy(outWithPadding, 0, output, outputOffset, outLen);
-            // decrypt mode. Zero out output data that's not required
-            Arrays.fill(outWithPadding, (byte) 0x00);
+            if (internalOutput != null) {
+                System.arraycopy(internalOutput, 0, output, outputOffset, outLen);
+                // decrypt mode. Zero out output data that's not required
+                Arrays.fill(internalOutput, (byte) 0x00);
+            }
         }
         endDoFinal();
         return outLen;
@@ -1030,16 +1036,15 @@ final class CipherCore {
         }
     }
 
-    private int unpad(int outLen, byte[] outWithPadding)
+    private int unpad(int outLen, int off, byte[] outWithPadding)
             throws BadPaddingException {
-        int padStart = padding.unpad(outWithPadding, 0, outLen);
+        int padStart = padding.unpad(outWithPadding, off, outLen);
         if (padStart < 0) {
             throw new BadPaddingException("Given final block not " +
             "properly padded. Such issues can arise if a bad key " +
             "is used during decryption.");
         }
-        outLen = padStart;
-        return outLen;
+        return padStart - off;
     }
 
     private byte[] prepareInputBuffer(byte[] input, int inputOffset,
@@ -1115,7 +1120,7 @@ final class CipherCore {
             len = finalNoPadding(finalBuf, finalOffset, output,
                     outOfs, finalBufLen);
             if (decrypting && padding != null) {
-                len = unpad(len, output);
+                len = unpad(len, outOfs, output);
             }
             return len;
         } finally {
@@ -1284,6 +1289,29 @@ final class CipherCore {
     void updateAAD(byte[] src, int offset, int len) {
         checkReinit();
         cipher.updateAAD(src, offset, len);
+    }
+
+    // This must only be used with GCM.
+    // If some data has been buffered from an update call, operate on the buffer
+    // then run doFinal.
+    int gcmDoFinal(ByteBuffer src, ByteBuffer dst) throws ShortBufferException,
+        IllegalBlockSizeException, BadPaddingException {
+        int estOutSize = getOutputSizeByOperation(src.remaining(), true);
+        if (estOutSize > dst.remaining()) {
+            throw new ShortBufferException("output buffer too small");
+        }
+
+        if (decrypting) {
+            if (buffered > 0) {
+                cipher.decrypt(buffer, 0, buffered, new byte[0], 0);
+            }
+            return cipher.decryptFinal(src, dst);
+        } else {
+            if (buffered > 0) {
+                ((GaloisCounterMode)cipher).encrypt(buffer, 0, buffered);
+            }
+            return cipher.encryptFinal(src, dst);
+        }
     }
 
     private static String privilegedGetProperty(final String property) {
