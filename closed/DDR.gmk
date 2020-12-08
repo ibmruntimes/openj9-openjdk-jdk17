@@ -121,7 +121,7 @@ $(DDR_STRUCTURES_MARKER) : $(DDR_SUPERSET_FILE) $(BUILD_DDR_TOOLS)
 $(DDR_CLASSES_MARKER) : $(DDR_BLOB_FILE) $(BUILD_DDR_TOOLS)
 	@$(ECHO) Generating DDR pointer and structure class files
 	@$(RM) -rf $(DDR_CLASSES_BIN)
-	@$(JAVA) -cp "$(DDR_TOOLS_BIN)$(PATH_SEP)$(DDR_VM_SRC_ROOT)" \
+	@$(JAVA) -cp $(call PathList, $(DDR_TOOLS_BIN) $(DDR_VM_SRC_ROOT)) \
 		com.ibm.j9ddr.tools.ClassGenerator \
 			--blob=$(DDR_BLOB_FILE) \
 			--out=$(DDR_CLASSES_BIN)
