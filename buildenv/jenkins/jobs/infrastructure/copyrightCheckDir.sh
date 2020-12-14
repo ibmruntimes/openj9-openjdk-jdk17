@@ -611,6 +611,7 @@ echo "jdk/src/share/classes/org/jcp/xml/dsig/internal/dom/DOMXPathFilter2Transfo
 echo "src/java.xml.crypto/share/classes/org/jcp/xml/dsig/internal/dom/DOMXPathFilter2Transform.java" >>$TEMPFILE
 echo "src/java.xml.crypto/share/classes/org/jcp/xml/dsig/internal/dom/XMLDSigRI.java" >>$TEMPFILE
 echo "jdk/src/share/classes/org/jcp/xml/dsig/internal/dom/XMLDSigRI.java" >>$TEMPFILE
+echo "jdk/test/java/awt/Frame/DecoratedExceptions/DecoratedExceptions.java" >>$TEMPFILE
 # The following file refers to the license in other source files. That license is GPL v3 without classpath exception, but the files
 # themselves are not actually present in the openjdk source repository
 echo "src/java.smartcardio/unix/native/libj2pcsc/MUSCLE/COPYING" >>$TEMPFILE
