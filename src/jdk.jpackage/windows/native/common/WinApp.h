@@ -1,10 +1,12 @@
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -21,25 +23,16 @@
  * questions.
  */
 
-#include "jni.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#include <excpt.h>
-extern LONG WINAPI topLevelExceptionFilter(struct _EXCEPTION_POINTERS* exceptionInfo);
-#endif
+#ifndef WinApp_h
+#define WinApp_h
 
-extern "C" {
-  JNIIMPORT void JNICALL runUnitTests(int argv, char** argc);
-}
+#include "app.h"
 
-int main(int argc, char** argv) {
-#ifdef _WIN32
-  __try {
-#endif
-  runUnitTests(argc, argv);
-#ifdef _WIN32
-  } __except(topLevelExceptionFilter(GetExceptionInformation())) {}
-#endif
-  return 0;
-}
+namespace app {
+
+int wlaunch(const std::nothrow_t&, LauncherFunc func);
+
+} // namespace app
+
+#endif // WinApp_h

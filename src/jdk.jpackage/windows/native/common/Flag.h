@@ -1,10 +1,12 @@
 /*
- * Copyright (c) 2016, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -21,25 +23,28 @@
  * questions.
  */
 
-#include "jni.h"
+#ifndef Flag_h
+#define Flag_h
 
-#ifdef _WIN32
-#include <windows.h>
-#include <excpt.h>
-extern LONG WINAPI topLevelExceptionFilter(struct _EXCEPTION_POINTERS* exceptionInfo);
-#endif
 
-extern "C" {
-  JNIIMPORT void JNICALL runUnitTests(int argv, char** argc);
-}
+template <class T, class T2=int, int Id=0>
+class Flag {
+public:
+    explicit Flag(T2 v): val(v) {}
 
-int main(int argc, char** argv) {
-#ifdef _WIN32
-  __try {
-#endif
-  runUnitTests(argc, argv);
-#ifdef _WIN32
-  } __except(topLevelExceptionFilter(GetExceptionInformation())) {}
-#endif
-  return 0;
-}
+    bool operator == (const Flag& other) const {
+        return val == other.val;
+    }
+    bool operator != (const Flag& other) const {
+        return ! *this == other;
+    }
+
+    T2 value() const {
+        return val;
+    }
+
+private:
+    T2 val;
+};
+
+#endif // #ifndef Flag_h
