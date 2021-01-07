@@ -1,5 +1,5 @@
 # ===========================================================================
-# (c) Copyright IBM Corp. 2017, 2020 All Rights Reserved
+# (c) Copyright IBM Corp. 2017, 2021 All Rights Reserved
 # ===========================================================================
 # This code is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 only, as
@@ -87,11 +87,10 @@ endif
 
 ifeq (windows,$(OPENJDK_TARGET_OS))
   # convert windows path to unix path
-  UnixPath = $(shell $(CYGPATH) -u $1)
+  UnixPath = $(shell $(PATHTOOL) -u $1)
   # set Visual Studio environment
   # wrap PATH in quotes as it contains spaces (unix path)
-  # INCLUDE, LIB are already wrapped in quotes (windows paths)
-  EXPORT_MSVS_ENV_VARS := PATH="$(PATH)" INCLUDE=$(INCLUDE) LIB=$(LIB)
+  EXPORT_MSVS_ENV_VARS := PATH="$(PATH)"
 else
   UnixPath = $1
   EXPORT_MSVS_ENV_VARS :=
@@ -134,7 +133,7 @@ define openj9_test_image_rules
 endef
 
 $(foreach file, \
-	$(patsubst %, $(OPENJ9_VM_BUILD_DIR)/%$(EXE_SUFFIX), \
+	$(patsubst %, $(OPENJ9_VM_BUILD_DIR)/%$(EXECUTABLE_SUFFIX), \
 		algotest \
 		bcvunit \
 		cfdump \
