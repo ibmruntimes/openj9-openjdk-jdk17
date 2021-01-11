@@ -1,5 +1,5 @@
 # ===========================================================================
-# (c) Copyright IBM Corp. 2018, 2020 All Rights Reserved
+# (c) Copyright IBM Corp. 2018, 2021 All Rights Reserved
 # ===========================================================================
 # This code is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 only, as
@@ -122,6 +122,7 @@ $(DDR_CLASSES_MARKER) : $(DDR_BLOB_FILE) $(BUILD_DDR_TOOLS)
 	@$(ECHO) Generating DDR pointer and structure class files
 	@$(RM) -rf $(DDR_CLASSES_BIN)
 	@$(JAVA) -cp $(call PathList, $(DDR_TOOLS_BIN) $(DDR_VM_SRC_ROOT)) \
+		--add-exports java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED \
 		com.ibm.j9ddr.tools.ClassGenerator \
 			--blob=$(DDR_BLOB_FILE) \
 			--out=$(DDR_CLASSES_BIN)
