@@ -23,4 +23,11 @@
 # questions.
 #
 
+# ===========================================================================
+# (c) Copyright IBM Corp. 2021, 2021 All Rights Reserved
+# ===========================================================================
+
 COPY += _options
+
+# Hook to include the corresponding custom file, if present.
+$(eval $(call IncludeCustomExtension, modules/jdk.jcmd/Java.gmk))
