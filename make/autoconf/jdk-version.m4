@@ -24,7 +24,7 @@
 #
 
 # ===========================================================================
-# (c) Copyright IBM Corp. 2019, 2019 All Rights Reserved
+# (c) Copyright IBM Corp. 2019, 2021 All Rights Reserved
 # ===========================================================================
 
 ###############################################################################
@@ -62,7 +62,9 @@ AC_DEFUN([JDKVER_CHECK_AND_SET_NUMBER],
 AC_DEFUN_ONCE([JDKVER_SETUP_JDK_VERSION_NUMBERS],
 [
   # Source the version numbers file
-  . $AUTOCONF_DIR/version-numbers
+  . $TOPDIR/make/conf/version-numbers.conf
+  # Source the branding file
+  . $TOPDIR/make/conf/branding.conf
   . $TOPDIR/closed/autoconf/version-numbers
 
   # Some non-version number information is set in that file
@@ -84,7 +86,7 @@ AC_DEFUN_ONCE([JDKVER_SETUP_JDK_VERSION_NUMBERS],
     # Set JDK_RC_NAME to a custom value if '--with-jdk-rc-name' was used and is not empty.
     JDK_RC_NAME="$with_jdk_rc_name"
   else
-    # Otherwise calculate from "version-numbers" included above.
+    # Otherwise calculate from "branding.conf" included above.
     JDK_RC_NAME="$PRODUCT_NAME $JDK_RC_PLATFORM_NAME"
   fi
   AC_SUBST(JDK_RC_NAME)
@@ -99,7 +101,7 @@ AC_DEFUN_ONCE([JDKVER_SETUP_JDK_VERSION_NUMBERS],
     AC_MSG_ERROR([--with-vendor-name contains non-printing characters: $with_vendor_name])
   elif test "x$with_vendor_name" != x; then
     # Only set COMPANY_NAME if '--with-vendor-name' was used and is not empty.
-    # Otherwise we will use the value from "version-numbers" included above.
+    # Otherwise we will use the value from "branding.conf" included above.
     COMPANY_NAME="$with_vendor_name"
   fi
   AC_SUBST(COMPANY_NAME)
@@ -113,7 +115,7 @@ AC_DEFUN_ONCE([JDKVER_SETUP_JDK_VERSION_NUMBERS],
     AC_MSG_ERROR([--with-vendor-url contains non-printing characters: $with_vendor_url])
   elif test "x$with_vendor_url" != x; then
     # Only set VENDOR_URL if '--with-vendor-url' was used and is not empty.
-    # Otherwise we will use the value from "version-numbers" included above.
+    # Otherwise we will use the value from "branding.conf" included above.
     VENDOR_URL="$with_vendor_url"
   fi
   AC_SUBST(VENDOR_URL)
@@ -127,7 +129,7 @@ AC_DEFUN_ONCE([JDKVER_SETUP_JDK_VERSION_NUMBERS],
     AC_MSG_ERROR([--with-vendor-bug-url contains non-printing characters: $with_vendor_bug_url])
   elif test "x$with_vendor_bug_url" != x; then
     # Only set VENDOR_URL_BUG if '--with-vendor-bug-url' was used and is not empty.
-    # Otherwise we will use the value from "version-numbers" included above.
+    # Otherwise we will use the value from "branding.conf" included above.
     VENDOR_URL_BUG="$with_vendor_bug_url"
   fi
   AC_SUBST(VENDOR_URL_BUG)
@@ -141,7 +143,7 @@ AC_DEFUN_ONCE([JDKVER_SETUP_JDK_VERSION_NUMBERS],
     AC_MSG_ERROR([--with-vendor-vm-bug-url contains non-printing characters: $with_vendor_vm_bug_url])
   elif test "x$with_vendor_vm_bug_url" != x; then
     # Only set VENDOR_URL_VM_BUG if '--with-vendor-vm-bug-url' was used and is not empty.
-    # Otherwise we will use the value from "version-numbers" included above.
+    # Otherwise we will use the value from "branding.conf" included above.
     VENDOR_URL_VM_BUG="$with_vendor_vm_bug_url"
   fi
   AC_SUBST(VENDOR_URL_VM_BUG)
@@ -285,7 +287,7 @@ AC_DEFUN_ONCE([JDKVER_SETUP_JDK_VERSION_NUMBERS],
     fi
   else
     if test "x$NO_DEFAULT_VERSION_PARTS" != xtrue; then
-      # Default is to get value from version-numbers
+      # Default is to get value from version-numbers.conf
       VERSION_FEATURE="$DEFAULT_VERSION_FEATURE"
     fi
   fi
