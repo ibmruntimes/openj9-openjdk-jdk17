@@ -69,6 +69,7 @@ $(call openj9_copy_shlibs, \
 	j9vm29 \
 	j9vmchk29 \
 	j9vrb29 \
+	$(if $(filter static,$(OMR_MIXED_REFERENCES_MODE)),j9vrb_full29) \
 	j9zlib29 \
 	jclse29 \
 	jvm \
