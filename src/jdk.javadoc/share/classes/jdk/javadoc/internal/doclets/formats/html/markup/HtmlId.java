@@ -1,10 +1,12 @@
 /*
- * Copyright (c) 2005, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -21,22 +23,28 @@
  * questions.
  */
 
-package jar1;
+package jdk.javadoc.internal.doclets.formats.html.markup;
 
-import java.io.InputStream;
-import java.util.Locale;
-import java.util.ResourceBundle;
+/**
+ * A type-safe wrapper around a {@code String}, for use as an "id"
+ * in {@code HtmlTree} objects.
+ *
+ * @see HtmlTree#setId(HtmlId)
+ */
+public interface HtmlId {
+    /**
+     * Creates an id with the given name.
+     *
+     * @param name the name
+     * @return the id
+     */
+    static HtmlId of(String name) {
+        assert name.indexOf(' ') == -1;
+        return () -> name;
+    }
 
-public class LoadResourceBundle {
-
-        public LoadResourceBundle() throws Exception {
-                ResourceBundle bundle;
-                InputStream in;
-
-                in = getClass().getResourceAsStream("bundle.properties");
-                in.available();
-
-                bundle = ResourceBundle.getBundle("jar1/bundle", Locale.getDefault());
-                bundle.getString("Foo");
-        }
+    /**
+     * {@return the name of the id}
+     */
+    String name();
 }

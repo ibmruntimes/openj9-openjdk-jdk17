@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,22 +21,30 @@
  * questions.
  */
 
-package jar1;
-
+import java.awt.datatransfer.DataFlavor;
 import java.io.InputStream;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
-public class LoadResourceBundle {
+/**
+ * @test
+ * @bug 8259519
+ * @summary InputStream should be used as a default data flavor representation
+ */
+public final class DefaultRepresentation extends InputStream {
 
-        public LoadResourceBundle() throws Exception {
-                ResourceBundle bundle;
-                InputStream in;
-
-                in = getClass().getResourceAsStream("bundle.properties");
-                in.available();
-
-                bundle = ResourceBundle.getBundle("jar1/bundle", Locale.getDefault());
-                bundle.getString("Foo");
+    public static void main(String[] args) {
+        DataFlavor df = new DataFlavor(DefaultRepresentation.class, "stream");
+        if (df.getDefaultRepresentationClass() != InputStream.class) {
+            // default representation class is not specified!
+            // this check just defends against accidental changes
+            throw new RuntimeException("InputStream class is expected");
         }
+        if (!df.isRepresentationClassInputStream()) {
+            throw new RuntimeException("true is expected");
+        }
+    }
+
+    @Override
+    public int read() {
+        return 0;
+    }
 }
