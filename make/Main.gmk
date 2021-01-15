@@ -24,7 +24,7 @@
 #
 
 # ===========================================================================
-# (c) Copyright IBM Corp. 2020, 2020 All Rights Reserved
+# (c) Copyright IBM Corp. 2020, 2021 All Rights Reserved
 # ===========================================================================
 
 ################################################################################
@@ -191,6 +191,7 @@ JAVA_TARGETS := $(addsuffix -java, $(JAVA_MODULES))
 define DeclareCompileJavaRecipe
   $1-java:
 	+($(CD) $(TOPDIR)/make && $(MAKE) $(MAKE_ARGS) \
+	    $(patsubst %,-I%/modules/$1,$(PHASE_MAKEDIRS)) \
 	    -f CompileJavaModules.gmk MODULE=$1)
 endef
 
