@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -20,31 +20,34 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-import jdk.test.lib.dcmd.*;
-import jdk.test.lib.process.OutputAnalyzer;
 
 /*
  * @test
- * @bug 8165736 8252657
- * @library /test/lib
- * @run testng AttachReturnError
+ * @bug 8259820
+ * @summary Check JShell can handle -source 8
+ * @modules jdk.jshell
+ * @run testng SourceLevelTest
  */
-public class AttachReturnError extends AttachFailedTestBase {
-    @Override
-    public void run(CommandExecutor executor)  {
-        try {
-            String libpath = getSharedObjectPath("ReturnError");
-            OutputAnalyzer output = null;
 
-            // Check return code
-            output = executor.execute("JVMTI.agent_load " + libpath);
-            output.shouldContain("return code: -1");
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
-            // Check loaded libraries
-            output = executor.execute("VM.dynlibs");
-            output.shouldNotContain(libpath);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+public class SourceLevelTest extends ReplToolTesting {
+
+    @DataProvider(name="sourceLevels")
+    public Object[][] sourceLevels() {
+        return new Object[][] {
+            new Object[] {"8"},
+            new Object[] {"11"}
+        };
     }
+
+    @Test(dataProvider="sourceLevels")
+    public void testSourceLevel(String sourceLevel) {
+        test(new String[] {"-C", "-source", "-C", sourceLevel},
+                (a) -> assertCommand(a, "1 + 1", "$1 ==> 2"),
+                (a) -> assertCommand(a, "1 + 2", "$2 ==> 3")
+        );
+    }
+
 }
