@@ -23,6 +23,10 @@
 # questions.
 #
 
+# ===========================================================================
+# (c) Copyright IBM Corp. 2021, 2021 All Rights Reserved
+# ===========================================================================
+
 # This must be the first rule
 default: all
 
@@ -86,7 +90,7 @@ CreateHkTargets = \
 ################################################################################
 # Include module specific build settings
 
--include $(TOPDIR)/make/modules/$(MODULE)/Java.gmk
+-include Java.gmk
 
 ################################################################################
 # Setup the main compilation
