@@ -25,7 +25,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2020, 2020 All Rights Reserved
+ * (c) Copyright IBM Corp. 2020, 2021 All Rights Reserved
  * ===========================================================================
  */
 
@@ -376,6 +376,7 @@ CreateExecutionEnvironment(int *pargc, char ***pargv,
          *     o          $JVMPATH (directory portion only)
          *     o          $JRE/lib
          *     o          $JRE/../lib
+         *     o          ZLIBNX_PATH (for AIX P9 or newer systems with NX)
          *
          * followed by the user's previous effective LD_LIBRARY_PATH, if
          * any.
@@ -388,6 +389,10 @@ CreateExecutionEnvironment(int *pargc, char ***pargv,
             char *new_jvmpath = JLI_StringDup(jvmpath);
             new_runpath_size = ((runpath != NULL) ? JLI_StrLen(runpath) : 0) +
                     2 * JLI_StrLen(jrepath) +
+#ifdef AIX
+                    /* On AIX P9 or newer with NX accelerator enabled, add the accelerated zlibNX to LIBPATH */
+                    ((power_9_andup() && power_nx_gzip()) ? JLI_StrLen(":" ZLIBNX_PATH) : 0) +
+#endif
                     JLI_StrLen(new_jvmpath) + 52;
             new_runpath = JLI_MemAlloc(new_runpath_size);
             newpath = new_runpath + JLI_StrLen(LD_LIBRARY_PATH "=");
@@ -405,10 +410,17 @@ CreateExecutionEnvironment(int *pargc, char ***pargv,
                 sprintf(new_runpath, LD_LIBRARY_PATH "="
                         "%s:"
                         "%s/lib:"
-                        "%s/../lib",
+                        "%s/../lib"
+#ifdef AIX
+                        "%s" /* For zlibNX on eligible AIX systems */
+#endif
+                        ,
                         new_jvmpath,
                         jrepath,
                         jrepath
+#ifdef AIX
+                        , ((power_9_andup() && power_nx_gzip()) ? (":" ZLIBNX_PATH) : "")
+#endif
                         );
 
                 JLI_MemFree(new_jvmpath);
