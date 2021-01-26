@@ -23,10 +23,6 @@
 # questions.
 #
 
-# ===========================================================================
-# (c) Copyright IBM Corp. 2020, 2020 All Rights Reserved
-# ===========================================================================
-
 ifndef _MODULES_GMK
 _MODULES_GMK := 1
 
@@ -34,9 +30,6 @@ _MODULES_GMK := 1
 # Setup module sets for classloaders
 
 include $(TOPDIR)/make/conf/module-loader-map.conf
-
-# Hook to include the corresponding custom file, if present.
-$(eval $(call IncludeCustomExtension, common/Modules.gmk))
 
 # Append platform-specific and upgradeable modules
 PLATFORM_MODULES += $(PLATFORM_MODULES_$(OPENJDK_TARGET_OS)) \
