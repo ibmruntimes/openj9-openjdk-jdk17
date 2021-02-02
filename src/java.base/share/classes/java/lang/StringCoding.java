@@ -23,6 +23,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2021, 2021 All Rights Reserved
+ * ===========================================================================
+ */
+
 package java.lang;
 
 import java.io.UnsupportedEncodingException;
@@ -600,7 +606,7 @@ class StringCoding {
     }
 
     @IntrinsicCandidate
-    private static int implEncodeISOArray(byte[] sa, int sp,
+    public static int implEncodeISOArray(byte[] sa, int sp,
                                           byte[] da, int dp, int len) {
         int i = 0;
         for (; i < len; i++) {
