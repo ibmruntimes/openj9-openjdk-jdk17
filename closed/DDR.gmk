@@ -64,7 +64,6 @@ DDR_GENSRC_DIR := $(SUPPORT_OUTPUTDIR)/gensrc/openj9.dtfj
 DDR_CLASSES_MARKER := $(DDR_SUPPORT_DIR)/classes.done
 DDR_POINTERS_MARKER := $(DDR_SUPPORT_DIR)/gensrc-pointers.done
 DDR_STRUCTURES_MARKER := $(DDR_SUPPORT_DIR)/gensrc-structures.done
-DDR_TOOLS_MARKER := $(DDR_SUPPORT_DIR)/tools.done
 DDR_VM_MARKER := $(DDR_SUPPORT_DIR)/debugtools.done
 
 #############################################################################
@@ -74,6 +73,7 @@ $(eval $(call SetupJavaCompilation,BUILD_DDR_TOOLS, \
 	TARGET_RELEASE := $(TARGET_RELEASE_BOOTJDK), \
 	BIN := $(DDR_TOOLS_BIN), \
 	CLASSPATH := $(JDK_OUTPUTDIR)/modules/java.base, \
+	JAVAC_FLAGS := --add-exports=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED, \
 	SRC := $(DDR_VM_SRC_ROOT), \
 	INCLUDE_FILES := \
 		com/ibm/j9ddr/BytecodeGenerator.java \
