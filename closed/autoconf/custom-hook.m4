@@ -164,6 +164,9 @@ AC_DEFUN([OPENJ9_CONFIGURE_COMPILERS],
   AC_ARG_WITH(openj9-developer-dir, [AS_HELP_STRING([--with-openj9-developer-dir], [build OpenJ9 with a specific Xcode version])],
     [OPENJ9_DEVELOPER_DIR=$with_openj9_developer_dir],
     [OPENJ9_DEVELOPER_DIR=])
+  if test "x$OPENJDK_BUILD_OS" = xwindows ; then
+    UTIL_REQUIRE_PROGS([OPENJ9_CLANG], [clang])
+  fi
 
   AC_SUBST(OPENJ9_CC)
   AC_SUBST(OPENJ9_CXX)
@@ -695,26 +698,29 @@ AC_DEFUN([OPENJ9_GENERATE_TOOL_WRAPPER],
   echo "#!/bin/sh" > $tool_file
   # We need to insert an empty string ([]), to stop M4 treating "$@" as a
   # variable reference
-  printf '%s "%s" "$[]@"\n' "$FIXPATH" "$2" >> $tool_file
+  printf '%s "$[]@"\n' "$2" >> $tool_file
   chmod +x $tool_file
 ])
 
 # Generate all the tool wrappers required for cmake on windows
 AC_DEFUN([OPENJ9_GENERATE_TOOL_WRAPPERS],
 [
-  MSVC_BIN_DIR=$($DIRNAME $CC)
-  SDK_BIN_DIR=$($DIRNAME $RC)
-
   mkdir -p "$OPENJ9_TOOL_DIR"
+
+  UTIL_REQUIRE_TOOLCHAIN_PROGS(MC, mc)
+  # Note: the assembler found by OpenJDK macros is 'ml', which is the 32-bit assembler.
+  UTIL_REQUIRE_TOOLCHAIN_PROGS(ML64, ml64)
+
   OPENJ9_GENERATE_TOOL_WRAPPER([cl], [$CC])
+  OPENJ9_GENERATE_TOOL_WRAPPER([clang], [$OPENJ9_CLANG])
+  OPENJ9_GENERATE_TOOL_WRAPPER([jar], [$JAR])
+  OPENJ9_GENERATE_TOOL_WRAPPER([java], [$JAVA])
+  OPENJ9_GENERATE_TOOL_WRAPPER([javac], [$JAVAC])
   OPENJ9_GENERATE_TOOL_WRAPPER([lib], [$AR])
   OPENJ9_GENERATE_TOOL_WRAPPER([link], [$LD])
-  OPENJ9_GENERATE_TOOL_WRAPPER([ml], [$MSVC_BIN_DIR/ml])
-  OPENJ9_GENERATE_TOOL_WRAPPER([ml64], [$MSVC_BIN_DIR/ml64])
-  OPENJ9_GENERATE_TOOL_WRAPPER([rc], [$RC])
-  OPENJ9_GENERATE_TOOL_WRAPPER([mc], [$SDK_BIN_DIR/mc])
+  OPENJ9_GENERATE_TOOL_WRAPPER([mc], [$MC])
+  OPENJ9_GENERATE_TOOL_WRAPPER([ml], [$AS])
+  OPENJ9_GENERATE_TOOL_WRAPPER([ml64], [$ML64])
   OPENJ9_GENERATE_TOOL_WRAPPER([nasm], [$NASM])
-  OPENJ9_GENERATE_TOOL_WRAPPER([java], [$JAVA])
-  OPENJ9_GENERATE_TOOL_WRAPPER([jar], [$JAR])
-  OPENJ9_GENERATE_TOOL_WRAPPER([javac], [$JAVAC])
+  OPENJ9_GENERATE_TOOL_WRAPPER([rc], [$RC])
 ])
