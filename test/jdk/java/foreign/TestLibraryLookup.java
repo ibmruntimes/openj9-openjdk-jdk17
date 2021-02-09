@@ -22,6 +22,12 @@
  */
 
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2021, 2021 All Rights Reserved.
+ * ===========================================================================
+ */
+
+/*
  * @test
  * @requires ((os.arch == "amd64" | os.arch == "x86_64") & sun.arch.data.model == "64") | os.arch == "aarch64"
  * @modules jdk.incubator.foreign/jdk.internal.foreign
@@ -82,6 +88,7 @@ public class TestLibraryLookup {
         LibraryLookup lookup = LibraryLookup.ofLibrary("LookupTest");
         assertTrue(lookup.lookup("nonExistent").isEmpty());
         assertEquals(LibrariesHelper.numLoadedLibraries(), 1);
+        java.lang.ref.Reference.reachabilityFence(lookup);
         lookup = null;
         symbol = null;
         waitUnload();
