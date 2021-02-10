@@ -690,7 +690,7 @@ AC_DEFUN([CONFIGURE_OPENSSL],
 
 # Create a tool wrapper for use by cmake.
 # Consists of a shell script which wraps commands with an invocation of fixpath.
-# OPENJ9_GENERATE_TOOL_WRAPER(<name_of_wrapper>, <command_to_call>)
+# OPENJ9_GENERATE_TOOL_WRAPPER(<name_of_wrapper>, <command_to_call>)
 AC_DEFUN([OPENJ9_GENERATE_TOOL_WRAPPER],
 [
   tool_file="$OPENJ9_TOOL_DIR/$1"
