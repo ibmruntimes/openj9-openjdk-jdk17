@@ -24,7 +24,7 @@
  */
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2018, 2019 All Rights Reserved
+ * (c) Copyright IBM Corp. 2018, 2021 All Rights Reserved
  * ===========================================================================
  */
 
@@ -36,7 +36,9 @@ import java.security.*;
 import javax.crypto.*;
 import static com.sun.crypto.provider.AESConstants.AES_BLOCK_SIZE;
 import com.sun.crypto.provider.AESCrypt;
+import sun.security.util.ArrayUtil;
 
+import java.nio.ByteBuffer;
 import jdk.crypto.jniprovider.NativeCrypto;
 
 /**
@@ -99,6 +101,9 @@ final class NativeGaloisCounterMode extends FeedbackCipher {
     }
 
     private static void checkDataLength(int processed, int len) {
+        if (len < 0) {
+            throw new ProviderException("input size cannot be negative");
+        }
         if (processed > MAX_BUF_SIZE - len) {
             throw new ProviderException("SunJCE provider only supports " +
                 "input size up to " + MAX_BUF_SIZE + " bytes");
@@ -298,10 +303,6 @@ final class NativeGaloisCounterMode extends FeedbackCipher {
      * @return the number of bytes placed into the <code>out</code> buffer
      */
     int encrypt(byte[] in, int inOfs, int len, byte[] out, int outOfs) {
-        if ((len % blockSize) != 0) {
-            throw new ProviderException("Internal error in input buffering");
-       }
-
         checkDataLength(ibuffer_enc.size(), len);
 
         if (len > 0) {
@@ -312,6 +313,22 @@ final class NativeGaloisCounterMode extends FeedbackCipher {
         }
 
         return 0;
+    }
+
+    /*
+     * This method is for CipherCore to insert the remainder of its buffer
+     * into ibuffer_enc before a encryptFinal(ByteBuffer, ByteBuffer) operation
+     */
+    int encrypt(byte[] in, int inOfs, int len) {
+        // store internally until encryptFinal
+        ArrayUtil.nullAndBoundsCheck(in, inOfs, len);
+        if (len > 0) {
+            if (ibuffer_enc == null) {
+                ibuffer_enc = new ByteArrayOutputStream();
+            }
+            ibuffer_enc.write(in, inOfs, len);
+        }
+        return len;
     }
 
     /**
@@ -363,6 +380,46 @@ final class NativeGaloisCounterMode extends FeedbackCipher {
     }
 
     /**
+     * Performs encryption operation for the last time.
+     *
+     * @param src the input buffer with the data to be encrypted
+     * @param dst the output buffer with encrypted data
+     * @return the number of bytes placed into the <code>dst</code> buffer
+     */
+    int encryptFinal(ByteBuffer src, ByteBuffer dst)
+        throws IllegalBlockSizeException, ShortBufferException {
+
+        // Get array from source
+        byte[] src_arr = getBbArray(src);
+        int src_ofs = src.hasArray() ? (src.position() + src.arrayOffset()) : 0;
+
+        // Get array from destination
+        byte[] dst_arr;
+        int dst_offset;
+        if (dst.hasArray()) {
+            dst_arr = dst.array();
+            dst_offset = dst.position() + dst.arrayOffset();
+        } else {
+            dst_arr = new byte[dst.remaining()];
+            dst_offset = 0;
+        }
+
+        int len = encryptFinal(src_arr, src_ofs, src.remaining(), dst_arr, dst_offset);
+
+        // Advance source buffer position
+        src.position(src.limit());
+
+        // Update destination buffer
+        if (dst.hasArray()) {
+            dst.position(dst.position() + len);
+        } else {
+            dst.put(dst_arr, 0, len);
+        }
+
+        return len;
+    }
+
+    /**
      * Performs decryption operation.
      *
      * <p>The input cipher text <code>in</code>, starting at
@@ -380,10 +437,6 @@ final class NativeGaloisCounterMode extends FeedbackCipher {
      * @return the number of bytes placed into the <code>out</code> buffer
      */
     int decrypt(byte[] in, int inOfs, int len, byte[] out, int outOfs) {
-        if ((len % blockSize) != 0) {
-            throw new ProviderException("Internal error in input buffering");
-       }
-
         checkDataLength(ibuffer.size(), len);
 
         if (len > 0) {
@@ -416,16 +469,18 @@ final class NativeGaloisCounterMode extends FeedbackCipher {
                      byte[] out, int outOfs)
         throws IllegalBlockSizeException, AEADBadTagException,
         ShortBufferException {
-        if (len < tagLenBytes) {
+        if (len < 0) {
+            throw new ProviderException("Input length is negative");
+        }
+        if (len < tagLenBytes - ibuffer.size()) {
             throw new AEADBadTagException("Input too short - need tag");
         }
+        if (len > MAX_BUF_SIZE - ibuffer.size()) {
+            throw new ProviderException("SunJCE provider only supports "
+                + "a positive input size up to " + MAX_BUF_SIZE + " bytes");
+        }
 
-        // do this check here can also catch the potential integer overflow
-        // scenario for the subsequent output buffer capacity check.
-        checkDataLength(ibuffer.size(), (len - tagLenBytes));
-
-
-        if (out.length - outOfs < ((ibuffer.size() + len) - tagLenBytes)) {
+        if (out.length - outOfs < len  + ibuffer.size() - tagLenBytes) {
             throw new ShortBufferException("Output buffer too small");
         }
 
@@ -458,6 +513,69 @@ final class NativeGaloisCounterMode extends FeedbackCipher {
 
 
         return ret;
+    }
+
+
+    /**
+     * Performs decryption operation for the last time.
+     *
+     * @param src the input buffer with the data to be decrypted
+     * @param dst the output buffer with the decrypted data
+     * @return the number of bytes placed into the <code>dst</code> buffer
+     */
+    int decryptFinal(ByteBuffer src, ByteBuffer dst)
+        throws IllegalBlockSizeException, AEADBadTagException,
+        ShortBufferException {
+
+        // Get array from source
+        byte[] src_arr = getBbArray(src);
+        int src_ofs = src.hasArray() ? (src.position() + src.arrayOffset()) : 0;
+
+        // Get array from destination
+        byte[] dst_arr;
+        int dst_offset;
+        if (dst.hasArray()) {
+            dst_arr = dst.array();
+            dst_offset = dst.position() + dst.arrayOffset();
+        } else {
+            dst_arr = new byte[dst.remaining()];
+            dst_offset = 0;
+        }
+
+        int len = decryptFinal(src_arr, src_ofs, src.remaining(), dst_arr, dst_offset);
+
+        // Advance source buffer position
+        src.position(src.limit());
+
+        // Update destination buffer
+        if (dst.hasArray()) {
+            dst.position(dst.position() + len);
+        } else {
+            dst.put(dst_arr, 0, len);
+        }
+
+        return len;
+    }
+
+    /**
+     * Gets the byte array behind a buffer.
+     * Tries to use ByteBuffer.array(). If this is not available, the function uses ByteBuffer.get()
+     *
+     * @param src the buffer whose byte[] is needed
+     * @return the byte array with the buffer's content
+     */
+    private static byte[] getBbArray(ByteBuffer src) {
+        byte[] arr;
+        if (src.hasArray()) {
+            arr = src.array();
+        } else {
+            ByteBuffer cpy = src.duplicate();
+            arr = new byte[cpy.remaining()];
+            if (arr.length > 0) {
+                cpy.get(arr, 0, arr.length);
+            }
+        }
+        return arr;
     }
 
     // return tag length in bytes
