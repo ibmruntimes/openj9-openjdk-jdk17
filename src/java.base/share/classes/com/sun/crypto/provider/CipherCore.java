@@ -24,7 +24,7 @@
  */
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2018, 2019 All Rights Reserved
+ * (c) Copyright IBM Corp. 2018, 2021 All Rights Reserved
  * ===========================================================================
  */
 
@@ -1308,7 +1308,11 @@ final class CipherCore {
             return cipher.decryptFinal(src, dst);
         } else {
             if (buffered > 0) {
-                ((GaloisCounterMode)cipher).encrypt(buffer, 0, buffered);
+                if (useNativeGCM) {
+                    ((NativeGaloisCounterMode) cipher).encrypt(buffer, 0, buffered);
+                } else {
+                    ((GaloisCounterMode) cipher).encrypt(buffer, 0, buffered);
+                }
             }
             return cipher.encryptFinal(src, dst);
         }
