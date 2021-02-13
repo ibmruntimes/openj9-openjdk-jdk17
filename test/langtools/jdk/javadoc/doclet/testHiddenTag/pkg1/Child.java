@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -20,9 +20,14 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-grant {
-    // No permission
-    permission java.io.FilePermission "sock", "delete";
 
-    permission java.lang.RuntimePermission "setSecurityManager";
-};
+package pkg1;
+
+import pkg2.UndocumentedParent;
+
+/**
+ * A visible class, extending invisible classes.
+ */
+public class Child extends UndocumentedParent<Child> {
+
+}
