@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -29,6 +29,9 @@
  * ===========================================================================
  */
 package sun.nio.cs;
+
+import jdk.internal.access.JavaLangAccess;
+import jdk.internal.access.SharedSecrets;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -65,6 +68,8 @@ public class US_ASCII
 
     private static class Decoder extends CharsetDecoder {
 
+        private static final JavaLangAccess JLA = SharedSecrets.getJavaLangAccess();
+
         private Decoder(Charset cs) {
             super(cs, 1.0f, 1.0f);
         }
@@ -73,39 +78,28 @@ public class US_ASCII
                                             CharBuffer dst)
         {
             byte[] sa = src.array();
-            int sp = src.arrayOffset() + src.position();
-            int sl = src.arrayOffset() + src.limit();
-            assert (sp <= sl);
-            sp = (sp <= sl ? sp : sl);
-            char[] da = dst.array();
-            int dp = dst.arrayOffset() + dst.position();
-            int dl = dst.arrayOffset() + dst.limit();
-            assert (dp <= dl);
-            dp = (dp <= dl ? dp : dl);
+            int soff = src.arrayOffset();
+            int sp = soff + src.position();
+            int sl = soff + src.limit();
 
-            try {
-            	
-                if((dl-dp) >= (sl-sp)) {                                             //OpenJ9-perf_converter
-                    
-                    int n = decodeASCII(sa, sp, sl-sp, da, dp);
-                    sp = sp + n;
-                    dp = dp + n;
-                    if (sp<sl)
-                     	return CoderResult.malformedForLength(1);
-                    return CoderResult.UNDERFLOW;                            //OpenJ9-perf_converter
-                }                                                               //OpenJ9-perf_converter
-                else {                                                           //OpenJ9-perf_converter
-                    int n = decodeASCII(sa, sp, dl-dp, da, dp);
-                    sp = sp + n;
-                    dp = dp + n;
-                    if (dp<dl)
-                    	return CoderResult.malformedForLength(1);
-                    return CoderResult.OVERFLOW;                         //OpenJ9-perf_converter
-                }                                                                //OpenJ9-perf_converter
-            } finally {
-                src.position(sp - src.arrayOffset());
-                dst.position(dp - dst.arrayOffset());
+            char[] da = dst.array();
+            int doff = dst.arrayOffset();
+            int dp = doff + dst.position();
+            int dl = doff + dst.limit();
+
+            // ASCII only loop
+            int n = JLA.decodeASCII(sa, sp, da, dp, Math.min(sl - sp, dl - dp));
+            sp += n;
+            dp += n;
+            src.position(sp - soff);
+            dst.position(dp - doff);
+            if (sp < sl) {
+                if (dp >= dl) {
+                    return CoderResult.OVERFLOW;
+                }
+                return CoderResult.malformedForLength(1);
             }
+            return CoderResult.UNDERFLOW;
         }
 
         private CoderResult decodeBufferLoop(ByteBuffer src,
@@ -137,24 +131,6 @@ public class US_ASCII
                 return decodeArrayLoop(src, dst);
             else
                 return decodeBufferLoop(src, dst);
-        }
- 	public final int decodeASCII(byte[] src, int sp, int len, char[] dst, int dp) {
-            int n = 0;
-            while (n < len) 
-               {
-                byte b = src[sp++];
-
-                if (b >= 0){
-            
-                    dst[dp++] = (char)b;
-                    n++;
-                    continue;
-                       }
-                break;   
-                
-               }
-            
-            return n;
         }
     }
 
