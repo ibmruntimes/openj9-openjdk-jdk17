@@ -20,6 +20,11 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2021, 2021 All Rights Reserved.
+ * ===========================================================================
+ */
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -123,9 +128,10 @@ public abstract class IntlTest {
             } catch (IllegalAccessException e) {
                 errln("Can't acces test method " + testMethod.getName());
             } catch (InvocationTargetException e) {
+                // Log the original exception before calling errln(), which throws RuntimeException
+                e.getTargetException().printStackTrace(this.log);
                 errln("Uncaught exception thrown in test method "
                         + testMethod.getName());
-                e.getTargetException().printStackTrace(this.log);
             }
             writeTestResult(errorCount - oldCount);
         }
