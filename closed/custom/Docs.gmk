@@ -159,6 +159,9 @@ OPENJ9_ONLY_FILELIST := $(shell $(FIND) $(J9JCL_SOURCES_DIR) -type f)
 OPENJ9_ONLY_JAVADOC_FILELIST := $(shell $(FIND) $(J9JCL_SOURCES_DIR) -type f  '(' -path '*/openj9.*/*.java' -o -path '*/jdk.management/*.java' ')')
 OPENJ9_ONLY_JAVADOC_FILES := $(SUPPORT_OUTPUTDIR)/openj9-docs/_javadoc_openj9_files.txt
 
+# Temporarily disable some extra javadoc diagnostics (using 'sort' to remove any duplication).
+OPENJ9_JAVADOC_DISABLED_DOCLINT = $(sort $(JAVADOC_DISABLED_DOCLINT) accessibility html missing syntax reference)
+
 # Set up the javadoc command line options.
 # Use  -linkoffline to redirect the links to the documentation for the classes
 # from the openjdk project source files to the# online Oracle documentation.
@@ -171,7 +174,7 @@ OPENJ9_ONLY_JAVADOC_OPTIONS = $(filter-out --expand-requires transitive,$(JAVADO
 OPENJ9_ONLY_JAVADOC_OPTIONS += -linkoffline $(JAVASE_BASE_URL)/ $(DOCS_OUTPUTDIR)/api/
 OPENJ9_ONLY_JAVADOC_OPTIONS += $(JAVADOC_TAGS)
 OPENJ9_ONLY_JAVADOC_OPTIONS += --module-source-path $(call PathList,$(OPENJ9_STUBS_DIR) $(MODULES_SOURCE_PATH))
-OPENJ9_ONLY_JAVADOC_OPTIONS += -Xdoclint:all,$(call CommaList, $(addprefix -, $(JAVADOC_DISABLED_DOCLINT)))
+OPENJ9_ONLY_JAVADOC_OPTIONS += -Xdoclint:all,$(call CommaList, $(addprefix -, $(OPENJ9_JAVADOC_DISABLED_DOCLINT)))
 
 OPENJ9_DOC_TITLE = $(JDK_LONG_NAME)<br>Version $(VERSION_SPECIFICATION)
 OPENJ9_WINDOW_TITLE = $(subst &amp;,&,$(JDK_SHORT_NAME))
