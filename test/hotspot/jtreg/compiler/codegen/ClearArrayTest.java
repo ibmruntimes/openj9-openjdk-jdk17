@@ -4,9 +4,7 @@
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,21 +21,25 @@
  * questions.
  */
 
-#ifndef JAVA_COMPONENT_ACCESSIBILITY
-#define JAVA_COMPONENT_ACCESSIBILITY
+/*
+ * @test
+ * @bug 8260716
+ * @summary Test for correct code generation by the JIT
+ * @run main/othervm -Xbatch -XX:CompileCommand=compileonly,*ClearArrayTest.test -XX:+UnlockDiagnosticVMOptions -XX:-IdealizeClearArrayNode compiler.codegen.ClearArrayTest
+ */
 
-#import "JavaComponentAccessibility.h"
-#import "JavaAccessibilityUtilities.h"
+package compiler.codegen;
 
-@interface CommonComponentAccessibility : JavaComponentAccessibility <NSAccessibilityElement> {
+public class ClearArrayTest {
+    static int[] f1;
 
+    private static void test() {
+        f1 = new int[8];
+    }
+
+    public static void main(String[] args) {
+        for (int i=0; i<15000; i++) {
+            test();
+        }
+    }
 }
-+ (void) initializeRolesMap;
-+ (JavaComponentAccessibility * _Nullable) getComponentAccessibility:(NSString * _Nonnull)role;
-- (NSRect)accessibilityFrame;
-- (nullable id)accessibilityParent;
-- (BOOL)performAccessibleAction:(int)index;
-- (BOOL)isAccessibilityElement;
-@end
-
-#endif
