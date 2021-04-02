@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,38 +21,10 @@
  * questions.
  */
 
-/**
- * @test
- * @bug 6935535
- * @summary String.indexOf() returns incorrect result on x86 with SSE4.2
- *
- * @run main/othervm -Xcomp compiler.codegen.Test6935535
- */
-
-/**
- * @test
- * @bug 8264223
- * @summary add CodeHeap verification
- *
- * @requires vm.debug
- * @run main/othervm -Xcomp -XX:+VerifyCodeCache compiler.codegen.Test6935535
- */
-package compiler.codegen;
-
-public class Test6935535 {
-
-    static int IndexOfTest(String str) {
-        return str.indexOf("1111111111111xx1x");
-    }
-
-    public static void main(String args[]) {
-        String str = "1111111111111xx1111111111111xx1x";
-        str = str.substring(0, 31);
-        int idx = IndexOfTest(str);
-        System.out.println("IndexOf(" + "1111111111111xx1x" + ") = " + idx + " in " + str);
-        if (idx != -1) {
-            System.exit(97);
-        }
+class MyNonParallelLoader extends MyLoader {
+    // This loader isn't parallel capable because it's not registered in the static
+    // initializer as such.  parallelCapable is not an inheritable attribute.
+    MyNonParallelLoader(boolean load_in_parallel) {
+       super(load_in_parallel);
     }
 }
-
