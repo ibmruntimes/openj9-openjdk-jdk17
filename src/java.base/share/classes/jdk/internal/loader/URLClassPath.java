@@ -769,7 +769,7 @@ public class URLClassPath {
                     URLClassPath.check(url);
                 }
                 uc = url.openConnection();
-                InputStream in = uc.getInputStream();
+
                 if (uc instanceof JarURLConnection) {
                     /* Need to remember the jar file so it can be closed
                      * in a hurry.
@@ -777,6 +777,8 @@ public class URLClassPath {
                     JarURLConnection juc = (JarURLConnection)uc;
                     jarfile = JarLoader.checkJar(juc.getJarFile());
                 }
+
+                InputStream in = uc.getInputStream();
             } catch (Exception e) {
                 return null;
             }
