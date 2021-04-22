@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,12 +21,23 @@
  * questions.
  */
 
-#include <stdint.h>
-#include "jni.h"
+/**
+ * @test
+ * @bug 8200145
+ * @summary Conditional expression mistakenly treated as standalone
+ * @run compile T8200145.java
+ */
 
-JNIEXPORT void JNICALL Java_FindClassUtf8_nTest(JNIEnv* env, jclass jclazz)
-{
-    jbyte chars[] = {0x18, 0xf8, 0x20, 0x5d, 0x31, 0x32, 0x31, 0x5b, 0}; // f8 is invalid utf8
+public class T8200145 {
+    static class Outer {
+        class Inner<T> implements Runnable { public void run() {} }
+    }
 
-    jclass badClass = (*env)->FindClass(env, (const char*)&chars);
+    void test(Outer outer) {
+        boolean test =  1 == 1 ;
+        Outer.Inner<String> inner1 = outer.new Inner<>();
+        Outer.Inner<String> inner2 = test ? outer.new Inner<>() : null;
+        Outer.Inner<String> inner3 = test ? null: outer.new Inner<>();
+        Outer.Inner<String> inner4 = test ? outer.new Inner<>() : outer.new Inner<>();
+    }
 }
