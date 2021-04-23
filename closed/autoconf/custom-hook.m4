@@ -379,7 +379,7 @@ AC_DEFUN([OPENJ9_CONFIGURE_OPENJDK_METHODHANDLES],
     AC_MSG_RESULT([no (explicitly disabled)])
     OPENJ9_ENABLE_OPENJDK_METHODHANDLES=false
   elif test "x$enable_openjdk_methodhandles" = x ; then
-    AC_MSG_RESULT([yes (default for $OPENJ9_ENABLE_OPENJDK_METHODHANDLES)])
+    AC_MSG_RESULT([yes (default)])
     OPENJ9_ENABLE_OPENJDK_METHODHANDLES=true
   else
     AC_MSG_ERROR([--enable-openjdk-methodhandles accepts no argument])
