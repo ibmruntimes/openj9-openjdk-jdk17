@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, BELLSOFT. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,34 +22,29 @@
  * questions.
  */
 
-/**
+/*
  * @test
- * @bug 8031321
- * @summary Verify processing of UseCountLeadingZerosInstruction option
- *          on CPU with LZCNT support.
+ * @bug 8265756
  * @library /test/lib /
- * @requires vm.flagless
- * @modules java.base/jdk.internal.misc
- *          java.management
- *
- * @build sun.hotspot.WhiteBox
- * @run driver jdk.test.lib.helpers.ClassFileInstaller sun.hotspot.WhiteBox
- * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions
- *                   -XX:+WhiteBoxAPI
- *                   compiler.arguments.TestUseCountLeadingZerosInstructionOnSupportedCPU
+ * @compile TestLargeLocalVarsStackRegionHelper.jasm
+ * @run main runtime.Locals.TestLargeLocalVarsStackRegion
  */
 
-package compiler.arguments;
+package runtime.Locals;
 
-public class TestUseCountLeadingZerosInstructionOnSupportedCPU
-     extends BMISupportedCPUTest {
+import jdk.test.lib.Asserts;
 
-    public TestUseCountLeadingZerosInstructionOnSupportedCPU() {
-        super("UseCountLeadingZerosInstruction", LZCNT_WARNING, "lzcnt");
-    }
+public class TestLargeLocalVarsStackRegion {
 
-    public static void main(String args[]) throws Throwable {
-        new TestUseCountLeadingZerosInstructionOnSupportedCPU().test();
+    // Some platforms (such as windows-aarch64) may have
+    // stack page touch order restrictions.
+    // Test calls method with large local vars stack region
+    // to trigger usage of several stack memory pages and
+    // check the validity of the touch order.
+    //
+    // Helper method is written in jasm as this allows to
+    // specify local vars stack region size directly.
+    public static void main(String args[]) {
+        Asserts.assertEQ(TestLargeLocalVarsStackRegionHelper.tst(), 0);
     }
 }
-
