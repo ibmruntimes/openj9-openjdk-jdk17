@@ -25,7 +25,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2018, 2019 All Rights Reserved
+ * (c) Copyright IBM Corp. 2018, 2021 All Rights Reserved
  * ===========================================================================
  */
 
@@ -197,7 +197,7 @@ public class BuiltinClassLoader
             }                                                                    	//OpenJ9-shared_classes_misc
         }                                                                        	//OpenJ9-shared_classes_misc
     }
-	
+
 	/*                                                                           	//OpenJ9-shared_classes_misc
 	 * Initialize support for shared classes.                                    	//OpenJ9-shared_classes_misc
 	 */																				//OpenJ9-shared_classes_misc
@@ -224,7 +224,7 @@ public class BuiltinClassLoader
 				}																					//OpenJ9-shared_classes_misc
 			}																						//OpenJ9-shared_classes_misc
 		}																							//OpenJ9-shared_classes_misc
-		
+
 		if (usingSharedClasses() && null == sharedClassMetaDataCache) {            					//OpenJ9-shared_classes_misc
 			// Create a metadata cache                                   							//OpenJ9-shared_classes_misc
 			sharedClassMetaDataCache = new SharedClassMetaDataCache(ucpLength);  					//OpenJ9-shared_classes_misc
@@ -236,7 +236,7 @@ public class BuiltinClassLoader
     private boolean usingSharedClasses() {                                       					//OpenJ9-shared_classes_misc
         return (sharedClassServiceProvider != null);         										//OpenJ9-shared_classes_misc
     }
-	
+
     /*                                                                          				//OpenJ9-shared_classes_misc
      * Returns if -Xshareclasses is used in the command line         							//OpenJ9-shared_classes_misc
      */  																						//OpenJ9-shared_classes_misc
@@ -244,7 +244,7 @@ public class BuiltinClassLoader
     	/* 																						//OpenJ9-shared_classes_misc
     	 * Lambda expression can't be used here due to bootstrap problem 						//OpenJ9-shared_classes_misc
     	 * when jdk.internal.lambda.dumpProxyClasses is enabled.								//OpenJ9-shared_classes_misc
-    	 * More details are at https://github.com/eclipse/openj9/issues/3399					//OpenJ9-shared_classes_misc
+    	 * More details are at https://github.com/eclipse-openj9/openj9/issues/3399					//OpenJ9-shared_classes_misc
     	 */																						//OpenJ9-shared_classes_misc
     	return AccessController.doPrivileged(new PrivilegedAction<Boolean>() {					//OpenJ9-shared_classes_misc
     		public Boolean run() {																//OpenJ9-shared_classes_misc
@@ -260,7 +260,7 @@ public class BuiltinClassLoader
     	/* 																						//OpenJ9-shared_classes_misc
     	 * Lambda expression can't be used here due to bootstrap problem 						//OpenJ9-shared_classes_misc
     	 * when jdk.internal.lambda.dumpProxyClasses is enabled.								//OpenJ9-shared_classes_misc
-    	 * More details are at https://github.com/eclipse/openj9/issues/3399					//OpenJ9-shared_classes_misc
+    	 * More details are at https://github.com/eclipse-openj9/openj9/issues/3399					//OpenJ9-shared_classes_misc
     	 */																						//OpenJ9-shared_classes_misc
 		String javaHome = AccessController.doPrivileged( new PrivilegedAction<String>() {		//OpenJ9-shared_classes_misc
 			public String run() {																//OpenJ9-shared_classes_misc
@@ -274,7 +274,7 @@ public class BuiltinClassLoader
 			} catch (MalformedURLException e) {}												//OpenJ9-shared_classes_misc
 		}																						//OpenJ9-shared_classes_misc
 	}																							//OpenJ9-shared_classes_misc
-    
+
     /**
      * A module defined/loaded by a built-in class loader.
      *
@@ -975,7 +975,7 @@ public class BuiltinClassLoader
             return AccessController.doPrivileged(pa);
         }
     }
-    
+
 	 /**																											//OpenJ9-shared_classes_misc
      * Finds the class with the specified binary name in the shared classes cache.									//OpenJ9-shared_classes_misc
      *																												//OpenJ9-shared_classes_misc
@@ -1022,7 +1022,7 @@ public class BuiltinClassLoader
 		return null;																								//OpenJ9-shared_classes_misc
 	}
 
-	
+
 	/*                                                                          				//OpenJ9-shared_classes_misc
      * Defines a class using the class bytes, codesource and manifest           				//OpenJ9-shared_classes_misc
      * obtained from the specified shared class cache. The resulting            				//OpenJ9-shared_classes_misc
@@ -1087,7 +1087,7 @@ public class BuiltinClassLoader
             CodeSource cs = new CodeSource(csURL, (CodeSigner[]) null);
             try {
                 // define class to VM
-                Class<?> clazz = defineClass(cn, bb, cs);									
+                Class<?> clazz = defineClass(cn, bb, cs);
 				if ((null != clazz) && !patched) {											//OpenJ9-shared_classes_misc
 					//ignore the return value of storeClassIntoSharedClassesCache()			//OpenJ9-shared_classes_misc
 					storeClassIntoSharedClassesCache(clazz, cs, man, -1, loadedModule);		//OpenJ9-shared_classes_misc
@@ -1102,7 +1102,7 @@ public class BuiltinClassLoader
             return null;
         }
     }
-    
+
 	/**																											//OpenJ9-shared_classes_misc
      * Stores the class into the shared classes cache.															//OpenJ9-shared_classes_misc
      *																											//OpenJ9-shared_classes_misc
@@ -1166,7 +1166,7 @@ public class BuiltinClassLoader
             cs = new CodeSource(url, signers);
             clazz = defineClass(cn, b, 0, b.length, cs);
         }
-        
+
         if (null != clazz) {																	//OpenJ9-shared_classes_misc
             //ignore the return value of storeClassIntoSharedClassesCache()						//OpenJ9-shared_classes_misc
             storeClassIntoSharedClassesCache(clazz, cs, man, res.getClasspathLoadIndex(), null);//OpenJ9-shared_classes_misc
