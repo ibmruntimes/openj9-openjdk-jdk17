@@ -18,5 +18,5 @@
 # 2 along with this work; if not, see <http://www.gnu.org/licenses/>.
 # ===========================================================================
 
-COPY     += CompatibilityConstants29.dat StructureAliases29.dat StructureAliases29-edg.dat
+COPY     += .dat
 EXCLUDES += com/ibm/j9ddr/tools/ant
