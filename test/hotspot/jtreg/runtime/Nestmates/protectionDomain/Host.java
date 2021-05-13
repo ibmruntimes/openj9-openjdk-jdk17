@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2019, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -23,21 +21,24 @@
  * questions.
  */
 
-#ifndef MTLStencilManager_h_Included
-#define MTLStencilManager_h_Included
+// Host and Host$Member will be loaded by a custom loader with different
+// protection domains.
 
-#import <Metal/Metal.h>
+public class Host {
 
-#include "RenderOptions.h"
+    private static int forNestmatesOnly = 1;
 
-@class MTLContex;
+    public static class Member {
+        // We need our static initializer to ensure our CP reference
+        // to Host is resolved by the main thread.
+        static final Class<?> hostClass = Host.class;
 
+        int id;
 
-@interface MTLStencilManager : NSObject
-- (id _Nonnull)initWithDevice:(_Nonnull id<MTLDevice>) device;
-- (void)dealloc;
-@property (readonly) _Nonnull id<MTLDepthStencilState> stencilState;
-@property (readonly) _Nonnull id<MTLDepthStencilState> genStencilState;
-@end
-
-#endif // MTLSamplerManager_h_Included
+        // Executing, or JIT compiling, this method will result in
+        // a nestmate access check.
+        public Member() {
+            id = forNestmatesOnly++;
+        }
+    }
+}
