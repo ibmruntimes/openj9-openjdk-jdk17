@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,23 +21,23 @@
  * questions.
  */
 
-package gc.g1;
+package gc.stringdedup;
 
 /*
- * @test TestStringDeduplicationFullGC
- * @summary Test string deduplication during full GC
+ * @test TestStringDeduplicationYoungGC
+ * @summary Test string deduplication during young GC
  * @bug 8029075
- * @requires vm.gc.G1
+ * @requires vm.gc == "null" | vm.gc == "G1" | vm.gc == "Shenandoah"
  * @library /test/lib
  * @library /
  * @modules java.base/jdk.internal.misc:open
  * @modules java.base/java.lang:open
  *          java.management
- * @run driver gc.g1.TestStringDeduplicationFullGC
+ * @run driver gc.stringdedup.TestStringDeduplicationYoungGC
  */
 
-public class TestStringDeduplicationFullGC {
+public class TestStringDeduplicationYoungGC {
     public static void main(String[] args) throws Exception {
-        TestStringDeduplicationTools.testFullGC();
+        TestStringDeduplicationTools.testYoungGC();
     }
 }
