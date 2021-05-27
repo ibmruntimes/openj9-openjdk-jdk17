@@ -574,7 +574,6 @@ AC_DEFUN_ONCE([CUSTOM_LATE_HOOK],
     OPENJ9_TOOL_DIR="$OUTPUTDIR/tools"
     AC_SUBST([OPENJ9_TOOL_DIR])
     OPENJ9_GENERATE_TOOL_WRAPPERS
-    AC_CONFIG_FILES([$OUTPUTDIR/toolchain-win.cmake:$CLOSED_AUTOCONF_DIR/toolchain-win.cmake.in])
 
     # We used to rely on VS_INCLUDE and VS_LIB directly, but those are no longer available
     # for substitutions, and they're not Windows-style paths: Convert them for our use.
@@ -583,6 +582,8 @@ AC_DEFUN_ONCE([CUSTOM_LATE_HOOK],
     AC_SUBST(OPENJ9_VS_INCLUDE)
     AC_SUBST(OPENJ9_VS_LIB)
   fi
+  AC_SUBST([SYSROOT])
+  AC_CONFIG_FILES([$OUTPUTDIR/toolchain.cmake:$CLOSED_AUTOCONF_DIR/toolchain.cmake.in])
 ])
 
 AC_DEFUN([CONFIGURE_OPENSSL],
