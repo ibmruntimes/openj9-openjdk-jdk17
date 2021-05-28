@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -19,28 +19,20 @@
  * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
  * or visit www.oracle.com if you need additional information or have any
  * questions.
+ *
  */
 
-/**/
+/*
+ * Note: This runs the unified logging part of gtest in async mode.
+ * The reason is that hotspot can't safely turn off asynclogging dyanmically.
+ * There's no TEST_OTHER_VM_F.
+ */
 
-public class TestSecurityManager extends SecurityManager {
-    public static final int EXIT_VALUE = 123;
-
-    public TestSecurityManager() {
-    }
-
-    public void checkListen(int port) {
-        // 4269910: ok, now the registry will *really* go away...
-        //
-        // the registry needs to listen on sockets so they
-        // will exit when they try to do so... this is used as a sign
-        // by the main test process to detect that the proper security
-        // manager has been installed in the relevant VMs.
-        //
-        System.exit(EXIT_VALUE);
-    }
-
-    public void checkExit(int status) {
-        // permit check exit for all code
-    }
-}
+/* @test
+ * @summary Run logging gtest in async mode.
+ * @library /test/lib
+ * @modules java.base/jdk.internal.misc
+ *          java.xml
+ * @run main/native GTestWrapper --gtest_filter=AsyncLogTest* -Xlog:async
+ * @run main/native GTestWrapper --gtest_filter=Log*Test* -Xlog:async
+ */
