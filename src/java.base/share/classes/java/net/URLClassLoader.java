@@ -97,6 +97,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
     private final URLClassPath ucp;
 
     /* The context to be used when loading classes and resources */
+    @SuppressWarnings("removal")
     private final AccessControlContext acc;
     /* Private member fields used for Shared classes*/                           //OpenJ9-shared_classes_misc
     private SharedClassProvider sharedClassServiceProvider;
@@ -227,6 +228,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      *             elements is {@code null}.
      * @see SecurityManager#checkCreateClassLoader
      */
+    @SuppressWarnings("removal")
     public URLClassLoader(URL[] urls, ClassLoader parent) {
         super(parent);
         initializeSharedClassesSupport(urls);                                    //OpenJ9-shared_classes_misc
@@ -235,7 +237,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
     }
 
     URLClassLoader(String name, URL[] urls, ClassLoader parent,
-                   AccessControlContext acc) {
+                   @SuppressWarnings("removal") AccessControlContext acc) {
         super(name, parent);
         initializeSharedClassesSupport(urls);                                    //OpenJ9-shared_classes_misc
         this.acc = acc;
@@ -264,6 +266,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      *             elements is {@code null}.
      * @see SecurityManager#checkCreateClassLoader
      */
+    @SuppressWarnings("removal")
     public URLClassLoader(URL[] urls) {
         super();
         initializeSharedClassesSupport(urls);                                    //OpenJ9-shared_classes_misc
@@ -271,7 +274,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
         ucp = new URLClassPath(urls, null, this.acc, sharedClassServiceProvider);       //OpenJ9-shared_classes_misc
     }
 
-    URLClassLoader(URL[] urls, AccessControlContext acc) {
+    URLClassLoader(URL[] urls, @SuppressWarnings("removal") AccessControlContext acc) {
         super();
         initializeSharedClassesSupport(urls);                                    //OpenJ9-shared_classes_misc
         this.acc = acc;
@@ -300,6 +303,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      *         elements is {@code null}.
      * @see SecurityManager#checkCreateClassLoader
      */
+    @SuppressWarnings("removal")
     public URLClassLoader(URL[] urls, ClassLoader parent,
                           URLStreamHandlerFactory factory) {
         super(parent);
@@ -331,6 +335,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      *
      * @since 9
      */
+    @SuppressWarnings("removal")
     public URLClassLoader(String name,
                           URL[] urls,
                           ClassLoader parent) {
@@ -362,6 +367,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      *
      * @since 9
      */
+    @SuppressWarnings("removal")
     public URLClassLoader(String name, URL[] urls, ClassLoader parent,
                           URLStreamHandlerFactory factory) {
         super(name, parent);
@@ -461,6 +467,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
     * @since 1.7
     */
     public void close() throws IOException {
+        @SuppressWarnings("removal")
         SecurityManager security = System.getSecurityManager();
         if (security != null) {
             security.checkPermission(new RuntimePermission("closeClassLoader"));
@@ -530,6 +537,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      *            or if the loader is closed.
      * @throws    NullPointerException if {@code name} is {@code null}.
      */
+    @SuppressWarnings("removal")
     protected Class<?> findClass(final String name)
         throws ClassNotFoundException
     {
@@ -817,6 +825,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
         /*
          * The same restriction to finding classes applies to resources
          */
+        @SuppressWarnings("removal")
         URL url = AccessController.doPrivileged(
             new PrivilegedAction<>() {
                 public URL run() {
@@ -849,6 +858,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
                     return true;
                 }
                 do {
+                    @SuppressWarnings("removal")
                     URL u = AccessController.doPrivileged(
                         new PrivilegedAction<>() {
                             public URL run() {
@@ -903,6 +913,7 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      * @throws    NullPointerException if {@code codesource} is {@code null}.
      * @return the permissions granted to the codesource
      */
+    @SuppressWarnings("removal")
     protected PermissionCollection getPermissions(CodeSource codesource)
     {
         PermissionCollection perms = super.getPermissions(codesource);
@@ -987,8 +998,10 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
     public static URLClassLoader newInstance(final URL[] urls,
                                              final ClassLoader parent) {
         // Save the caller's context
+        @SuppressWarnings("removal")
         final AccessControlContext acc = AccessController.getContext();
         // Need a privileged block to create the class loader
+        @SuppressWarnings("removal")
         URLClassLoader ucl = AccessController.doPrivileged(
             new PrivilegedAction<>() {
                 public URLClassLoader run() {
@@ -1013,8 +1026,10 @@ public class URLClassLoader extends SecureClassLoader implements Closeable {
      */
     public static URLClassLoader newInstance(final URL[] urls) {
         // Save the caller's context
+        @SuppressWarnings("removal")
         final AccessControlContext acc = AccessController.getContext();
         // Need a privileged block to create the class loader
+        @SuppressWarnings("removal")
         URLClassLoader ucl = AccessController.doPrivileged(
             new PrivilegedAction<>() {
                 public URLClassLoader run() {
@@ -1061,11 +1076,11 @@ final class FactoryURLClassLoader extends URLClassLoader {
     }
 
     FactoryURLClassLoader(String name, URL[] urls, ClassLoader parent,
-                          AccessControlContext acc) {
+                          @SuppressWarnings("removal") AccessControlContext acc) {
         super(name, urls, parent, acc);
     }
 
-    FactoryURLClassLoader(URL[] urls, AccessControlContext acc) {
+    FactoryURLClassLoader(URL[] urls, @SuppressWarnings("removal") AccessControlContext acc) {
         super(urls, acc);
     }
 
@@ -1074,6 +1089,7 @@ final class FactoryURLClassLoader extends URLClassLoader {
     {
         // First check if we have permission to access the package. This
         // should go away once we've added support for exported packages.
+        @SuppressWarnings("removal")
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             int i = name.lastIndexOf('.');

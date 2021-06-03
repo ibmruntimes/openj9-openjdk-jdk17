@@ -441,6 +441,7 @@ public class ObjectInputStream
      * @see java.io.SerializablePermission
      */
     protected ObjectInputStream() throws IOException, SecurityException {
+        @SuppressWarnings("removal")
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             sm.checkPermission(SUBCLASS_IMPLEMENTATION_PERMISSION);
@@ -1038,6 +1039,7 @@ public class ObjectInputStream
             return enable;
         }
         if (enable) {
+            @SuppressWarnings("removal")
             SecurityManager sm = System.getSecurityManager();
             if (sm != null) {
                 sm.checkPermission(SUBSTITUTION_PERMISSION);
@@ -1430,6 +1432,7 @@ public class ObjectInputStream
      * @since 9
      */
     public final void setObjectInputFilter(ObjectInputFilter filter) {
+        @SuppressWarnings("removal")
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             sm.checkPermission(ObjectStreamConstants.SERIAL_FILTER_PERMISSION);
@@ -1698,6 +1701,7 @@ public class ObjectInputStream
         if (cl == ObjectInputStream.class) {
             return;
         }
+        @SuppressWarnings("removal")
         SecurityManager sm = System.getSecurityManager();
         if (sm == null) {
             return;
@@ -1719,6 +1723,7 @@ public class ObjectInputStream
      * override security-sensitive non-final methods.  Returns TRUE if subclass
      * is "safe", FALSE otherwise.
      */
+    @SuppressWarnings("removal")
     private static Boolean auditSubclass(Class<?> subcl) {
         return AccessController.doPrivileged(
             new PrivilegedAction<Boolean>() {
@@ -2790,10 +2795,11 @@ public class ObjectInputStream
             final ObjectInputValidation obj;
             final int priority;
             Callback next;
+            @SuppressWarnings("removal")
             final AccessControlContext acc;
 
             Callback(ObjectInputValidation obj, int priority, Callback next,
-                AccessControlContext acc)
+                @SuppressWarnings("removal") AccessControlContext acc)
             {
                 this.obj = obj;
                 this.priority = priority;
@@ -2827,6 +2833,7 @@ public class ObjectInputStream
                 prev = cur;
                 cur = cur.next;
             }
+            @SuppressWarnings("removal")
             AccessControlContext acc = AccessController.getContext();
             if (prev != null) {
                 prev.next = new Callback(obj, priority, cur, acc);
@@ -2842,6 +2849,7 @@ public class ObjectInputStream
          * throws an InvalidObjectException, the callback process is terminated
          * and the exception propagated upwards.
          */
+        @SuppressWarnings("removal")
         void doCallbacks() throws InvalidObjectException {
             try {
                 while (list != null) {

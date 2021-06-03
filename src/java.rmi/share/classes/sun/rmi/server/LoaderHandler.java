@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996, 2013, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1996, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -80,6 +80,7 @@ import sun.rmi.runtime.Log;
 public final class LoaderHandler {
 
     /** RMI class loader log level */
+    @SuppressWarnings("removal")
     static final int logLevel = LogStream.parseLevel(
         java.security.AccessController.doPrivileged(
             (PrivilegedAction<String>) () -> System.getProperty("sun.rmi.loader.logLevel")));
@@ -94,6 +95,7 @@ public final class LoaderHandler {
      */
     private static String codebaseProperty = null;
     static {
+        @SuppressWarnings("removal")
         String prop = java.security.AccessController.doPrivileged(
             (PrivilegedAction<String>) () -> System.getProperty("java.rmi.server.codebase"));
         if (prop != null && prop.trim().length() > 0) {
@@ -255,6 +257,7 @@ public final class LoaderHandler {
                      * we must verify that the current access control context
                      * has permission to know all of these URLs.
                      */
+                    @SuppressWarnings("removal")
                     SecurityManager sm = System.getSecurityManager();
                     if (sm != null) {
                         Permissions perms = new Permissions();
@@ -313,6 +316,7 @@ public final class LoaderHandler {
          * If there is a security manager, the current access control
          * context must have the "getClassLoader" RuntimePermission.
          */
+        @SuppressWarnings("removal")
         SecurityManager sm = System.getSecurityManager();
         if (sm != null) {
             sm.checkPermission(new RuntimePermission("getClassLoader"));
@@ -381,6 +385,7 @@ public final class LoaderHandler {
          * loaders and simply delegate request to the parent loader
          * (see bugid 4140511).
          */
+        @SuppressWarnings("removal")
         SecurityManager sm = System.getSecurityManager();
         if (sm == null) {
             try {
@@ -543,6 +548,7 @@ public final class LoaderHandler {
          * If no security manager is set, disable access to RMI class
          * loaders and use the would-de parent instead.
          */
+        @SuppressWarnings("removal")
         SecurityManager sm = System.getSecurityManager();
         if (sm == null) {
             try {
@@ -828,6 +834,7 @@ public final class LoaderHandler {
      * and the given parent class loader.  A new class loader instance
      * will be created and returned if no match is found.
      */
+    @SuppressWarnings("removal")
     private static Loader lookupLoader(final URL[] urls,
                                        final ClassLoader parent)
     {
@@ -987,6 +994,7 @@ public final class LoaderHandler {
      * Return the access control context that a loader for the given
      * codebase URL path should execute with.
      */
+    @SuppressWarnings("removal")
     private static AccessControlContext getLoaderAccessControlContext(
         URL[] urls)
     {
@@ -1188,6 +1196,7 @@ public final class LoaderHandler {
          * permissions necessary to load classes from this loader.
          */
         private void checkPermissions() {
+            @SuppressWarnings("removal")
             SecurityManager sm = System.getSecurityManager();
             if (sm != null) {           // should never be null?
                 Enumeration<Permission> enum_ = permissions.elements();
