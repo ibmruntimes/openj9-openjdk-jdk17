@@ -467,13 +467,12 @@ final class NativeGaloisCounterMode extends FeedbackCipher {
      */
     int decryptFinal(byte[] in, int inOfs, int len,
                      byte[] out, int outOfs)
-        throws IllegalBlockSizeException, AEADBadTagException,
-        ShortBufferException {
+        throws IllegalBlockSizeException, ShortBufferException {
         if (len < 0) {
             throw new ProviderException("Input length is negative");
         }
         if (len < tagLenBytes - ibuffer.size()) {
-            throw new AEADBadTagException("Input too short - need tag");
+            throw new IllegalBlockSizeException("Input too short - need tag");
         }
         if (len > MAX_BUF_SIZE - ibuffer.size()) {
             throw new ProviderException("SunJCE provider only supports "
@@ -506,7 +505,7 @@ final class NativeGaloisCounterMode extends FeedbackCipher {
                 aad, aad.length, tagLenBytes);
 
         if (ret == -2) {
-            throw new AEADBadTagException("Tag mismatch!");
+            throw new IllegalBlockSizeException("Tag mismatch!");
         } else if (ret == -1) {
             throw new ProviderException("Error in Native GaloisCounterMode");
         }
