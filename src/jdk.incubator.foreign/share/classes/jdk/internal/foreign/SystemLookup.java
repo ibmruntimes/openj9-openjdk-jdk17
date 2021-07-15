@@ -23,6 +23,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2021, 2022 All Rights Reserved
+ * ===========================================================================
+ */
+
 package jdk.internal.foreign;
 
 import jdk.incubator.foreign.MemoryAccess;
@@ -52,9 +58,14 @@ public class SystemLookup implements SymbolLookup {
      * on Windows. For this reason, on Windows we do not generate any side-library, and load msvcrt.dll directly instead.
      */
     private static final SymbolLookup syslookup = switch (CABI.current()) {
-        case SysV, LinuxAArch64, MacOsAArch64 -> libLookup(libs -> libs.loadLibrary("syslookup"));
+        case SysV, LinuxAArch64, MacOsAArch64, SysVPPC64le, SysVS390x -> libLookup(libs -> libs.loadLibrary("syslookup"));
+        case AIX -> makeAixLookup();
         case Win64 -> makeWindowsLookup(); // out of line to workaround javac crash
     };
+
+    private static SymbolLookup makeAixLookup() {
+        throw new InternalError("Default library loading is not yet implemented on AIX"); //$NON-NLS-1$
+    }
 
     private static SymbolLookup makeWindowsLookup() {
         Path system32 = Path.of(System.getenv("SystemRoot"), "System32");
