@@ -187,9 +187,8 @@ $(foreach file, \
 		testlibB \
 		vmruntimestateagent29 \
 		) \
-	$(patsubst %, $(OPENJ9_VM_BUILD_DIR)/lib%.jnilib, \
-		loadLibraryTest \
-		), \
+	$(OPENJ9_VM_BUILD_DIR)/libloadLibraryTest.jnilib \
+	$(SUPPORT_OUTPUTDIR)/test/agct/lib/$(call SHARED_LIBRARY,AsyncGetCallTraceTest), \
 	$(if $(wildcard $(file)), \
 		$(eval $(call openj9_test_image_rules, $(file)))))
 
