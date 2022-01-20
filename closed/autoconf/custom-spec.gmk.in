@@ -72,6 +72,8 @@ endif
 # DDR
 OPENJ9_ENABLE_DDR       := @OPENJ9_ENABLE_DDR@
 
+OPENJ9_ENABLE_DEMOS     := @OPENJ9_ENABLE_DEMOS@
+
 # JITSERVER
 OPENJ9_ENABLE_JITSERVER := @OPENJ9_ENABLE_JITSERVER@
 
@@ -86,8 +88,7 @@ COMPILER_VERSION_STRING := @COMPILER_VERSION_STRING@
 
 include $(TOPDIR)/closed/openjdk-tag.gmk
 
-J9JDK_EXT_VERSION       := $(VERSION_NUMBER_FOUR_POSITIONS)
-J9JDK_EXT_VERSION       := HEAD
+J9JDK_EXT_VERSION       := $(VERSION_NUMBER_FOUR_POSITIONS)-ea
 J9JDK_EXT_NAME          := Extensions for OpenJDK for Eclipse OpenJ9
 
 # required by CMake
@@ -120,7 +121,7 @@ ifeq ($(OPENJDK_TARGET_OS), windows)
   export MSVC_VERSION := @TOOLCHAIN_VERSION@
 endif
 
-ifeq ($(OPENJDK_BUILD_OS), macosx)
+ifeq ($(OPENJDK_TARGET_OS), macosx)
   # MACOSX_DEPLOYMENT_TARGET acts similar to -mmacosx-version-min=version
   # compiler option. If both the compiler option is specified and the
   # environment variable is set, then the compiler option will take
@@ -130,8 +131,10 @@ ifeq ($(OPENJDK_BUILD_OS), macosx)
   # is not applied.
   export MACOSX_DEPLOYMENT_TARGET := @MACOSX_VERSION_MIN@
 
-  # Set page zero size to 4KB for mapping memory below 4GB.
-  LDFLAGS_JDKEXE += -pagezero_size 0x1000
+  ifneq ($(OPENJDK_TARGET_CPU), aarch64)
+    # Set page zero size to 4KB for mapping memory below 4GB.
+    LDFLAGS_JDKEXE += -pagezero_size 0x1000
+  endif
 endif
 
 # Usage: $(call CodesignFile, files ...)
