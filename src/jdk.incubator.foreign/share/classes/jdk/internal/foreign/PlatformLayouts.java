@@ -23,6 +23,13 @@
  *  questions.
  *
  */
+
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2021, 2022 All Rights Reserved
+ * ===========================================================================
+ */
+
 package jdk.internal.foreign;
 
 import jdk.incubator.foreign.CLinker;
@@ -32,13 +39,17 @@ import jdk.incubator.foreign.ValueLayout;
 import java.nio.ByteOrder;
 
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
+import static java.nio.ByteOrder.BIG_ENDIAN;
 
 public class PlatformLayouts {
-    public static <Z extends MemoryLayout> Z pick(Z sysv, Z win64, Z aarch64) {
+    public static <Z extends MemoryLayout> Z pick(Z sysv, Z win64, Z aarch64, Z sysvppc64le, Z sysvs390x, Z aix) {
         return switch (CABI.current()) {
             case SysV -> sysv;
             case Win64 -> win64;
             case LinuxAArch64, MacOsAArch64 -> aarch64;
+            case SysVPPC64le -> sysvppc64le;
+            case SysVS390x -> sysvs390x;
+            case AIX -> aix;
         };
     }
 
@@ -292,5 +303,183 @@ public class PlatformLayouts {
         public static MemoryLayout asVarArg(MemoryLayout layout) {
             return layout.withAttribute(STACK_VARARGS_ATTRIBUTE_NAME, true);
         }
+    }
+
+    /**
+     * This class defines layout constants modelling standard primitive types supported by the PPC64LE SystemV ABI.
+     */
+    public static final class SysVPPC64le {
+        private SysVPPC64le() {
+            //just the one
+        }
+
+        /**
+         * The name of the layout attribute (see {@link MemoryLayout#attributes()} used to mark variadic parameters. The
+         * attribute value must be a boolean.
+         */
+        public final static String VARARGS_ATTRIBUTE_NAME = "abi/SysV/varargs";
+
+        /**
+         * The {@code char} native type.
+         */
+        public static final ValueLayout C_CHAR = ofChar(LITTLE_ENDIAN, 8);
+
+        /**
+         * The {@code short} native type.
+         */
+        public static final ValueLayout C_SHORT = ofShort(LITTLE_ENDIAN, 16);
+
+        /**
+         * The {@code int} native type.
+         */
+        public static final ValueLayout C_INT = ofInt(LITTLE_ENDIAN, 32);
+
+        /**
+         * The {@code long} native type.
+         */
+        public static final ValueLayout C_LONG = ofLong(LITTLE_ENDIAN, 64);
+
+        /**
+         * The {@code long long} native type.
+         */
+        public static final ValueLayout C_LONG_LONG = ofLongLong(LITTLE_ENDIAN, 64);
+
+        /**
+         * The {@code float} native type.
+         */
+        public static final ValueLayout C_FLOAT = ofFloat(LITTLE_ENDIAN, 32);
+
+        /**
+         * The {@code double} native type.
+         */
+        public static final ValueLayout C_DOUBLE = ofDouble(LITTLE_ENDIAN, 64);
+
+        /**
+         * The {@code T*} native type.
+         */
+        public static final ValueLayout C_POINTER = ofPointer(LITTLE_ENDIAN, 64);
+
+        /**
+         * The {@code va_list} native type, as it is passed to a function.
+         */
+        public static final MemoryLayout C_VA_LIST = SysVPPC64le.C_POINTER;
+
+        /**
+         * Return a new memory layout which describes a variadic parameter to be passed to a function.
+         * @param layout the original parameter layout.
+         * @return a layout which is the same as {@code layout}, except for the extra attribute {@link #VARARGS_ATTRIBUTE_NAME},
+         * which is set to {@code true}.
+         */
+        public static MemoryLayout asVarArg(MemoryLayout layout) {
+            return layout.withAttribute(VARARGS_ATTRIBUTE_NAME, true);
+        }
+    }
+
+    /**
+     * This class defines layout constants modelling standard primitive types supported by the s390x SystemV ABI.
+     */
+    public static final class SysVS390x {
+        private SysVS390x() {
+            //just the one
+        }
+
+        /**
+         * The {@code char} native type.
+         */
+        public static final ValueLayout C_CHAR = ofChar(BIG_ENDIAN, 8);
+
+        /**
+         * The {@code short} native type.
+         */
+        public static final ValueLayout C_SHORT = ofShort(BIG_ENDIAN, 16);
+
+        /**
+         * The {@code int} native type.
+         */
+        public static final ValueLayout C_INT = ofInt(BIG_ENDIAN, 32);
+
+        /**
+         * The {@code long} native type.
+         */
+        public static final ValueLayout C_LONG = ofLong(BIG_ENDIAN, 64);
+
+        /**
+         * The {@code long long} native type.
+         */
+        public static final ValueLayout C_LONG_LONG = ofLongLong(BIG_ENDIAN, 64);
+
+        /**
+         * The {@code float} native type.
+         */
+        public static final ValueLayout C_FLOAT = ofFloat(BIG_ENDIAN, 32);
+
+        /**
+         * The {@code double} native type.
+         */
+        public static final ValueLayout C_DOUBLE = ofDouble(BIG_ENDIAN, 64);
+
+        /**
+         * The {@code T*} native type.
+         */
+        public static final ValueLayout C_POINTER = ofPointer(BIG_ENDIAN, 64);
+
+        /**
+         * The {@code va_list} native type, as it is passed to a function.
+         */
+        public static final MemoryLayout C_VA_LIST = SysVS390x.C_POINTER;
+    }
+
+    /**
+     * This class defines layout constants modelling standard primitive types supported by the AIX PPC64 C ABI.
+     */
+    public static final class AIX {
+        private AIX() {
+            //just the one
+        }
+
+        /**
+         * The {@code char} native type.
+         */
+        public static final ValueLayout C_CHAR = ofChar(BIG_ENDIAN, 8);
+
+        /**
+         * The {@code short} native type.
+         */
+        public static final ValueLayout C_SHORT = ofShort(BIG_ENDIAN, 16);
+
+        /**
+         * The {@code int} native type.
+         */
+        public static final ValueLayout C_INT = ofInt(BIG_ENDIAN, 32);
+
+        /**
+         * The {@code long} native type.
+         */
+        public static final ValueLayout C_LONG = ofLong(BIG_ENDIAN, 32);
+
+        /**
+         * The {@code long long} native type.
+         */
+        public static final ValueLayout C_LONG_LONG = ofLongLong(BIG_ENDIAN, 64);
+
+        /**
+         * The {@code float} native type.
+         */
+        public static final ValueLayout C_FLOAT = ofFloat(BIG_ENDIAN, 32);
+
+        /**
+         * The {@code double} native type.
+         */
+        public static final ValueLayout C_DOUBLE = ofDouble(BIG_ENDIAN, 64);
+
+        /**
+         * The {@code T*} native type.
+         */
+        public static final ValueLayout C_POINTER = ofPointer(BIG_ENDIAN, 64);
+
+        /**
+         * The {@code va_list} native type, as it is passed to a function.
+         */
+        public static final MemoryLayout C_VA_LIST = AIX.C_POINTER;
     }
 }
