@@ -32,6 +32,7 @@
 package jdk.internal.foreign.abi.s390x.sysv;
 
 import jdk.incubator.foreign.FunctionDescriptor;
+import jdk.incubator.foreign.ResourceScope;
 import jdk.internal.foreign.abi.ProgrammableInvoker;
 import jdk.internal.foreign.abi.ProgrammableUpcallHandler;
 import jdk.internal.foreign.abi.UpcallHandler;
@@ -51,7 +52,7 @@ public class CallArranger {
 	}
 
 	/* Replace ProgrammableUpcallHandler in OpenJDK with the implementation of ProgrammableUpcallHandler specific to OpenJ9 */
-	public static UpcallHandler arrangeUpcall(MethodHandle target, MethodType mt, FunctionDescriptor cDesc) {
+	public static UpcallHandler arrangeUpcall(MethodHandle target, MethodType mt, FunctionDescriptor cDesc, ResourceScope scope) {
 		throw new InternalError("arrangeUpcall is not yet implemented"); //$NON-NLS-1$
 	}
 }
