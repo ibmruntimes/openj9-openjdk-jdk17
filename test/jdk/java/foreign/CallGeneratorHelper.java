@@ -22,6 +22,12 @@
  *
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2021, 2022 All Rights Reserved
+ * ===========================================================================
+ */
+
 import jdk.incubator.foreign.GroupLayout;
 import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.MemoryLayout;
@@ -141,7 +147,10 @@ public class CallGeneratorHelper extends NativeTestHelper {
                 List<MemoryLayout> layouts = new ArrayList<>();
                 for (StructFieldType field : fields) {
                     MemoryLayout l = field.layout();
-                    long padding = offset % l.bitSize();
+                    /* Follow the calculation of padding in JDK19 which is based on
+                     * the alignment of layout rather than the bit size.
+                     */
+                    long padding = offset % l.bitAlignment();
                     if (padding != 0) {
                         layouts.add(MemoryLayout.paddingLayout(padding));
                         offset += padding;

@@ -55,8 +55,12 @@ public class PlatformLayouts {
 
     public static MemoryLayout asVarArg(MemoryLayout ml) {
         return switch (CABI.current()) {
+            case SysV -> SysV.asVarArg(ml);
             case Win64 -> Win64.asVarArg(ml);
             case MacOsAArch64 -> AArch64.asVarArg(ml);
+            case SysVPPC64le -> SysVPPC64le.asVarArg(ml);
+            case SysVS390x -> SysVS390x.asVarArg(ml);
+            case AIX -> AIX.asVarArg(ml);
             default -> ml;
         };
     }
@@ -158,6 +162,22 @@ public class PlatformLayouts {
          * The {@code va_list} native type, as it is passed to a function.
          */
         public static final MemoryLayout C_VA_LIST = SysV.C_POINTER;
+
+        /**
+         * The name of the layout attribute (see {@link MemoryLayout#attributes()}) used to mark variadic parameters. The
+         * attribute value must be a boolean.
+         */
+        public static final String VARARGS_ATTRIBUTE_NAME = "abi/sysv/varargs";
+
+        /**
+         * Return a new memory layout which describes a variadic parameter to be passed to a function.
+         * @param layout the original parameter layout.
+         * @return a layout which is the same as {@code layout}, except for the extra attribute {@link #VARARGS_ATTRIBUTE_NAME},
+         * which is set to {@code true}.
+         */
+        public static MemoryLayout asVarArg(MemoryLayout layout) {
+            return layout.withAttribute(VARARGS_ATTRIBUTE_NAME, true);
+        }
     }
 
     /**
@@ -314,12 +334,6 @@ public class PlatformLayouts {
         }
 
         /**
-         * The name of the layout attribute (see {@link MemoryLayout#attributes()} used to mark variadic parameters. The
-         * attribute value must be a boolean.
-         */
-        public final static String VARARGS_ATTRIBUTE_NAME = "abi/SysV/varargs";
-
-        /**
          * The {@code char} native type.
          */
         public static final ValueLayout C_CHAR = ofChar(LITTLE_ENDIAN, 8);
@@ -363,6 +377,12 @@ public class PlatformLayouts {
          * The {@code va_list} native type, as it is passed to a function.
          */
         public static final MemoryLayout C_VA_LIST = SysVPPC64le.C_POINTER;
+
+        /**
+         * The name of the layout attribute (see {@link MemoryLayout#attributes()}) used to mark variadic parameters. The
+         * attribute value must be a boolean.
+         */
+        public static final String VARARGS_ATTRIBUTE_NAME = "abi/ppc64/sysv/varargs";
 
         /**
          * Return a new memory layout which describes a variadic parameter to be passed to a function.
@@ -427,6 +447,22 @@ public class PlatformLayouts {
          * The {@code va_list} native type, as it is passed to a function.
          */
         public static final MemoryLayout C_VA_LIST = SysVS390x.C_POINTER;
+
+        /**
+         * The name of the layout attribute (see {@link MemoryLayout#attributes()}) used to mark variadic parameters. The
+         * attribute value must be a boolean.
+         */
+        public static final String VARARGS_ATTRIBUTE_NAME = "abi/s390x/sysv/varargs";
+
+        /**
+         * Return a new memory layout which describes a variadic parameter to be passed to a function.
+         * @param layout the original parameter layout.
+         * @return a layout which is the same as {@code layout}, except for the extra attribute {@link #VARARGS_ATTRIBUTE_NAME},
+         * which is set to {@code true}.
+         */
+        public static MemoryLayout asVarArg(MemoryLayout layout) {
+            return layout.withAttribute(VARARGS_ATTRIBUTE_NAME, true);
+        }
     }
 
     /**
@@ -460,7 +496,7 @@ public class PlatformLayouts {
         /**
          * The {@code long long} native type.
          */
-        public static final ValueLayout C_LONG_LONG = ofLongLong(BIG_ENDIAN, 64);
+        public static final ValueLayout C_LONG_LONG = ofLongLong(BIG_ENDIAN, 64).withBitAlignment(32);
 
         /**
          * The {@code float} native type.
@@ -470,16 +506,32 @@ public class PlatformLayouts {
         /**
          * The {@code double} native type.
          */
-        public static final ValueLayout C_DOUBLE = ofDouble(BIG_ENDIAN, 64);
+        public static final ValueLayout C_DOUBLE = ofDouble(BIG_ENDIAN, 64).withBitAlignment(32);
 
         /**
          * The {@code T*} native type.
          */
-        public static final ValueLayout C_POINTER = ofPointer(BIG_ENDIAN, 64);
+        public static final ValueLayout C_POINTER = ofPointer(BIG_ENDIAN, 64).withBitAlignment(32);
 
         /**
          * The {@code va_list} native type, as it is passed to a function.
          */
         public static final MemoryLayout C_VA_LIST = AIX.C_POINTER;
+
+        /**
+         * The name of the layout attribute (see {@link MemoryLayout#attributes()}) used to mark variadic parameters. The
+         * attribute value must be a boolean.
+         */
+        public static final String VARARGS_ATTRIBUTE_NAME = "abi/ppc64/aix/varargs";
+
+        /**
+         * Return a new memory layout which describes a variadic parameter to be passed to a function.
+         * @param layout the original parameter layout.
+         * @return a layout which is the same as {@code layout}, except for the extra attribute {@link #VARARGS_ATTRIBUTE_NAME},
+         * which is set to {@code true}.
+         */
+        public static MemoryLayout asVarArg(MemoryLayout layout) {
+            return layout.withAttribute(VARARGS_ATTRIBUTE_NAME, true);
+        }
     }
 }

@@ -22,6 +22,13 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2022, 2022 All Rights Reserved
+ * ===========================================================================
+ */
+
 package jdk.internal.foreign.abi.x64.sysv;
 
 
@@ -102,7 +109,7 @@ public final class SysVx64Linker extends AbstractCLinker {
         Objects.requireNonNull(target);
         Objects.requireNonNull(function);
         target = SharedUtils.boxVaLists(target, MH_boxVaList);
-        return UpcallStubs.upcallAddress(CallArranger.arrangeUpcall(target, target.type(), function), (ResourceScopeImpl) scope);
+        return UpcallStubs.upcallAddress(CallArranger.arrangeUpcall(target, target.type(), function, scope), (ResourceScopeImpl) scope);
     }
 
     public static VaList newVaListOfAddress(MemoryAddress ma, ResourceScope scope) {
