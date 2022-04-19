@@ -23,6 +23,13 @@
  *  questions.
  *
  */
+
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2021, 2022 All Rights Reserved
+ * ===========================================================================
+ */
+
 package jdk.incubator.foreign;
 
 import jdk.internal.foreign.AbstractCLinker;
@@ -32,6 +39,9 @@ import jdk.internal.foreign.SystemLookup;
 import jdk.internal.foreign.abi.SharedUtils;
 import jdk.internal.foreign.abi.aarch64.linux.LinuxAArch64VaList;
 import jdk.internal.foreign.abi.aarch64.macos.MacOsAArch64VaList;
+import jdk.internal.foreign.abi.ppc64.aix.AixPPC64VaList;
+import jdk.internal.foreign.abi.ppc64.sysv.SysVPPC64leVaList;
+import jdk.internal.foreign.abi.s390x.sysv.SysVS390xVaList;
 import jdk.internal.foreign.abi.x64.sysv.SysVVaList;
 import jdk.internal.foreign.abi.x64.windows.WinVaList;
 import jdk.internal.reflect.CallerSensitive;
@@ -238,39 +248,39 @@ public sealed interface CLinker permits AbstractCLinker {
     /**
      * The layout for the {@code char} C type
      */
-    ValueLayout C_CHAR = pick(SysV.C_CHAR, Win64.C_CHAR, AArch64.C_CHAR);
+    ValueLayout C_CHAR = pick(SysV.C_CHAR, Win64.C_CHAR, AArch64.C_CHAR, SysVPPC64le.C_CHAR, SysVS390x.C_CHAR, AIX.C_CHAR);
     /**
      * The layout for the {@code short} C type
      */
-    ValueLayout C_SHORT = pick(SysV.C_SHORT, Win64.C_SHORT, AArch64.C_SHORT);
+    ValueLayout C_SHORT = pick(SysV.C_SHORT, Win64.C_SHORT, AArch64.C_SHORT, SysVPPC64le.C_SHORT, SysVS390x.C_SHORT, AIX.C_SHORT);
     /**
      * The layout for the {@code int} C type
      */
-    ValueLayout C_INT = pick(SysV.C_INT, Win64.C_INT, AArch64.C_INT);
+    ValueLayout C_INT = pick(SysV.C_INT, Win64.C_INT, AArch64.C_INT, SysVPPC64le.C_INT, SysVS390x.C_INT, AIX.C_INT);
     /**
      * The layout for the {@code long} C type
      */
-    ValueLayout C_LONG = pick(SysV.C_LONG, Win64.C_LONG, AArch64.C_LONG);
+    ValueLayout C_LONG = pick(SysV.C_LONG, Win64.C_LONG, AArch64.C_LONG, SysVPPC64le.C_LONG, SysVS390x.C_LONG, AIX.C_LONG);
     /**
      * The layout for the {@code long long} C type.
      */
-    ValueLayout C_LONG_LONG = pick(SysV.C_LONG_LONG, Win64.C_LONG_LONG, AArch64.C_LONG_LONG);
+    ValueLayout C_LONG_LONG = pick(SysV.C_LONG_LONG, Win64.C_LONG_LONG, AArch64.C_LONG_LONG, SysVPPC64le.C_LONG_LONG, SysVS390x.C_LONG_LONG, AIX.C_LONG_LONG);
     /**
      * The layout for the {@code float} C type
      */
-    ValueLayout C_FLOAT = pick(SysV.C_FLOAT, Win64.C_FLOAT, AArch64.C_FLOAT);
+    ValueLayout C_FLOAT = pick(SysV.C_FLOAT, Win64.C_FLOAT, AArch64.C_FLOAT, SysVPPC64le.C_FLOAT, SysVS390x.C_FLOAT, AIX.C_FLOAT);
     /**
      * The layout for the {@code double} C type
      */
-    ValueLayout C_DOUBLE = pick(SysV.C_DOUBLE, Win64.C_DOUBLE, AArch64.C_DOUBLE);
+    ValueLayout C_DOUBLE = pick(SysV.C_DOUBLE, Win64.C_DOUBLE, AArch64.C_DOUBLE, SysVPPC64le.C_DOUBLE, SysVS390x.C_DOUBLE, AIX.C_DOUBLE);
     /**
      * The {@code T*} native type.
      */
-    ValueLayout C_POINTER = pick(SysV.C_POINTER, Win64.C_POINTER, AArch64.C_POINTER);
+    ValueLayout C_POINTER = pick(SysV.C_POINTER, Win64.C_POINTER, AArch64.C_POINTER, SysVPPC64le.C_POINTER, SysVS390x.C_POINTER, AIX.C_POINTER);
     /**
      * The layout for the {@code va_list} C type
      */
-    MemoryLayout C_VA_LIST = pick(SysV.C_VA_LIST, Win64.C_VA_LIST, AArch64.C_VA_LIST);
+    MemoryLayout C_VA_LIST = pick(SysV.C_VA_LIST, Win64.C_VA_LIST, AArch64.C_VA_LIST, SysVPPC64le.C_VA_LIST, SysVS390x.C_VA_LIST, AIX.C_VA_LIST);
 
     /**
      * Returns a memory layout that is suitable to use as the layout for variadic arguments in a specialized
@@ -444,7 +454,7 @@ public sealed interface CLinker permits AbstractCLinker {
      * <p> Unless otherwise specified, passing a {@code null} argument, or an array argument containing one or more {@code null}
      * elements to a method in this class causes a {@link NullPointerException NullPointerException} to be thrown. </p>
      */
-    sealed interface VaList extends Addressable permits WinVaList, SysVVaList, LinuxAArch64VaList, MacOsAArch64VaList, SharedUtils.EmptyVaList {
+    sealed interface VaList extends Addressable permits WinVaList, SysVVaList, LinuxAArch64VaList, MacOsAArch64VaList, AixPPC64VaList, SysVPPC64leVaList, SysVS390xVaList, SharedUtils.EmptyVaList {
 
         /**
          * Reads the next value as an {@code int} and advances this va list's position.
@@ -650,7 +660,7 @@ public sealed interface CLinker permits AbstractCLinker {
          * <p> Unless otherwise specified, passing a {@code null} argument, or an array argument containing one or more {@code null}
          * elements to a method in this class causes a {@link NullPointerException NullPointerException} to be thrown. </p>
          */
-        sealed interface Builder permits WinVaList.Builder, SysVVaList.Builder, LinuxAArch64VaList.Builder, MacOsAArch64VaList.Builder {
+        sealed interface Builder permits WinVaList.Builder, SysVVaList.Builder, LinuxAArch64VaList.Builder, MacOsAArch64VaList.Builder, AixPPC64VaList.Builder, SysVPPC64leVaList.Builder, SysVS390xVaList.Builder {
 
             /**
              * Adds a native value represented as an {@code int} to the C {@code va_list} being constructed.
