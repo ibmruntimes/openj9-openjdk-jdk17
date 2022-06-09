@@ -366,15 +366,12 @@ public class ObjectInputStream
      * read* requests
      */
 
-    /* ClassByNameCache Entry for caching class.forName results upon enableClassCaching */
-    private static final ClassByNameCache classByNameCache;
-    private static final boolean isClassCachingEnabled;
-    static {
-        isClassCachingEnabled =
+    @SuppressWarnings("removal")
+    private static final boolean isClassCachingEnabled =
             AccessController.doPrivileged(new GetClassCachingSettingAction());
-        classByNameCache = (isClassCachingEnabled ? new ClassByNameCache() : null);
-    }
-  
+    /* ClassByNameCache Entry for caching class.forName results upon enableClassCaching */
+    private static final ClassByNameCache classByNameCache =
+            isClassCachingEnabled ? new ClassByNameCache() : null;
 
     /** if true LUDCL/forName results would be cached, true by default starting Java8 */
     private static final class GetClassCachingSettingAction
@@ -513,12 +510,12 @@ public class ObjectInputStream
      * latestUserDefinedLoader().
      *
      * @throws  ClassNotFoundException if the class of a serialized object
-     * 	   could not be found.
+     *     could not be found.
      * @throws  IOException if an I/O error occurs.
      *
      */
 
-    private static Object redirectedReadObject(ObjectInputStream iStream, Class caller)
+    private static Object redirectedReadObject(ObjectInputStream iStream, Class<?> caller)
             throws ClassNotFoundException, IOException
     {
         return iStream.readObject(Object.class, caller);
@@ -556,7 +553,7 @@ public class ObjectInputStream
      * @throws  ClassNotFoundException Class of a serialized object cannot be
      *          found.
      */
-    private final Object readObject(Class<?> type, Class caller)
+    private final Object readObject(Class<?> type, Class<?> caller)
         throws IOException, ClassNotFoundException
     {
         if (enableOverride) {
@@ -567,9 +564,9 @@ public class ObjectInputStream
             throw new AssertionError("internal error");
 
         ClassLoader oldCachedLudcl = null;
-	    boolean setCached = false;
-	
-	    if (((null == curContext) || refreshLudcl) && (isClassCachingEnabled)) {
+        boolean setCached = false;
+
+        if (((null == curContext) || refreshLudcl) && isClassCachingEnabled) {
             oldCachedLudcl = cachedLudcl;
 
             // If caller is not provided, follow the standard path to get the cachedLudcl.
@@ -577,7 +574,7 @@ public class ObjectInputStream
 
             if (caller == null) {
                  cachedLudcl = latestUserDefinedLoader();
-            }else{
+            } else {
                  cachedLudcl = caller.getClassLoader();
             }
 
@@ -693,9 +690,9 @@ public class ObjectInputStream
     public Object readUnshared() throws IOException, ClassNotFoundException {
 
         ClassLoader oldCachedLudcl = null;
-        boolean setCached = false; 
+        boolean setCached = false;
 
-        if (((null == curContext) || refreshLudcl) && (isClassCachingEnabled)) {
+        if (((null == curContext) || refreshLudcl) && isClassCachingEnabled) {
             oldCachedLudcl = cachedLudcl;
             cachedLudcl = latestUserDefinedLoader();
             setCached = true;
