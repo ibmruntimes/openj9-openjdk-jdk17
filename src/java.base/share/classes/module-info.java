@@ -147,6 +147,8 @@ module java.base {
         jdk.incubator.foreign;
     exports com.sun.security.ntlm to
         java.security.sasl;
+    exports jdk.crypto.jniprovider to
+        jdk.crypto.ec;
     exports jdk.internal.javac to
         java.compiler,
         jdk.compiler,
