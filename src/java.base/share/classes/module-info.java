@@ -372,6 +372,7 @@ module java.base {
     exports jdk.internal.invoke to
         jdk.incubator.foreign;
     exports openj9.internal.security to
+        jdk.crypto.cryptoki,
         jdk.crypto.ec;
 
     // the service types defined by the APIs in this module
