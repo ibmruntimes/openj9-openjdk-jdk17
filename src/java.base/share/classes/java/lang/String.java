@@ -525,6 +525,7 @@ public final class String
                 this.value = val;
                 return;
             }
+            initCompressionFlag();
         }
         this.coder = UTF16;
         this.value = StringUTF16.toBytes(codePoints, offset, count);
@@ -589,6 +590,9 @@ public final class String
             }
             this.value = val;
             this.coder = UTF16;
+            if (COMPACT_STRINGS) {
+                initCompressionFlag();
+            }
         }
     }
 
@@ -822,6 +826,7 @@ public final class String
                         coder = LATIN1;
                         return;
                     }
+                    initCompressionFlag();
                 }
                 coder = UTF16;
                 value = StringUTF16.toBytes(ca, 0, clen);
@@ -850,6 +855,9 @@ public final class String
             }
             coder = UTF16;
             value = StringUTF16.toBytes(ca, 0, caLen);
+        }
+        if (COMPACT_STRINGS && coder == UTF16) {
+            initCompressionFlag();
         }
     }
 
@@ -5262,7 +5270,8 @@ public final class String
                 this.coder = LATIN1;
                 return;
             }
-        }
+            initCompressionFlag();
+		}
         this.coder = UTF16;
         this.value = StringUTF16.toBytes(value, off, len);
     }
@@ -5285,6 +5294,7 @@ public final class String
                     this.value = buf;
                     return;
                 }
+                initCompressionFlag();
             }
             this.coder = UTF16;
             this.value = Arrays.copyOfRange(val, 0, length << 1);
