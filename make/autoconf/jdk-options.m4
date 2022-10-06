@@ -23,6 +23,10 @@
 # questions.
 #
 
+# ===========================================================================
+# (c) Copyright IBM Corp. 2022, 2022 All Rights Reserved
+# ===========================================================================
+
 ###############################################################################
 # Check which variant of the JDK that we want to build.
 # Currently we have:
@@ -217,13 +221,9 @@ AC_DEFUN_ONCE([JDKOPT_SETUP_JDK_OPTIONS],
   elif test "x$with_copyright_year" != x; then
     COPYRIGHT_YEAR="$with_copyright_year"
   elif test "x$SOURCE_DATE_EPOCH" != x; then
-    if test "x$IS_GNU_DATE" = xyes; then
-      COPYRIGHT_YEAR=`date --date=@$SOURCE_DATE_EPOCH +%Y`
-    else
-      COPYRIGHT_YEAR=`date -j -f %s $SOURCE_DATE_EPOCH +%Y`
-    fi
+    COPYRIGHT_YEAR=`$JAVA $TOPDIR/make/src/classes/DateUtil.java --format=yyyy --date="$SOURCE_DATE_EPOCH"`
   else
-    COPYRIGHT_YEAR=`$DATE +'%Y'`
+    COPYRIGHT_YEAR=`$JAVA $TOPDIR/make/src/classes/DateUtil.java --format=yyyy`
   fi
   AC_SUBST(COPYRIGHT_YEAR)
 
@@ -675,7 +675,7 @@ AC_DEFUN_ONCE([JDKOPT_SETUP_REPRODUCIBLE_BUILD],
     AC_MSG_RESULT([determined at build time, from 'updated'])
   elif test "x$with_source_date" = xcurrent; then
     # Set the current time
-    SOURCE_DATE=$($DATE +"%s")
+    SOURCE_DATE=$($JAVA $TOPDIR/make/src/classes/DateUtil.java)
     AC_MSG_RESULT([$SOURCE_DATE, from 'current'])
   elif test "x$with_source_date" = xversion; then
     # Use the date from version-numbers.conf

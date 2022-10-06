@@ -23,6 +23,10 @@
 # questions.
 #
 
+# ===========================================================================
+# (c) Copyright IBM Corp. 2022, 2022 All Rights Reserved
+# ===========================================================================
+
 m4_include([util_paths.m4])
 
 ###############################################################################
@@ -236,19 +240,7 @@ AC_DEFUN([UTIL_GET_MATCHING_VALUES],
 # $2: input date/time string
 AC_DEFUN([UTIL_GET_EPOCH_TIMESTAMP],
 [
-  if test "x$IS_GNU_DATE" = xyes; then
-    # GNU date
-    timestamp=$($DATE --utc --date=$2 +"%s" 2> /dev/null)
-  else
-    # BSD date
-    timestamp=$($DATE -u -j -f "%F %T" "$2" "+%s" 2> /dev/null)
-    if test "x$timestamp" = x; then
-      # Perhaps the time was missing
-      timestamp=$($DATE -u -j -f "%F %T" "$2 00:00:00" "+%s" 2> /dev/null)
-      # If this did not work, we give up and return the empty string
-    fi
-  fi
-  $1=$timestamp
+  $1=$($JAVA $TOPDIR/make/src/classes/DateUtil.java --date="$2")
 ])
 
 ###############################################################################

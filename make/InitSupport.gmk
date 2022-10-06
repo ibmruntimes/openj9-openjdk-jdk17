@@ -23,6 +23,10 @@
 # questions.
 #
 
+# ===========================================================================
+# (c) Copyright IBM Corp. 2022, 2022 All Rights Reserved
+# ===========================================================================
+
 ################################################################################
 # This file contains helper functions for Init.gmk.
 # It is divided in two parts, depending on if a SPEC is present or not
@@ -310,18 +314,10 @@ else # $(HAS_SPEC)=true
   # level of reproducible builds
   define SetupReproducibleBuild
     ifeq ($$(SOURCE_DATE), updated)
-      SOURCE_DATE := $$(shell $$(DATE) +"%s")
+      SOURCE_DATE := $$(shell $$(JAVA) $$(TOPDIR)/make/src/classes/DateUtil.java)
     endif
     export SOURCE_DATE_EPOCH := $$(SOURCE_DATE)
-    ifeq ($$(IS_GNU_DATE), yes)
-      export SOURCE_DATE_ISO_8601 := $$(shell $$(DATE) --utc \
-                                                       --date="@$$(SOURCE_DATE_EPOCH)" \
-                                                       +"%Y-%m-%dT%H:%M:%SZ" 2> /dev/null)
-    else
-      export SOURCE_DATE_ISO_8601 := $$(shell $$(DATE) -u \
-                                                       -j -f "%s" "$$(SOURCE_DATE_EPOCH)" \
-                                                       +"%Y-%m-%dT%H:%M:%SZ" 2> /dev/null)
-    endif
+    export SOURCE_DATE_ISO_8601 := $$(shell $$(JAVA) $$(TOPDIR)/make/src/classes/DateUtil.java --date="$$(SOURCE_DATE_EPOCH)" --format="yyyy-MM-dd'T'HH:mm:ss'Z'")
   endef
 
   # Parse COMPARE_BUILD into COMPARE_BUILD_*
