@@ -32,6 +32,7 @@
  * @test
  * @library ../
  * @requires ((os.arch == "amd64" | os.arch == "x86_64") & sun.arch.data.model == "64") | os.arch == "aarch64"
+ * | os.arch == "ppc64" | os.arch == "ppc64le" | os.arch == "s390x"
  * @modules jdk.incubator.foreign/jdk.internal.foreign
  *          jdk.incubator.foreign/jdk.internal.foreign.abi
  *          jdk.incubator.foreign/jdk.internal.foreign.abi.aarch64.linux
