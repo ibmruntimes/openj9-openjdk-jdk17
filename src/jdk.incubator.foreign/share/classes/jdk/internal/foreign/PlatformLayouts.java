@@ -496,7 +496,7 @@ public class PlatformLayouts {
         /**
          * The {@code long long} native type.
          */
-        public static final ValueLayout C_LONG_LONG = ofLongLong(BIG_ENDIAN, 64).withBitAlignment(32);
+        public static final ValueLayout C_LONG_LONG = ofLongLong(BIG_ENDIAN, 64).withBitAlignment(64);
 
         /**
          * The {@code float} native type.
@@ -511,7 +511,7 @@ public class PlatformLayouts {
         /**
          * The {@code T*} native type.
          */
-        public static final ValueLayout C_POINTER = ofPointer(BIG_ENDIAN, 64).withBitAlignment(32);
+        public static final ValueLayout C_POINTER = ofPointer(BIG_ENDIAN, 64).withBitAlignment(64);
 
         /**
          * The {@code va_list} native type, as it is passed to a function.
