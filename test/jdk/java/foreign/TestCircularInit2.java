@@ -22,8 +22,15 @@
  */
 
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2022, 2022 All Rights Reserved
+ * ===========================================================================
+ */
+
+/*
  * @test
  * @requires ((os.arch == "amd64" | os.arch == "x86_64") & sun.arch.data.model == "64") | os.arch == "aarch64"
+ * | os.arch == "ppc64" | os.arch == "ppc64le" | os.arch == "s390x"
  * @modules jdk.incubator.foreign/jdk.internal.foreign
  * @run testng/othervm TestCircularInit2
  */
@@ -42,6 +49,9 @@ public class TestCircularInit2 {
         assertNotNull(PlatformLayouts.Win64.C_CHAR);
         assertNotNull(PlatformLayouts.SysV.C_CHAR);
         assertNotNull(PlatformLayouts.AArch64.C_CHAR);
+        assertNotNull(PlatformLayouts.SysVPPC64le.C_CHAR);
+        assertNotNull(PlatformLayouts.SysVS390x.C_CHAR);
+        assertNotNull(PlatformLayouts.AIX.C_CHAR);
     }
 
 }

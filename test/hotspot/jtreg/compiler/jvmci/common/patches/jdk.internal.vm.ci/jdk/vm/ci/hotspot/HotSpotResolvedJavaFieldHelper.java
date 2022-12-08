@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,17 +21,17 @@
  * questions.
  */
 
-/*
- * ===========================================================================
- * (c) Copyright IBM Corp. 2022, 2022 All Rights Reserved
- * ===========================================================================
- */
+package jdk.vm.ci.hotspot;
 
-/*
- * @test
- * @requires ((os.arch == "amd64" | os.arch == "x86_64") & sun.arch.data.model == "64") | os.arch == "aarch64"
- * | os.arch == "ppc64" | os.arch == "ppc64le" | os.arch == "s390x"
- * @build invoker_module/* lookup_module/*
- * @run testng/othervm --enable-native-access=invoker_module
-                       lookup_module/handle.lookup.MethodHandleLookup
- */
+import jdk.vm.ci.meta.JavaType;
+import jdk.vm.ci.meta.ResolvedJavaField;
+
+public class HotSpotResolvedJavaFieldHelper {
+    public static ResolvedJavaField createField(HotSpotResolvedObjectTypeImpl holder, JavaType type, int offset, int modifiers, int index) {
+        return new HotSpotResolvedJavaFieldImpl(holder, type, offset, modifiers, index);
+    }
+
+    public static int getIndex(ResolvedJavaField field) {
+        return ((HotSpotResolvedJavaFieldImpl) field).getIndex();
+    }
+}

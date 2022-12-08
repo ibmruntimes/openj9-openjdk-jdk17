@@ -22,8 +22,15 @@
  */
 
 /*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2022, 2022 All Rights Reserved
+ * ===========================================================================
+ */
+
+/*
  * @test
  * @requires ((os.arch == "amd64" | os.arch == "x86_64") & sun.arch.data.model == "64") | os.arch == "aarch64"
+ * | os.arch == "ppc64" | os.arch == "ppc64le" | os.arch == "s390x"
  * @run testng/othervm -Xmx4G -XX:MaxDirectMemorySize=1M TestSegments
  */
 
