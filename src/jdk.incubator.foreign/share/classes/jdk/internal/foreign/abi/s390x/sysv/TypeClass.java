@@ -95,7 +95,7 @@ enum TypeClass {
 			|| (carrier == int.class)
 			|| (carrier == long.class)
 		) {
-			argHandle = SharedUtils.vhPrimitiveOrAddress(long.class, C_LONG);
+			argHandle = SharedUtils.vhPrimitiveOrAddress(long.class, C_LONG_LONG);
 		} else if ((carrier == float.class)
 			|| (carrier == double.class)
 		) {

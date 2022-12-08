@@ -53,10 +53,6 @@ public enum TypeClass {
 	POINTER,
 	STRUCT;
 
-	private static String osName = System.getProperty("os.name").toLowerCase();
-	/* long long is 64 bits on AIX/ppc64, which is the same as Windows */
-	private static ValueLayout longLayout = osName.contains("aix") ? C_LONG_LONG : C_LONG;
-
 	public static VarHandle classifyVarHandle(ValueLayout layout) {
 		VarHandle argHandle = null;
 		Class<?> carrier = classifyCarrier(layout);
@@ -69,7 +65,7 @@ public enum TypeClass {
 			|| (carrier == int.class)
 			|| (carrier == long.class)
 		) {
-			argHandle = SharedUtils.vhPrimitiveOrAddress(long.class, longLayout);
+			argHandle = SharedUtils.vhPrimitiveOrAddress(long.class, C_LONG_LONG);
 		} else if (carrier == float.class) {
 			argHandle = SharedUtils.vhPrimitiveOrAddress(double.class, C_DOUBLE);
 		} else if ((carrier == double.class)
