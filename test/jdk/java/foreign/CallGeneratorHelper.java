@@ -24,7 +24,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2021, 2022 All Rights Reserved
+ * (c) Copyright IBM Corp. 2021, 2023 All Rights Reserved
  * ===========================================================================
  */
 
@@ -148,11 +148,12 @@ public class CallGeneratorHelper extends NativeTestHelper {
                 long align = 0;
                 for (StructFieldType field : fields) {
                     MemoryLayout l = field.layout();
-                    /* Follow the calculation of padding in JDK19 which is based on
-                     * the alignment of layout rather than the bit size.
+                    /* Use the padding calculation from JDK19+ which is based
+                     * on the alignment of the layout rather than its bit size.
                      */
-                    long padding = offset % l.bitAlignment();
-                    if (padding != 0) {
+                    long alignment = l.bitAlignment();
+                    long padding = alignment - (offset % alignment);
+                    if (padding != alignment) {
                         layouts.add(MemoryLayout.paddingLayout(padding));
                         offset += padding;
                     }
@@ -160,9 +161,11 @@ public class CallGeneratorHelper extends NativeTestHelper {
                     align = Math.max(align, l.bitAlignment());
                     offset += l.bitSize();
                 }
-                long padding = offset % align;
-                if (padding != 0) {
-                    layouts.add(MemoryLayout.paddingLayout(padding));
+                if (align != 0) {
+                    long padding = align - (offset % align);
+                    if (padding != align) {
+                        layouts.add(MemoryLayout.paddingLayout(padding));
+                    }
                 }
                 return MemoryLayout.structLayout(layouts.toArray(new MemoryLayout[0]));
             } else {
