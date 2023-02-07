@@ -23,6 +23,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2023, 2023 All Rights Reserved
+ * ===========================================================================
+ */
+
 package sun.security.pkcs11;
 
 import java.io.*;
@@ -108,6 +114,9 @@ final class Config {
 
     // name of the PKCS#11 library
     private String library;
+
+    // name of the PKCS#11 token to use
+    private String tokenLabel;
 
     // description to pass to the provider class
     private String description;
@@ -231,6 +240,10 @@ final class Config {
 
     String getLibrary() {
         return library;
+    }
+
+    String getTokenLabel() {
+        return tokenLabel;
     }
 
     String getDescription() {
@@ -494,6 +507,9 @@ final class Config {
                 useEcX963Encoding = parseBooleanEntry(word);
             } else if (word.equals("nssOptimizeSpace")) {
                 nssOptimizeSpace = parseBooleanEntry(word);
+            } else if (word.equalsIgnoreCase("tokenLabel")) {
+                word = "tokenLabel";
+                tokenLabel = parseStringEntry(word);
             } else {
                 throw new ConfigurationException
                         ("Unknown keyword '" + word + "', line " + st.lineno());
