@@ -25,7 +25,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2022, 2022 All Rights Reserved
+ * (c) Copyright IBM Corp. 2022, 2023 All Rights Reserved
  * ===========================================================================
  */
 
@@ -146,14 +146,12 @@ public final class Security {
 /*[ENDIF] CRIU_SUPPORT*/
 
         // Load FIPS properties
-        if (loadedProps) {
-            boolean fipsEnabled = FIPSConfigurator.configureFIPS(props);
-            if (sdebug != null) {
-                if (fipsEnabled) {
-                    sdebug.println("FIPS mode enabled.");
-                } else {
-                    sdebug.println("FIPS mode disabled.");
-                }
+        boolean fipsEnabled = FIPSConfigurator.configureFIPS(props);
+        if (sdebug != null) {
+            if (fipsEnabled) {
+                sdebug.println("FIPS mode enabled.");
+            } else {
+                sdebug.println("FIPS mode disabled.");
             }
         }
     }
