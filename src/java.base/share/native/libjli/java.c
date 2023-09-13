@@ -228,9 +228,10 @@ static jlong initialHeapSize    = 0;  /* initial heap size */
 #define STACK_SIZE_MINIMUM (64 * KB)
 #endif
 
-static void
+static jboolean
 parseXmso(JLI_List openj9Args)
 {
+    jboolean result = JNI_FALSE;
     size_t i = openj9Args->size;
     while (i > 0) {
         i -= 1;
@@ -238,6 +239,7 @@ parseXmso(JLI_List openj9Args)
             jlong tmp = 0;
             if (parse_size(openj9Args->elements[i] + 5, &tmp)) {
                 threadStackSize = tmp;
+                result = JNI_TRUE;
                 if (threadStackSize > 0 && threadStackSize < (jlong)STACK_SIZE_MINIMUM) {
                     threadStackSize = STACK_SIZE_MINIMUM;
                 }
@@ -246,6 +248,7 @@ parseXmso(JLI_List openj9Args)
         }
     }
     JLI_List_free(openj9Args);
+    return result;
 }
 
 static void
@@ -253,7 +256,10 @@ parseXmsoInFile(const char *filename)
 {
     JLI_List openj9Args = JLI_ParseOpenJ9ArgsFile(filename);
     if (openj9Args != NULL) {
-        parseXmso(openj9Args);
+        jboolean result = parseXmso(openj9Args);
+        if (JLI_IsTraceLauncher() && result) {
+            printf("Set -Xmso%ld from file %s\n", (long)threadStackSize, filename);
+        }
     }
 }
 
@@ -262,7 +268,10 @@ parseXmsoInEnv(const char *envVar)
 {
     JLI_List openj9Args = JLI_List_new(8); /* 8 is arbitrary */
     if (JLI_ParseOpenJ9ArgsFromEnvVar(openj9Args, envVar)) {
-        parseXmso(openj9Args);
+        jboolean result = parseXmso(openj9Args);
+        if (JLI_IsTraceLauncher() && result) {
+            printf("Set -Xmso%ld from env var %s\n", (long)threadStackSize, envVar);
+        }
     }
 }
 
@@ -940,6 +949,9 @@ AddOption(char *str, void *info)
             threadStackSize = tmp;
             if (threadStackSize > 0 && threadStackSize < (jlong)STACK_SIZE_MINIMUM) {
                 threadStackSize = STACK_SIZE_MINIMUM;
+            }
+            if (JLI_IsTraceLauncher()) {
+                printf("Set -Xmso%ld from command line\n", (long)threadStackSize);
             }
         }
     }
