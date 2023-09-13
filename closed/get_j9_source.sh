@@ -57,16 +57,10 @@ declare -A shas
 declare -A references
 
 git_urls[openj9]=https://github.com/eclipse-openj9/openj9
-git_urls[omr]=https://github.com/eclipse-openj9/openj9-omr
+branches[openj9]=v0.41.0-release
 
-currentbranch=$(git rev-parse --abbrev-ref HEAD)
-if [[ "$currentbranch" =~ v[0-9]+\.[0-9]+(\.[0-9]+)?-release ]] ; then
-	branches[openj9]=$currentbranch
-	branches[omr]=$currentbranch
-else
-	branches[openj9]=master
-	branches[omr]=openj9
-fi
+git_urls[omr]=https://github.com/eclipse-openj9/openj9-omr
+branches[omr]=v0.41.0-release
 
 pflag=false
 
