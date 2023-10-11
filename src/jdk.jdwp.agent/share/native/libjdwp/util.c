@@ -22,6 +22,11 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2023, 2023 All Rights Reserved
+ * ===========================================================================
+ */
 
 #include <ctype.h>
 
@@ -34,6 +39,7 @@
 #include "inStream.h"
 #include "invoker.h"
 #include "signature.h"
+#include "j9cfg.h"
 
 
 /* Global data area */
@@ -1912,8 +1918,42 @@ map2jvmtiError(jdwpError error)
     return AGENT_ERROR_INTERNAL;
 }
 
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+static jvmtiExtensionEventInfo *
+find_ext_event(jvmtiEnv *jvmti, const char *ename)
+{
+    jint extCount = 0;
+    jvmtiExtensionEventInfo *extList = NULL;
+
+    jvmtiError err = JVMTI_FUNC_PTR(jvmti, GetExtensionEvents)
+                            (jvmti, &extCount, &extList);
+    if (JVMTI_ERROR_NONE == err) {
+        for (int i = 0; i < extCount; i++) {
+            if (NULL != strstr(extList[i].id, ename)) {
+                return &extList[i];
+            }
+        }
+    } else {
+        ERROR_MESSAGE(("Error in JVMTI GetExtensionEvents: %s(%d)\n", jvmtiErrorText(err), err));
+    }
+    return NULL;
+}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+
 static jvmtiEvent index2jvmti[EI_max-EI_min+1];
 static jdwpEvent  index2jdwp [EI_max-EI_min+1];
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+static void
+extensionEventIndexInit(void) {
+    /* VM restore event */
+    jvmtiExtensionEventInfo *extEvent = find_ext_event(gdata->jvmti, "VMRestore");
+    if (NULL != extEvent) {
+        index2jvmti[EI_VM_RESTORE - EI_min] = extEvent->extension_event_index;
+    }
+    index2jdwp[EI_VM_RESTORE - EI_min] = JDWP_EVENT(VM_RESTORE);
+}
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 
 void
 eventIndexInit(void)
@@ -1962,6 +2002,10 @@ eventIndexInit(void)
     index2jdwp[EI_MONITOR_WAITED      -EI_min] = JDWP_EVENT(MONITOR_WAITED);
     index2jdwp[EI_VM_INIT             -EI_min] = JDWP_EVENT(VM_INIT);
     index2jdwp[EI_VM_DEATH            -EI_min] = JDWP_EVENT(VM_DEATH);
+
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+    extensionEventIndexInit();
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
 }
 
 jdwpEvent
@@ -2028,6 +2072,10 @@ eventIndex2EventName(EventIndex ei)
             return "EI_VM_INIT";
         case EI_VM_DEATH:
             return "EI_VM_DEATH";
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+        case EI_VM_RESTORE:
+            return "EI_VM_RESTORE":
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
         default:
             JDI_ASSERT(JNI_FALSE);
             return "Bad EI";
@@ -2096,6 +2144,14 @@ jdwp2EventIndex(jdwpEvent eventType)
 EventIndex
 jvmti2EventIndex(jvmtiEvent kind)
 {
+    /* JVMTI extension events */
+#if defined(J9VM_OPT_CRIU_SUPPORT)
+    if (index2jvmti[EI_VM_RESTORE - EI_min] == kind) {
+        return EI_VM_RESTORE;
+    }
+#endif /* defined(J9VM_OPT_CRIU_SUPPORT) */
+
+    /* normal JVMTI events*/
     switch ( kind ) {
         case JVMTI_EVENT_SINGLE_STEP:
             return EI_SINGLE_STEP;
