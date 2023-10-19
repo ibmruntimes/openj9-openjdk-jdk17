@@ -561,6 +561,9 @@ abstract class NativeChaCha20Cipher extends CipherSpi {
         // assigning them to the object.
         byte[] newKeyBytes = getEncodedKey(key);
         checkKeyAndNonce(newKeyBytes, newNonce);
+        if (this.keyBytes != null) {
+            Arrays.fill(this.keyBytes, (byte)0);
+        }
         this.keyBytes = newKeyBytes;
         nonce = newNonce;
 
