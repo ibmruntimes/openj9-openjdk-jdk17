@@ -52,7 +52,8 @@ java/rmi/Naming java/util/prefs sun/management/jmxremote \
 sun/tools/jstatd sun/tools/jcmd \
 sun/tools/jinfo sun/tools/jmap sun/tools/jps sun/tools/jstack sun/tools/jstat \
 com/sun/tools/attach sun/security/mscapi java/util/Arrays/largeMemory \
-java/util/BitSet/stream javax/rmi java/net/httpclient/websocket
+java/util/BitSet/stream javax/rmi java/net/httpclient/websocket \
+sun/tools/jhsdb
 
 # Group definitions
 groups=TEST.groups
@@ -94,7 +95,7 @@ requires.properties= \
 requires.extraPropDefns = [../../closed/test/jtreg-ext/requires/OpenJ9PropsExt.java]
 
 # Minimum jtreg version
-requiredVersion=6+1
+requiredVersion=7.3.1+1
 
 # Path to libraries in the topmost test directory. This is needed so @library
 # does not need ../../ notation to reach them
