@@ -23,6 +23,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2023, 2023 All Rights Reserved
+ * ===========================================================================
+ */
+
 package java.io;
 
 import java.util.Formatter;
@@ -30,6 +36,10 @@ import java.util.Locale;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+
+/*[IF CRIU_SUPPORT]*/
+import openj9.internal.criu.NotCheckpointSafe;
+/*[ENDIF] CRIU_SUPPORT */
 
 /**
  * A {@code PrintStream} adds functionality to another output stream,
@@ -713,6 +723,9 @@ public class PrintStream extends FilterOutputStream
     // using println, but since subclasses could exist which depend on
     // observing a call to print followed by newLine we only use this if
     // getClass() == PrintStream.class to avoid compatibility issues.
+    /*[IF CRIU_SUPPORT]*/
+    @NotCheckpointSafe
+    /*[ENDIF] CRIU_SUPPORT */
     private void writeln(String s) {
         try {
             synchronized (this) {
