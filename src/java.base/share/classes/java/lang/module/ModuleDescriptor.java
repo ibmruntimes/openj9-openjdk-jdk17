@@ -2553,7 +2553,7 @@ public class ModuleDescriptor
     private static int modsHashCode(Iterable<? extends Enum<?>> enums) {
         int h = 0;
         for (Enum<?> e : enums) {
-            h += e.name().hashCode();
+            h = h * 43 + Objects.hashCode(e.name());
         }
         return h;
     }
