@@ -1,6 +1,6 @@
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2019, 2023 All Rights Reserved
+ * (c) Copyright IBM Corp. 2019, 2024 All Rights Reserved
  * ===========================================================================
  * 
  * This code is free software; you can redistribute it and/or modify it
@@ -39,6 +39,7 @@ public class OpenJ9PropsExt implements Callable<Map<String, String>> {
             map.put("docker.support", "true");
             map.put("vm.bits", vmBits());
             map.put("vm.compiler2.enabled", "false");
+            map.put("vm.debug", "false");
             map.put("vm.gc.G1", "false");
             map.put("vm.gc.Parallel", "false");
             map.put("vm.gc.Serial", "false");
