@@ -23,6 +23,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2024, 2024 All Rights Reserved
+ * ===========================================================================
+ */
+
 package java.lang.invoke;
 
 import java.lang.constant.ClassDesc;
@@ -39,6 +45,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import jdk.internal.misc.Unsafe;
 import jdk.internal.util.Preconditions;
 import jdk.internal.vm.annotation.DontInline;
 import jdk.internal.vm.annotation.ForceInline;
@@ -2132,6 +2139,8 @@ public abstract class VarHandle implements Constable {
     @Stable
     TypesAndInvokers typesAndInvokers;
 
+    private static final long TYPES_AND_INVOKERS_OFFSET;
+
     static class TypesAndInvokers {
         final @Stable
         MethodType[] methodType_table = new MethodType[VarHandle.AccessType.COUNT];
@@ -2140,11 +2149,20 @@ public abstract class VarHandle implements Constable {
         MethodHandle[] methodHandle_table = new MethodHandle[AccessMode.COUNT];
     }
 
+    static {
+        TYPES_AND_INVOKERS_OFFSET = UNSAFE.objectFieldOffset(VarHandle.class, "typesAndInvokers");
+    }
+
     @ForceInline
     private final TypesAndInvokers getTypesAndInvokers() {
         TypesAndInvokers tis = typesAndInvokers;
         if (tis == null) {
-            tis = typesAndInvokers = new TypesAndInvokers();
+            tis = new TypesAndInvokers();
+            if (!UNSAFE.compareAndSetReference(this, TYPES_AND_INVOKERS_OFFSET, null, tis)) {
+                // Lost the race, so use what was set by winning thread.
+                tis = typesAndInvokers;
+                assert typesAndInvokers != null;
+            }
         }
         return tis;
     }
@@ -2154,7 +2172,13 @@ public abstract class VarHandle implements Constable {
         TypesAndInvokers tis = getTypesAndInvokers();
         MethodHandle mh = tis.methodHandle_table[mode];
         if (mh == null) {
-            mh = tis.methodHandle_table[mode] = getMethodHandleUncached(mode);
+            mh = getMethodHandleUncached(mode);
+            long offset = Unsafe.ARRAY_OBJECT_BASE_OFFSET + Unsafe.ARRAY_OBJECT_INDEX_SCALE * mode;
+            if (!UNSAFE.compareAndSetReference(tis.methodHandle_table, offset, null, mh)) {
+                // We lost the race. Use the winning thread's handle instead.
+                mh = tis.methodHandle_table[mode];
+                assert mh != null;
+            }
         }
         return mh;
     }
