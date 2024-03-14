@@ -23,6 +23,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2024, 2024 All Rights Reserved
+ * ===========================================================================
+ */
+
 package java.lang.invoke;
 
 import sun.invoke.util.BytecodeDescriptor;
@@ -1194,6 +1200,13 @@ final class MemberName implements Member, Cloneable {
             for (int i = 0; i < length; i++)
                 buf[i] = new MemberName();
             return buf;
+        }
+    }
+
+    @Override
+    protected void finalize() {
+        if (null != clazz) {
+            MethodHandleNatives.markClassForMemberNamePruning(clazz);
         }
     }
 }
