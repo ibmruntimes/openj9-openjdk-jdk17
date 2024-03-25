@@ -23,6 +23,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2024, 2024 All Rights Reserved
+ * ===========================================================================
+ */
+
 package java.lang.invoke;
 
 import jdk.internal.access.JavaLangAccess;
@@ -690,4 +696,9 @@ class MethodHandleNatives {
         UNSAFE.ensureClassInitialized(c);
         return JLA.classData(c);
     }
+
+    /**
+     * Inform the VM that a MemberName belonging to class c has been collected.
+     */
+    static native void markClassForMemberNamePruning(Class<?> c);
 }
