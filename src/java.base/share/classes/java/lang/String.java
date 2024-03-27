@@ -25,7 +25,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2021, 2022 All Rights Reserved
+ * (c) Copyright IBM Corp. 2021, 2024 All Rights Reserved
  * ===========================================================================
  */
 
@@ -5309,6 +5309,9 @@ public final class String
     String(byte[] value, byte coder) {
         this.value = value;
         this.coder = coder;
+        if (COMPACT_STRINGS && UTF16 == coder) {
+            initCompressionFlag();
+        }
     }
 
     byte coder() {
