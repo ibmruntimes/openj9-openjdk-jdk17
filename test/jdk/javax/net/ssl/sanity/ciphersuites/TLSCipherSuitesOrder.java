@@ -24,6 +24,7 @@ import java.util.Arrays;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 
+import jdk.test.lib.Utils;
 import jdk.test.lib.security.SecurityUtils;
 
 /*
@@ -59,10 +60,33 @@ public class TLSCipherSuitesOrder extends SSLSocketTemplate {
 
     public static void main(String[] args) {
         PROTOCOL protocol = PROTOCOL.valueOf(args[0]);
+        // if (Utils.isFIPS()) {
+        //     if (!SecurityUtils.TLS_PROTOCOLS.contains(args[0])) {
+        //         System.out.println(args[0] + " is not supported in FIPS 140-3.");
+        //         return;
+        //     }
+        // }
         try {
             new TLSCipherSuitesOrder(protocol.getProtocol(),
                     protocol.getCipherSuite(args[1]),
                     protocol.getCipherSuite(args[2])).run();
+        } catch (javax.net.ssl.SSLHandshakeException sslex) {
+            if (Utils.isFIPS()) {
+                if (!SecurityUtils.TLS_PROTOCOLS.contains(args[0])) {
+                    System.out.println(args[0] + " is not supported in FIPS 140-3.");
+                }
+                if ("No appropriate protocol (protocol is disabled or cipher suites are inappropriate)".equals(sslex.getMessage())) {
+                    System.out.println("Expected exception msg: <No appropriate protocol (protocol is disabled or cipher suites are inappropriate)> is caught");
+                    return;
+                } else {
+                    System.out.println("Unexpected exception msg: <" + sslex.getMessage() + "> is caught");
+                    return;
+                }
+            } else {
+                System.out.println("Unexpected exception is caught in Non-FIPS mode");
+                sslex.printStackTrace();
+                return;
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -71,8 +95,10 @@ public class TLSCipherSuitesOrder extends SSLSocketTemplate {
     private TLSCipherSuitesOrder(String protocol, String[] clientcipherSuites,
             String[] servercipherSuites) {
         // Re-enable protocol if it is disabled.
-        if (protocol.equals("TLSv1") || protocol.equals("TLSv1.1")) {
-            SecurityUtils.removeFromDisabledTlsAlgs(protocol);
+        if (!Utils.isFIPS()) {
+            if (protocol.equals("TLSv1") || protocol.equals("TLSv1.1")) {
+                SecurityUtils.removeFromDisabledTlsAlgs(protocol);
+            }
         }
         this.protocol = protocol;
         this.clientcipherSuites = clientcipherSuites;

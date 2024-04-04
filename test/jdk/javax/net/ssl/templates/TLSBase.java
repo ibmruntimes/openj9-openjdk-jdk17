@@ -20,7 +20,6 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -73,6 +72,12 @@ abstract public class TLSBase {
         String trustFilename =
                 System.getProperty("test.src", "./") + "/" + pathToStores +
                         "/" + trustStoreFile;
+
+        if (NetSslUtils.isFIPS()) {
+            keyFilename = NetSslUtils.revertJKSToPKCS12(keyFilename, passwd);
+            trustFilename = NetSslUtils.revertJKSToPKCS12(trustFilename, passwd);
+        }
+
         System.setProperty("javax.net.ssl.keyStore", keyFilename);
         System.setProperty("javax.net.ssl.keyStorePassword", passwd);
         System.setProperty("javax.net.ssl.trustStore", trustFilename);
