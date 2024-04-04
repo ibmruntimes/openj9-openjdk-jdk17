@@ -27,6 +27,7 @@
 /*
  * @test
  * @bug 8052406
+ * @library /test/lib
  * @summary SSLv2Hello protocol may be filter out unexpectedly
  * @run main/othervm ProtocolFilter
  */
@@ -34,6 +35,9 @@
 import java.io.*;
 import java.net.*;
 import javax.net.ssl.*;
+
+import jdk.test.lib.Utils;
+import jdk.test.lib.security.SecurityUtils;
 
 public class ProtocolFilter {
 
@@ -90,8 +94,13 @@ public class ProtocolFilter {
             (SSLServerSocket) sslssf.createServerSocket(serverPort);
 
         // Only enable cipher suites for TLS v1.2.
-        sslServerSocket.setEnabledCipherSuites(
-            new String[]{"TLS_RSA_WITH_AES_128_CBC_SHA256"});
+        if (Utils.isFIPS()) {
+            sslServerSocket.setEnabledCipherSuites(
+                new String[]{"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"});
+        } else {
+            sslServerSocket.setEnabledCipherSuites(
+                new String[]{"TLS_RSA_WITH_AES_128_CBC_SHA256"});
+        }
 
         serverPort = sslServerSocket.getLocalPort();
 
@@ -162,6 +171,11 @@ public class ProtocolFilter {
         String trustFilename =
             System.getProperty("test.src", ".") + "/" + pathToStores +
                 "/" + trustStoreFile;
+
+        if (Utils.isFIPS()) {
+            keyFilename = Utils.revertJKSToPKCS12(keyFilename, passwd);
+            trustFilename = Utils.revertJKSToPKCS12(trustFilename, passwd);
+        }
 
         System.setProperty("javax.net.ssl.keyStore", keyFilename);
         System.setProperty("javax.net.ssl.keyStorePassword", passwd);
