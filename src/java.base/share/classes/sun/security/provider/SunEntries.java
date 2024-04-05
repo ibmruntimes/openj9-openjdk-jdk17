@@ -24,7 +24,7 @@
  */
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2018, 2023 All Rights Reserved
+ * (c) Copyright IBM Corp. 2018, 2024 All Rights Reserved
  * ===========================================================================
  */
 
@@ -93,6 +93,9 @@ public final class SunEntries {
      * digest implementation.
      */
     private static final boolean useNativeDigest = NativeCrypto.isAlgorithmEnabled("jdk.nativeDigest", "MessageDigest");
+
+    // Flag indicating whether the operating system is AIX.
+    private static final boolean isAIX = "AIX".equals(GetPropertyAction.privilegedGetProperty("os.name"));
 
     // the default algo used by SecureRandom class for new SecureRandom() calls
     public static final String DEF_SECURE_RANDOM_ALGO;
@@ -263,6 +266,7 @@ public final class SunEntries {
         /*
          * Digest engines
          */
+        String providerMD5;
         String providerSHA;
         String providerSHA224;
         String providerSHA256;
@@ -272,6 +276,17 @@ public final class SunEntries {
          * Set the digest provider based on whether native crypto is
          * enabled or not.
          */
+        /* Don't use native MD5 on AIX due to an observed performance regression. */
+        if (useNativeDigest
+            && NativeCrypto.isAllowedAndLoaded()
+            && NativeCrypto.isMD5Available()
+            && !isAIX
+        ) {
+            providerMD5 = "sun.security.provider.NativeMD5";
+        } else {
+            providerMD5 = "sun.security.provider.MD5";
+        }
+
         if (useNativeDigest && NativeCrypto.isAllowedAndLoaded()) {
             providerSHA = "sun.security.provider.NativeSHA";
             providerSHA224 = "sun.security.provider.NativeSHA2$SHA224";
@@ -286,7 +301,7 @@ public final class SunEntries {
             providerSHA512 = "sun.security.provider.SHA5$SHA512";
         }
         add(p, "MessageDigest", "MD2", "sun.security.provider.MD2", attrs);
-        add(p, "MessageDigest", "MD5", "sun.security.provider.MD5", attrs);
+        add(p, "MessageDigest", "MD5", providerMD5, attrs);
         addWithAlias(p, "MessageDigest", "SHA-1", providerSHA,
                 attrs);
 
