@@ -30,6 +30,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,6 +43,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import sun.security.util.Debug;
 
@@ -191,7 +193,7 @@ public final class RestrictedSecurity {
             printStackTraceAndExit(
                     "Restricted security mode secure random provider can only be used when restricted security mode is enabled.");
         }
-        return restricts.jdkSecureRandomProvider;
+        return restricts.getProperty("jdkSecureRandomProvider");
     }
 
     /**
@@ -207,7 +209,7 @@ public final class RestrictedSecurity {
             printStackTraceAndExit(
                     "Restricted security mode secure random algorithm can only be used when restricted security mode is enabled.");
         }
-        return restricts.jdkSecureRandomAlgorithm;
+        return restricts.getProperty("jdkSecureRandomAlgorithm");
     }
 
     /**
@@ -358,8 +360,8 @@ public final class RestrictedSecurity {
         }
     }
 
-    private static void checkFIPSCompatibility(Properties props) {
-        boolean isFIPSProfile = Boolean.parseBoolean(props.getProperty(profileID + ".desc.fips"));
+    private static void checkFIPSCompatibility() {
+        boolean isFIPSProfile = restricts.descIsFIPS;
         if (isFIPSProfile) {
             if (debug != null) {
                 debug.println("RestrictedSecurity profile " + profileID
@@ -441,11 +443,6 @@ public final class RestrictedSecurity {
                 getProfileID(props);
                 checkIfKnownProfileSupported();
 
-                // If user enabled FIPS, check whether chosen profile is applicable.
-                if (userEnabledFIPS) {
-                    checkFIPSCompatibility(props);
-                }
-
                 // Initialize restricted security properties from java.security file.
                 restricts = new RestrictedSecurityProperties(profileID, props);
 
@@ -519,16 +516,16 @@ public final class RestrictedSecurity {
         Map<String, String> propsMapping = new HashMap<>();
 
         // JDK properties name as key, restricted security properties value as value.
-        propsMapping.put("jdk.tls.disabledNamedCurves", restricts.jdkTlsDisabledNamedCurves);
-        propsMapping.put("jdk.tls.disabledAlgorithms", restricts.jdkTlsDisabledAlgorithms);
-        propsMapping.put("jdk.tls.ephemeralDHKeySize", restricts.jdkTlsEphemeralDHKeySize);
-        propsMapping.put("jdk.tls.legacyAlgorithms", restricts.jdkTlsLegacyAlgorithms);
-        propsMapping.put("jdk.certpath.disabledAlgorithms", restricts.jdkCertpathDisabledAlgorithms);
-        propsMapping.put("jdk.security.legacyAlgorithms", restricts.jdkSecurityLegacyAlgorithms);
+        propsMapping.put("jdk.tls.disabledNamedCurves", restricts.getProperty("jdkTlsDisabledNamedCurves"));
+        propsMapping.put("jdk.tls.disabledAlgorithms", restricts.getProperty("jdkTlsDisabledAlgorithms"));
+        propsMapping.put("jdk.tls.ephemeralDHKeySize", restricts.getProperty("jdkTlsEphemeralDHKeySize"));
+        propsMapping.put("jdk.tls.legacyAlgorithms", restricts.getProperty("jdkTlsLegacyAlgorithms"));
+        propsMapping.put("jdk.certpath.disabledAlgorithms", restricts.getProperty("jdkCertpathDisabledAlgorithms"));
+        propsMapping.put("jdk.security.legacyAlgorithms", restricts.getProperty("jdkSecurityLegacyAlgorithms"));
         String fipsMode = System.getProperty("com.ibm.fips.mode");
         if (fipsMode == null) {
-            System.setProperty("com.ibm.fips.mode", restricts.jdkFipsMode);
-        } else if (!fipsMode.equals(restricts.jdkFipsMode)) {
+            System.setProperty("com.ibm.fips.mode", restricts.getProperty("jdkFipsMode"));
+        } else if (!fipsMode.equals(restricts.getProperty("jdkFipsMode"))) {
             printStackTraceAndExit("Property com.ibm.fips.mode is incompatible with semeru.customprofile and semeru.fips properties");
         }
 
@@ -536,32 +533,26 @@ public final class RestrictedSecurity {
             String jdkPropsName = entry.getKey();
             String propsNewValue = entry.getValue();
 
-            String propsOldValue = props.getProperty(jdkPropsName);
-            if (isNullOrBlank(propsOldValue)) {
-                propsOldValue = "";
-            }
-
             if ((propsNewValue != null) && userEnabledFIPS && !allowSetProperties) {
                 // Add to set of properties set by the active profile.
                 unmodifiableProperties.add(jdkPropsName);
             }
 
             if (!isNullOrBlank(propsNewValue)) {
-                String values = isNullOrBlank(propsOldValue) ? propsNewValue : (propsOldValue + ", " + propsNewValue);
-                props.setProperty(jdkPropsName, values);
+                props.setProperty(jdkPropsName, propsNewValue);
                 if (debug != null) {
-                    debug.println("Added restricted security properties, with property: " + jdkPropsName + " value: "
-                            + values);
+                    debug.println("Added restricted security properties, with property: "
+                            + jdkPropsName + " value: " + propsNewValue);
                 }
             }
         }
 
         // For keyStore and keystore.type, old value not needed, just set the new value.
-        String keyStoreType = restricts.keyStoreType;
+        String keyStoreType = restricts.getProperty("keyStoreType");
         if (!isNullOrBlank(keyStoreType)) {
             props.setProperty("keystore.type", keyStoreType);
         }
-        String keyStore = restricts.keyStore;
+        String keyStore = restricts.getProperty("keyStore");
         if (!isNullOrBlank(keyStore)) {
             // SSL property "javax.net.ssl.keyStore" set at the JVM level via system properties.
             System.setProperty("javax.net.ssl.keyStore", keyStore);
@@ -578,14 +569,19 @@ public final class RestrictedSecurity {
         }
 
         // Check if the SunsetDate expired.
-        if (isPolicySunset(restricts.descSunsetDate)) {
+        if (isPolicySunset(restricts.getProperty("descSunsetDate"))) {
             printStackTraceAndExit("Restricted security policy expired.");
         }
 
         // Check secure random settings.
-        if (isNullOrBlank(restricts.jdkSecureRandomProvider)
-                || isNullOrBlank(restricts.jdkSecureRandomAlgorithm)) {
+        if (isNullOrBlank(restricts.getProperty("jdkSecureRandomProvider"))
+                || isNullOrBlank(restricts.getProperty("jdkSecureRandomAlgorithm"))) {
             printStackTraceAndExit("Restricted security mode secure random is missing.");
+        }
+
+        // If user enabled FIPS, check whether chosen profile is applicable.
+        if (userEnabledFIPS) {
+            checkFIPSCompatibility();
         }
     }
 
@@ -597,12 +593,15 @@ public final class RestrictedSecurity {
      */
     private static boolean isPolicySunset(String descSunsetDate) {
         boolean isSunset = false;
-        try {
-            isSunset = LocalDate.parse(descSunsetDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                    .isBefore(LocalDate.now());
-        } catch (DateTimeParseException except) {
-            printStackTraceAndExit(
-                    "Restricted security policy sunset date is incorrect, the correct format is yyyy-MM-dd.");
+        // Only check if a sunset date is specified in the profile.
+        if (!isNullOrBlank(descSunsetDate)) {
+            try {
+                isSunset = LocalDate.parse(descSunsetDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        .isBefore(LocalDate.now());
+            } catch (DateTimeParseException except) {
+                printStackTraceAndExit(
+                        "Restricted security policy sunset date is incorrect, the correct format is yyyy-MM-dd.");
+            }
         }
 
         if (debug != null) {
@@ -635,41 +634,28 @@ public final class RestrictedSecurity {
      * properties which are loaded from the java.security file.
      */
     private static final class RestrictedSecurityProperties {
-
-        private String descName;
+        // Properties specified through the profile.
+        private final Map<String, String> profileProperties;
         private boolean descIsDefault;
         private boolean descIsFIPS;
-        private String descNumber;
-        private String descPolicy;
-        private String descSunsetDate;
-
-        // Security properties.
-        private String jdkTlsDisabledNamedCurves;
-        private String jdkTlsDisabledAlgorithms;
-        private String jdkTlsEphemeralDHKeySize;
-        private String jdkTlsLegacyAlgorithms;
-        private String jdkCertpathDisabledAlgorithms;
-        private String jdkSecurityLegacyAlgorithms;
-        private String keyStoreType;
-        private String keyStore;
-
-        // For SecureRandom.
-        String jdkSecureRandomProvider;
-        String jdkSecureRandomAlgorithm;
-
-        String jdkFipsMode;
 
         // Provider with argument (provider name + optional argument).
         private final List<String> providers;
         // Provider without argument.
         private final List<String> providersSimpleName;
         // The map is keyed by provider name.
-        private final Map<String, Constraint[]> providerConstraints;
+        private final Map<String, List<Constraint>> providerConstraints;
 
         private final String profileID;
 
         // The java.security properties.
         private final Properties securityProps;
+
+        private final List<String> appendableProps = Arrays.asList("jdkTlsDisabledNamedCurves",
+                                                                   "jdkTlsDisabledAlgorithms",
+                                                                   "jdkTlsLegacyAlgorithms",
+                                                                   "jdkCertpathDisabledAlgorithms",
+                                                                   "jdkSecurityLegacyAlgorithms");
 
         /**
          *
@@ -685,88 +671,225 @@ public final class RestrictedSecurity {
             profileID = id;
             securityProps = props;
 
+            profileProperties = new HashMap<>();
+
             providers = new ArrayList<>();
             providersSimpleName = new ArrayList<>();
             providerConstraints = new HashMap<>();
 
             // Initialize the properties.
-            init();
+            init(profileID);
+
+            if (debug != null) {
+                // Print information of utilized security profile.
+                listUsedProfile(profileID);
+            }
         }
 
         /**
          * Initialize restricted security properties.
          */
-        private void init() {
+        private void init(String profileID) {
             if (debug != null) {
-                debug.println("Initializing restricted security mode.");
+                debug.println("Initializing restricted security properties for '" + profileID + "'.");
             }
 
+            String potentialExtendsProfileID = parseProperty(securityProps.getProperty(profileID + ".extends"));
+            if (potentialExtendsProfileID != null) { // If profile extends another profile.
+                if (debug != null) {
+                    debug.println("\t'" + profileID + "' extends '" + potentialExtendsProfileID + "'.");
+                }
+
+                // Check if extended profile exists.
+                String extendsProfileID = null;
+                if (potentialExtendsProfileID.indexOf(".") != potentialExtendsProfileID.lastIndexOf(".")) {
+                    // Extended profile id has at least 2 dots (meaning it's a full profile id).
+                    for (Object keyObject : securityProps.keySet()) {
+                        if (keyObject instanceof String key) {
+                            if (key.startsWith(potentialExtendsProfileID + ".desc") ||
+                                key.startsWith(potentialExtendsProfileID + ".fips") ||
+                                key.startsWith(potentialExtendsProfileID + ".tls") ||
+                                key.startsWith(potentialExtendsProfileID + ".jce") ||
+                                key.startsWith(potentialExtendsProfileID + ".javax") ||
+                                key.startsWith(potentialExtendsProfileID + ".securerandom")
+                            ) {
+                                // If even one security property is found for this profile id, move on.
+                                extendsProfileID = potentialExtendsProfileID;
+                                break;
+                            }
+                        }
+                    }
+                    if (extendsProfileID == null) {
+                        printStackTraceAndExit(potentialExtendsProfileID + " that is supposed to extend '"
+                                + profileID + "'is not present in the java.security file or any appended files.");
+                    }
+                }
+
+                // Recursively call init() on extended profile.
+                init(potentialExtendsProfileID);
+
+                // Perform update based on current profile.
+                update(profileID);
+            } else {
+                try {
+                    // Load restricted security providers from java.security properties.
+                    initProviders(profileID);
+                    // Load restricted security properties from java.security properties.
+                    initProperties(profileID);
+                    // Load restricted security provider constraints from java.security properties.
+                    //initConstraints(profileID);
+                } catch (Exception e) {
+                    if (debug != null) {
+                        debug.println("Unable to initialize restricted security mode.");
+                    }
+                    printStackTraceAndExit(e);
+                }
+            }
+
+            if (debug != null) {
+                debug.println("Initialization of restricted security properties for '" + profileID + "' completed.");
+
+                
+            }
+        }
+
+        /**
+         * Initialize restricted security properties.
+         */
+        private void update(String profileExtensionId) {
             try {
                 // Load restricted security providers from java.security properties.
-                initProviders();
+                updateProviders(profileExtensionId);
                 // Load restricted security properties from java.security properties.
-                initProperties();
+                initProperties(profileExtensionId);
                 // Load restricted security provider constraints from java.security properties.
-                initConstraints();
+                //updateConstraints(profileExtensionId, updatedProvidersPosition);
             } catch (Exception e) {
                 if (debug != null) {
-                    debug.println("Unable to initialize restricted security mode.");
+                    debug.println("Unable to update restricted security properties for '" + profileExtensionId + "'.");
                 }
                 printStackTraceAndExit(e);
             }
+        }
+
+        private void parseProvider(String providerInfo, int providerPos, boolean update) {
+            // if (!areBracketsBalanced(providerInfo)) {
+            //     printStackTraceAndExit("Provider format is incorrect: " + providerInfo);
+            // }
+            if (debug != null) {
+                debug.println("\t\tLoading provider in position " + providerPos);
+            }
+
+            checkProviderFormat(providerInfo, update);
+
+            int pos = providerInfo.indexOf('[');
+            String providerName = (pos < 0) ? providerInfo.trim() : providerInfo.substring(0, pos).trim();
+            // Provider with argument (provider name + optional argument).
+            if (update) {
+                providers.set(providerPos - 1, providerName);
+            } else {
+                providers.add(providerPos - 1, providerName);
+            }
+
+            // Remove the provider's optional arguments if there are.
+            pos = providerName.indexOf(' ');
+            if (pos >= 0) {
+                providerName = providerName.substring(0, pos);
+            }
+            providerName = providerName.trim();
+
+            // Remove argument, e.g. -NSS-FIPS, if present.
+            pos = providerName.indexOf('-');
+            if (pos >= 0) {
+                providerName = providerName.substring(0, pos);
+            }
+
+            // Provider name defined in provider construction method.
+            providerName = getProvidersSimpleName(providerName);
+            boolean providerChanged = false;
+            if (update) {
+                String previousProviderName = providersSimpleName.get(providerPos - 1);
+                providerChanged = !previousProviderName.equals(providerName);
+                providersSimpleName.set(providerPos - 1, providerName);
+            } else {
+                providersSimpleName.add(providerPos - 1, providerName);
+            }
 
             if (debug != null) {
-                debug.println("Initialization of restricted security mode completed.");
+                debug.println("\t\tLoaded provider in position " + providerPos + " named: " + providerName);
+            }
 
-                // Print all available restricted security profiles.
-                listAvailableProfiles();
+            setConstraints(providerName, providerInfo, providerChanged);
+        }
 
-                // Print information of utilized security profile.
-                listUsedProfile();
+        private void removeProvider(String profileExtensionId, int providerPos) {
+            if (debug != null) {
+                debug.println("\t\tRemoving provider in position " + providerPos);
+            }
+
+            int numOfExistingProviders = providersSimpleName.size();
+
+            // This is the last provider.
+            if (providerPos == numOfExistingProviders) {
+                if (debug != null) {
+                    debug.println("\t\t\tLast provider. Only one to be removed.");
+                }
+                String providerRemoved = providersSimpleName.remove(providerPos - 1);
+                providers.remove(providerPos - 1);
+                providerConstraints.remove(providerRemoved);
+
+                if (debug != null) {
+                    debug.println("\t\tProvider " + providerRemoved + " removed.");
+                }
+                return;
+            }
+
+            // If there's more, check that all of them are set to be removed.
+            for (int i = numOfExistingProviders; i >= providerPos; i--) {
+                if (debug != null) {
+                    debug.println("\t\t\tNot the last provider. More to be removed.");
+                }
+
+                String providerInfo = securityProps.getProperty(profileExtensionId + ".jce.provider." + i);
+                if ((providerInfo == null) || !providerInfo.trim().isEmpty()) {
+                    printStackTraceAndExit(
+                        "Cannot specify an empty provider in position "
+                                + providerPos + " without empty the ones after it.");
+                }
+
+                String providerRemoved = providersSimpleName.remove(i - 1);
+                providers.remove(i - 1);
+                providerConstraints.remove(providerRemoved);
+
+                if (debug != null) {
+                    debug.println("\t\tProvider " + providerRemoved + " removed.");
+                }
             }
         }
 
         /**
          * Load restricted security provider.
          */
-        private void initProviders() {
+        private void initProviders(String profileID) {
             if (debug != null) {
                 debug.println("\tLoading providers of restricted security profile.");
             }
 
             for (int pNum = 1;; ++pNum) {
-                String providerInfo = securityProps
-                        .getProperty(profileID + ".jce.provider." + pNum);
+                String property = profileID + ".jce.provider." + pNum;
+                String providerInfo = securityProps.getProperty(property);
 
-                if ((providerInfo == null) || providerInfo.trim().isEmpty()) {
+                if (providerInfo == null) {
                     break;
                 }
 
-                if (!areBracketsBalanced(providerInfo)) {
-                    printStackTraceAndExit("Provider format is incorrect: " + providerInfo);
+                if (providerInfo.trim().isEmpty()) {
+                    printStackTraceAndExit(
+                        "Cannot specify an empty provider in position "
+                                + pNum + ". Nothing specified before.");
                 }
 
-                int pos = providerInfo.indexOf('[');
-                String providerName = (pos < 0) ? providerInfo.trim() : providerInfo.substring(0, pos).trim();
-                // Provider with argument (provider name + optional argument).
-                providers.add(pNum - 1, providerName);
-
-                // Remove the provider's optional arguments if there are.
-                pos = providerName.indexOf(' ');
-                if (pos >= 0) {
-                    providerName = providerName.substring(0, pos);
-                }
-                providerName = providerName.trim();
-
-                // Remove argument, e.g. -NSS-FIPS, if present.
-                pos = providerName.indexOf('-');
-                if (pos >= 0) {
-                    providerName = providerName.substring(0, pos);
-                }
-
-                // Provider name defined in provider construction method.
-                providerName = getProvidersSimpleName(providerName);
-                providersSimpleName.add(pNum - 1, providerName);
+                parseProvider(providerInfo, pNum, false);
             }
 
             if (providers.isEmpty()) {
@@ -779,43 +902,91 @@ public final class RestrictedSecurity {
             }
         }
 
+        private void updateProviders(String profileExtensionId) {
+            int posOfRemovedProvider = -1;
+            int numOfExistingProviders = providersSimpleName.size();
+            // Deal with update of existing providers.
+            for (int i = 1; i <= numOfExistingProviders; i++) {
+                String providerInfo = securityProps.getProperty(profileExtensionId + ".jce.provider." + i);
+
+                // TODO: Can one set to empty to remove?
+                if (providerInfo != null) {
+                    if (!providerInfo.trim().isEmpty()) {
+                        parseProvider(providerInfo, i, true);
+                    } else {
+                        // Remove provider after checking.
+                        removeProvider(profileExtensionId, i);
+                        posOfRemovedProvider = i;
+                    }
+                }
+            }
+
+            // Deal with additional providers added.
+            for (int i = numOfExistingProviders + 1;; i++) {
+                String providerInfo = securityProps
+                        .getProperty(profileExtensionId + ".jce.provider." + i);
+
+                if (providerInfo == null) {
+                    break;
+                }
+
+                if (providerInfo.trim().isEmpty()) {
+                    printStackTraceAndExit(
+                        "Cannot specify an empty provider in position "
+                            + i + ". Nothing specified before.");
+                }
+
+                if (posOfRemovedProvider != -1) {
+                    printStackTraceAndExit(
+                        "Cannot add a provider in position " + i
+                            + " after removing the one is position " + posOfRemovedProvider + ".");
+                }
+
+                parseProvider(providerInfo, i, false);
+            }
+        }
+
         /**
          * Load restricted security properties.
          */
-        private void initProperties() {
+        private void initProperties(String profileID) {
             if (debug != null) {
                 debug.println("\tLoading properties of restricted security profile.");
             }
 
-            descName = parseProperty(securityProps.getProperty(profileID + ".desc.name"));
-            descIsDefault = Boolean.parseBoolean(parseProperty(securityProps.getProperty(profileID + ".desc.default")));
-            descIsFIPS = Boolean.parseBoolean(parseProperty(securityProps.getProperty(profileID + ".desc.fips")));
-            descNumber = parseProperty(securityProps.getProperty(profileID + ".desc.number"));
-            descPolicy = parseProperty(securityProps.getProperty(profileID + ".desc.policy"));
-            descSunsetDate = parseProperty(securityProps.getProperty(profileID + ".desc.sunsetDate"));
+            setProperty("descName", securityProps.getProperty(profileID + ".desc.name"));
+            if (setProperty("descIsDefaultString", securityProps.getProperty(profileID + ".desc.default"))) {
+                descIsDefault = Boolean.parseBoolean(profileProperties.get("descIsDefaultString"));
+            }
+            if (setProperty("descIsFIPSString", securityProps.getProperty(profileID + ".desc.fips"))) {
+                descIsFIPS = Boolean.parseBoolean(profileProperties.get("descIsFIPSString"));
+            }
+            setProperty("descNumber", securityProps.getProperty(profileID + ".desc.number"));
+            setProperty("descPolicy", securityProps.getProperty(profileID + ".desc.policy"));
+            setProperty("descSunsetDate", securityProps.getProperty(profileID + ".desc.sunsetDate"));
 
-            jdkTlsDisabledNamedCurves = parseProperty(
+            setProperty("jdkTlsDisabledNamedCurves",
                     securityProps.getProperty(profileID + ".tls.disabledNamedCurves"));
-            jdkTlsDisabledAlgorithms = parseProperty(
+            setProperty("jdkTlsDisabledAlgorithms",
                     securityProps.getProperty(profileID + ".tls.disabledAlgorithms"));
-            jdkTlsEphemeralDHKeySize = parseProperty(
+            setProperty("jdkTlsEphemeralDHKeySize",
                     securityProps.getProperty(profileID + ".tls.ephemeralDHKeySize"));
-            jdkTlsLegacyAlgorithms = parseProperty(
+            setProperty("jdkTlsLegacyAlgorithms",
                     securityProps.getProperty(profileID + ".tls.legacyAlgorithms"));
-            jdkCertpathDisabledAlgorithms = parseProperty(
+            setProperty("jdkCertpathDisabledAlgorithms",
                     securityProps.getProperty(profileID + ".jce.certpath.disabledAlgorithms"));
-            jdkSecurityLegacyAlgorithms = parseProperty(
+            setProperty("jdkSecurityLegacyAlgorithms",
                     securityProps.getProperty(profileID + ".jce.legacyAlgorithms"));
-            keyStoreType = parseProperty(
+            setProperty("keyStoreType",
                     securityProps.getProperty(profileID + ".keystore.type"));
-            keyStore = parseProperty(
+            setProperty("keyStore",
                     securityProps.getProperty(profileID + ".javax.net.ssl.keyStore"));
 
-            jdkSecureRandomProvider = parseProperty(
+            setProperty("jdkSecureRandomProvider",
                     securityProps.getProperty(profileID + ".securerandom.provider"));
-            jdkSecureRandomAlgorithm = parseProperty(
+            setProperty("jdkSecureRandomAlgorithm",
                     securityProps.getProperty(profileID + ".securerandom.algorithm"));
-            jdkFipsMode = parseProperty(
+            setProperty("jdkFipsMode",
                     securityProps.getProperty(profileID + ".fips.mode"));
 
             if (debug != null) {
@@ -823,105 +994,86 @@ public final class RestrictedSecurity {
             }
         }
 
-        /**
-         * Load security constraints with type, algorithm, attributes.
-         *
-         * Example:
-         * RestrictedSecurity1.jce.provider.1 = SUN [{CertPathBuilder, PKIX, *},
-         * {Policy, JavaPolicy, *}, {CertPathValidator, *, *}].
-         */
-        private void initConstraints() {
+        private void setConstraints(String providerName, String providerInfo, boolean providerChanged) {
             if (debug != null) {
-                debug.println("\tLoading constraints of restricted security profile.");
+                debug.println("\t\tLoading constraints for security provider: " + providerName);
             }
 
-            for (int pNum = 1; pNum <= providersSimpleName.size(); pNum++) {
-                String providerName = providersSimpleName.get(pNum - 1);
-                String providerInfo = securityProps
-                        .getProperty(profileID + ".jce.provider." + pNum);
+            List<Constraint> constraints = new ArrayList<>();
 
+            providerInfo = providerInfo.replaceAll("\\s+", "");
+
+            Pattern p = Pattern.compile("\\[.+\\]");
+            Matcher m = p.matcher(providerInfo);
+            if (!m.find()) {
                 if (debug != null) {
-                    debug.println("\t\tLoading constraints for security provider: " + providerName);
+                    debug.println("\t\t\tNo constraints for security provider: " + providerName);
                 }
+                providerConstraints.put(providerName, constraints);
+                return;
+            }
 
-                // Check if the provider has constraints.
-                if (providerInfo.indexOf('[') < 0) {
-                    if (debug != null) {
-                        debug.println("\t\t\tNo constraints for security provider: " + providerName);
+            p = Pattern.compile(
+"\\[([\\+\\-]?)(\\{\\w+,[A-Za-z0-9\\.]+,[A-Za-z0-9\\=\\*:]+\\})(,\\{\\w+,[A-Za-z0-9\\.]+,[A-Za-z0-9\\=\\*:]+\\})*\\]");
+            m = p.matcher(providerInfo);
+
+            if (!m.find()) {
+                printStackTraceAndExit("Incorrect constraint definition for provider " + providerName);
+            }
+
+            String action = m.group(1);
+
+            p = Pattern.compile("\\{(\\w+),([A-Za-z0-9\\.]+),([A-Za-z0-9\\=\\*:]+)\\}");
+            m = p.matcher(providerInfo);
+            
+            while (m.find()) {
+                String inType = m.group(1);
+                String inAlgorithm = m.group(2);
+                String inAttributes = m.group(3);
+
+                // Each attribute must includes 2 fields (key and value) or *.
+                if (!isAsterisk(inAttributes)) {
+                    String[] attributeArray = inAttributes.split(":");
+                    for (String attribute : attributeArray) {
+                        String[] in = attribute.split("=", 2);
+                        if (in.length != 2) {
+                            printStackTraceAndExit(
+                                    "Constraint attributes format is incorrect: " + providerInfo);
+                        }
                     }
-                    providerConstraints.put(providerName, new Constraint[0]);
-                    continue;
                 }
+                Constraint constraint = new Constraint(inType, inAlgorithm, inAttributes);
+                constraints.add(constraint);
+            }
 
-                // Remove the whitespaces in the format separator if there are.
-                providerInfo = providerInfo.trim()
-                        .replaceAll("\\[\\s+\\{", "[{")
-                        .replaceAll("\\}\\s+\\]", "}]")
-                        .replaceAll("\\}\\s*,\\s*\\{", "},{");
-
-                int startIndex = providerInfo.lastIndexOf("[{");
-                int endIndex = providerInfo.indexOf("}]");
-
-                // Provider with constraints.
-                if ((startIndex > 0) && (endIndex > startIndex)) {
-                    String[] constrArray = providerInfo
-                            .substring(startIndex + 2, endIndex).split("\\},\\{");
-
-                    if (constrArray.length <= 0) {
-                        printStackTraceAndExit("Constraint format is incorrect: " + providerInfo);
-                    }
-
-                    // Constraint object array.
-                    // For each constraint type, algorithm and attributes.
-                    Constraint[] constraints = new Constraint[constrArray.length];
-
-                    int cNum = 0;
-                    for (String constr : constrArray) {
-                        String[] input = constr.split(",");
-
-                        // Each constraint must includes 3 fields(type, algorithm, attributes).
-                        if (input.length != 3) {
-                            printStackTraceAndExit("Constraint format is incorrect: " + providerInfo);
-                        }
-
-                        String inType = input[0].trim();
-                        String inAlgorithm = input[1].trim();
-                        String inAttributes = input[2].trim();
-
-                        // Each attribute must includes 2 fields (key and value) or *.
-                        if (!isAsterisk(inAttributes)) {
-                            String[] attributeArray = inAttributes.split(":");
-                            for (String attribute : attributeArray) {
-                                String[] in = attribute.split("=", 2);
-                                if (in.length != 2) {
-                                    printStackTraceAndExit(
-                                            "Constraint attributes format is incorrect: " + providerInfo);
-                                }
-                            }
-                        }
-
-                        Constraint constraint = new Constraint(inType, inAlgorithm, inAttributes);
-
-                        if (debug != null) {
-                            debug.println("\t\t\tConstraint specified for security provider: " + providerName);
-                            debug.println("\t\t\t\twith type: " + inType);
-                            debug.println("\t\t\t\tfor algorithm: " + inAlgorithm);
-                            debug.println("\t\t\t\twith attributes: " + inAttributes);
-                        }
-                        constraints[cNum] = constraint;
-                        cNum++;
-                    }
-                    providerConstraints.put(providerName, constraints);
-                    if (debug != null) {
-                        debug.println("\t\tSuccessfully loaded constraints for security provider: " + providerName);
-                    }
-                } else {
-                    printStackTraceAndExit("Constraint format is incorrect: " + providerInfo);
+            // Differeriante between add, remove and override.
+            if (!isNullOrBlank(action)) {
+                if (providerChanged) {
+                    printStackTraceAndExit(
+                        "Cannot append or remove constraints since the provider " + providerName
+                        + " wasn't in this position in the profile extended.");
                 }
+                List<Constraint> existingConstraints = providerConstraints.get(providerName);
+                if (existingConstraints == null) {
+                    existingConstraints = new ArrayList<>();
+                    providerConstraints.put(providerName, existingConstraints);
+                }
+                if (action.equals("+")) { // Appending constraints.
+                    existingConstraints.addAll(constraints);
+                } else { // Removing constraints.
+                    for (Constraint toRemove: constraints) {
+                        if (!existingConstraints.remove(toRemove)) {
+                            printStackTraceAndExit(
+                                    "Constraint " + toRemove + "is not part of existing constraints.");
+                        }
+                    }
+                }
+            } else {
+                providerConstraints.put(providerName, constraints);
             }
 
             if (debug != null) {
-                debug.println("\tAll constraints of restricted security profile successfully loaded.");
+                debug.println("\t\t\tSuccessfully loaded constraints for security provider: " + providerName);
             }
         }
 
@@ -939,12 +1091,12 @@ public final class RestrictedSecurity {
             int pos = providerName.indexOf('-');
             providerName = (pos < 0) ? providerName : providerName.substring(0, pos);
 
-            Constraint[] constraints = providerConstraints.get(providerName);
+            List<Constraint> constraints = providerConstraints.get(providerName);
 
             if (constraints == null) {
                 // Disallow unknown providers.
                 return false;
-            } else if (constraints.length == 0) {
+            } else if (constraints.isEmpty()) {
                 // Allow this provider with no constraints.
                 return true;
             }
@@ -1114,79 +1266,183 @@ public final class RestrictedSecurity {
         /**
          * List the RestrictedSecurity profile currently used.
          */
-        private void listUsedProfile() {
+        private void listUsedProfile(String profileID) {
             System.out.println();
             System.out.println("Utilized Restricted Security Profile Info:");
             System.out.println("==========================================");
             System.out.println("The Restricted Security profile used is: " + profileID);
             System.out.println();
-            printProfile(profileID);
+            System.out.println(profileID + " Profile Info:");
+            System.out.println("==========================================");
+            printProperty(profileID + ".desc.name: ", profileProperties.get("descName"));
+            printProperty(profileID + ".desc.default: ", profileProperties.get("descIsDefaultString"));
+            printProperty(profileID + ".desc.fips: ", profileProperties.get("descIsFIPSString"));
+            printProperty(profileID + ".fips.mode: ", profileProperties.get("jdkFipsMode"));
+            printProperty(profileID + ".desc.number: ", profileProperties.get("descNumber"));
+            printProperty(profileID + ".desc.policy: ", profileProperties.get("descPolicy"));
+            printProperty(profileID + ".desc.sunsetDate: ", profileProperties.get("descSunsetDate"));
+            System.out.println();
+
+            // List providers.
+            System.out.println(profileID + " Profile Providers:");
+            System.out.println("===============================================");
+            for (int providerPosition = 0; providerPosition < providers.size(); providerPosition++) {
+                printProperty(profileID + ".jce.provider." + (providerPosition + 1) + ": ",
+                        providers.get(providerPosition));
+                String providerSimpleName = providersSimpleName.get(providerPosition);
+                for (Constraint providerConstraint: providerConstraints.get(providerSimpleName)) {
+                    System.out.println("\t" + providerConstraint.toString());
+                }
+            }
+            System.out.println();
+
+            // List profile restrictions.
+            System.out.println(profileID + " Profile Restrictions:");
+            System.out.println("==================================================");
+            printProperty(profileID + ".tls.disabledNamedCurves: ", profileProperties.get("jdkTlsDisabledNamedCurves"));
+            printProperty(profileID + ".tls.disabledAlgorithms: ", profileProperties.get("jdkTlsDisabledAlgorithms"));
+            printProperty(profileID + ".tls.ephemeralDHKeySize: ", profileProperties.get("jdkTlsEphemeralDHKeySize"));
+            printProperty(profileID + ".tls.legacyAlgorithms: ", profileProperties.get("jdkTlsLegacyAlgorithms"));
+            printProperty(profileID + ".jce.certpath.disabledAlgorithms: ", profileProperties.get("jdkCertpathDisabledAlgorithms"));
+            printProperty(profileID + ".jce.legacyAlgorithms: ", profileProperties.get("jdkSecurityLegacyAlgorithms"));
+            System.out.println();
+
+            printProperty(profileID + ".keystore.type: ", profileProperties.get("keyStoreType"));
+            printProperty(profileID + ".javax.net.ssl.keyStore: ", profileProperties.get("keyStore"));
+            printProperty(profileID + ".securerandom.provider: ", profileProperties.get("jdkSecureRandomProvider"));
+            printProperty(profileID + ".securerandom.algorithm: ", profileProperties.get("jdkSecureRandomAlgorithm"));
+            System.out.println();
         }
 
         private void printProfile(String profileToPrint) {
+            Set<String> propertyNames = securityProps.stringPropertyNames();
+            List<String> descKeys = new ArrayList<>();
+            List<String> providers = new ArrayList<>();
+            List<String> restrictions = new ArrayList<>();
+            for (String propertyName : propertyNames) {
+                if (propertyName.startsWith(profileToPrint + ".desc.") || propertyName.startsWith(profileToPrint + ".fips.")) {
+                    descKeys.add(propertyName + securityProps.getProperty(propertyName));
+                } else if (propertyName.startsWith(profileToPrint + ".jce.provider.")) {
+                    providers.add(propertyName + securityProps.getProperty(propertyName));
+                } else if (propertyName.startsWith(profileToPrint)) {
+                    restrictions.add(propertyName + securityProps.getProperty(propertyName));
+                }
+
+            }
+
             System.out.println(profileToPrint + " Profile Info:");
             System.out.println("==========================================");
-            printProperty(profileToPrint + ".desc.name: ",
-                    securityProps.getProperty(profileToPrint + ".desc.name"));
-            printProperty(profileToPrint + ".desc.default: ",
-                    securityProps.getProperty(profileToPrint + ".desc.default"));
-            printProperty(profileToPrint + ".desc.fips: ",
-                    securityProps.getProperty(profileToPrint + ".desc.fips"));
-            printProperty(profileToPrint + ".fips.mode: ",
-                    securityProps.getProperty(profileToPrint + ".fips.mode"));
-            printProperty(profileToPrint + ".desc.number: ",
-                    parseProperty(securityProps.getProperty(profileToPrint + ".desc.number")));
-            printProperty(profileToPrint + ".desc.policy: ",
-                    parseProperty(securityProps.getProperty(profileToPrint + ".desc.policy")));
-            printProperty(profileToPrint + ".desc.sunsetDate: ",
-                    parseProperty(securityProps.getProperty(profileToPrint + ".desc.sunsetDate")));
+            for (String descKey : descKeys) {
+                System.out.println(descKey);
+            }
             System.out.println();
 
             // List providers.
             System.out.println(profileToPrint + " Profile Providers:");
             System.out.println("===============================================");
-            for (int pNum = 1;; ++pNum) {
-            String providerInfo = securityProps
-                    .getProperty(profileToPrint + ".jce.provider." + pNum);
-
-                if ((providerInfo == null) || providerInfo.trim().isEmpty()) {
-                    break;
-                }
-                printProperty(profileToPrint + ".jce.provider." + pNum + ": ", providerInfo);
+            for (String provider : providers) {
+                System.out.println(provider);
             }
             System.out.println();
 
             // List profile restrictions.
             System.out.println(profileToPrint + " Profile Restrictions:");
             System.out.println("==================================================");
-            printProperty(profileToPrint + ".tls.disabledNamedCurves: ",
-                    parseProperty(securityProps.getProperty(profileToPrint + ".tls.disabledNamedCurves")));
-            printProperty(profileToPrint + ".tls.disabledAlgorithms: ",
-                    parseProperty(securityProps.getProperty(profileToPrint + ".tls.disabledAlgorithms")));
-            printProperty(profileToPrint + ".tls.ephemeralDHKeySize: ",
-                    parseProperty(securityProps.getProperty(profileToPrint + ".tls.ephemeralDHKeySize")));
-            printProperty(profileToPrint + ".tls.legacyAlgorithms: ",
-                    parseProperty(securityProps.getProperty(profileToPrint + ".tls.legacyAlgorithms")));
-            printProperty(profileToPrint + ".jce.certpath.disabledAlgorithms: ",
-                    parseProperty(securityProps.getProperty(profileToPrint + ".jce.certpath.disabledAlgorithms")));
-            printProperty(profileToPrint + ".jce.legacyAlgorithms: ",
-                    parseProperty(securityProps.getProperty(profileToPrint + ".jce.legacyAlgorithms")));
-            System.out.println();
-
-            printProperty(profileToPrint + ".keystore.type: ",
-                    parseProperty(securityProps.getProperty(profileToPrint + ".keystore.type")));
-            printProperty(profileToPrint + ".javax.net.ssl.keyStore: ",
-                    parseProperty(securityProps.getProperty(profileToPrint + ".javax.net.ssl.keyStore")));
-            printProperty(profileToPrint + ".securerandom.provider: ",
-                    parseProperty(securityProps.getProperty(profileToPrint + ".securerandom.provider")));
-            printProperty(profileToPrint + ".securerandom.algorithm: ",
-                    parseProperty(securityProps.getProperty(profileToPrint + ".securerandom.algorithm")));
+            for (String restriction : restrictions) {
+                System.out.println(restriction);
+            }
             System.out.println();
         }
 
-        private void printProperty(String name, String value) {
-            String valueToPrint = (value.isEmpty()) ? "NOT AVAILABLE" : value;
-            System.out.println(name + valueToPrint);
+        private static void printProperty(String name, String value) {
+            if (value != null) {
+                String valueToPrint = (value.isEmpty()) ? "EMPTY" : value;
+                System.out.println(name + valueToPrint);
+            } else if (debug != null) {
+                debug.println("Nothing to print. Value of property " + name + " is null.");
+            }
+        }
+
+        /**
+         * Only set a property if the value is not null.
+         *
+         * @param property  the property to be set
+         * @param value     the value to check and set the property to
+         * @return          whether the property was set
+         */
+        private boolean setProperty(String property, String value) {
+            if (debug != null) {
+                debug.println("Setting property: " + property);
+            }
+            value = parseProperty(value);
+            String newValue = null;
+            if (value != null) {
+                // Check if property overrides, adds to or removes from previous value.
+                String existingValue = profileProperties.get(property);
+                if (!value.isBlank() && value.startsWith("+")) {
+                    if (isPropertyAppendable(property)) {
+                        // Append additional values to property.
+                        value = value.substring(1, value.length()).trim();
+
+                        // Take existing value of property into account, if applicable.
+                        if (existingValue == null) {
+                            printStackTraceAndExit("Property '" + property + "' does not exist in parent profile. Cannot append.");
+                        } else if (existingValue.isBlank()) {
+                            newValue = value;
+                        } else {
+                            newValue = (value.isBlank()) ? existingValue : existingValue + ", " + value;
+                        }
+                    } else {
+                        printStackTraceAndExit("Property '" + property + "' is not appendable.");
+                    }
+                } else if (!value.isBlank() && value.startsWith("-")) {
+                    if (isPropertyAppendable(property)) {
+                        // Remove values from property.
+                        value = value.substring(1, value.length()).trim();
+                        if (!value.isBlank()) {
+                            List<String> existingValues = Arrays.asList(existingValue.split(","));
+                            existingValues = existingValues.stream().map(v -> v.trim()).collect(Collectors.toList());
+                            List<String> valuesToRemove = Arrays.asList(value.split(","));
+                            for (String valueToRemove : valuesToRemove) {
+                                if (existingValues.contains(valueToRemove.trim())) {
+                                    existingValues.remove(valueToRemove.trim());
+                                } else {
+                                    printStackTraceAndExit("Value '" + valueToRemove + "' is not in existing values.");
+                                }
+                            }
+                            newValue = String.join(",", existingValues);
+                        } else {
+                            // Nothing to do. Use existing value of property into account, if available.
+                            if (existingValue == null) {
+                                printStackTraceAndExit("Property '" + property + "' does not exist in parent profile. Cannot remove.");
+                            } else if (existingValue.isBlank()) {
+                                newValue = value;
+                            } else {
+                                newValue = existingValue;
+                            }
+                        }
+                    } else {
+                        printStackTraceAndExit("Property '" + property + "' is not appendable.");
+                    }
+                } else {
+                    newValue = value;
+                }
+                profileProperties.put(property, newValue);
+                return true;
+            }
+            if (debug != null) {
+                debug.println("Nothing to set. Value of property " + property + " is null.");
+            }
+
+            return false;
+        }
+
+        private String getProperty(String property) {
+            return profileProperties.get(property);
+        }
+
+        private boolean isPropertyAppendable(String property) {
+            return appendableProps.contains(property);
         }
 
         /**
@@ -1202,6 +1458,22 @@ public final class RestrictedSecurity {
 
             return string;
         }
+
+        private static void checkProviderFormat(String providerInfo, boolean update) {
+            Pattern p = Pattern.compile(
+    "^([A-Za-z0-9\\-\\.]+)\\s*(\\s[A-Za-z0-9\\$\\{\\}\\./]+)?\\s*(\\s\\[([\\+\\-])?([A-Za-z0-9\\{\\}\\.\\=\\*:,\\s]+)\\])?\\s*$");
+            Matcher m = p.matcher(providerInfo);
+            if (m.find()) {
+                String symbol = m.group(4);
+                if (!update && (symbol != null)) {
+                    printStackTraceAndExit("You cannot add or remove to provider "
+                            + m.group(1) + ". This is the base profile.");
+                }
+            } else {
+                printStackTraceAndExit("Provider format is incorrect: " + providerInfo);
+            }
+        }
+
 
         /**
          * Check if the brackets are balanced.
@@ -1261,6 +1533,40 @@ public final class RestrictedSecurity {
                 this.algorithm = algorithm;
                 this.attributes = attributes;
             }
+
+            @Override
+            public String toString() {
+                return "{" + type + ", " + algorithm + ", " + attributes + "}";
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (this == obj)
+                    return true;
+                if (obj == null)
+                    return false;
+                if (getClass() != obj.getClass())
+                    return false;
+                Constraint other = (Constraint) obj;
+                if (type == null) {
+                    if (other.type != null)
+                        return false;
+                } else if (!type.equals(other.type))
+                    return false;
+                if (algorithm == null) {
+                    if (other.algorithm != null)
+                        return false;
+                } else if (!algorithm.equals(other.algorithm))
+                    return false;
+                if (attributes == null) {
+                    if (other.attributes != null)
+                        return false;
+                } else if (!attributes.equals(other.attributes))
+                    return false;
+                return true;
+            }
+
+            
         }
     }
 }
