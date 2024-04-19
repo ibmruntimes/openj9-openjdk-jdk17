@@ -25,7 +25,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2022, 2023 All Rights Reserved
+ * (c) Copyright IBM Corp. 2022, 2024 All Rights Reserved
  * ===========================================================================
  */
 
@@ -59,6 +59,7 @@
 
 #include <assert.h>
 
+#include "criuhelpers.h"
 #include "java.h"
 #include "jni.h"
 
@@ -473,6 +474,10 @@ JavaMain(void* _args)
     jobjectArray mainArgs;
     int ret = 0;
     jlong start = 0, end = 0;
+
+#if defined(J9VM_OPT_CRAC_SUPPORT)
+    handleCRaCRestore(argc, argv);
+#endif /* defined(J9VM_OPT_CRAC_SUPPORT) */
 
     RegisterThread();
 
