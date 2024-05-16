@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2024, Azul Systems, Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,22 +22,8 @@
  * questions.
  */
 
-/*
- * @test
- * @bug 8296412
- * @compile TestInfiniteLoopWithUnmergedBackedges.jasm
- * @summary Infinite loops may not have the backedges merged, before we call IdealLoopTree::check_safepts
- * @requires vm.compiler2.enabled
- * @run main/othervm -Xcomp -XX:-TieredCompilation -XX:-LoopUnswitching
- *      -XX:CompileCommand=compileonly,TestInfiniteLoopWithUnmergedBackedges::test*
- *      TestInfiniteLoopWithUnmergedBackedgesMain
- */
+package nsk.jvmti.unit.extcallback;
 
-public class TestInfiniteLoopWithUnmergedBackedgesMain {
-    public static void main (String[] args) {
-        TestInfiniteLoopWithUnmergedBackedges.test_001(1, 0, 0, 0, 0);
-        TestInfiniteLoopWithUnmergedBackedges.test_002(1, 0, 0, 0, 0);
-        TestInfiniteLoopWithUnmergedBackedges.test_003(1, 0, 0, 0, 0);
-        TestInfiniteLoopWithUnmergedBackedges.test_004(1, 0, 0, 0, 0);
-    }
+public class Test2 {
+    public Test2() {}
 }
