@@ -1004,7 +1004,11 @@ public final class String
     private static int scale(int len, float expansionFactor) {
         // We need to perform double, not float, arithmetic; otherwise
         // we lose low order bits when len is larger than 2**24.
-        return (int)(len * (double)expansionFactor);
+        double result = len * (double)expansionFactor;
+        if (result > (double)Integer.MAX_VALUE) {
+            throw new OutOfMemoryError("Requested array size exceeds limit");
+        }
+        return (int)result;
     }
 
     private static Charset lookupCharset(String csn) throws UnsupportedEncodingException {
