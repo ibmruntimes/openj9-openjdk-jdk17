@@ -257,11 +257,6 @@ public final class SunEC extends Provider {
                                 if (nativeCryptTrace) {
                                     System.err.println("EC KeyPair Generation - Not using OpenSSL integration due to older version of OpenSSL (<1.1.0).");
                                 }
-                            } else if (isAIX) {
-                                /* Disabling OpenSSL usage on AIX due to perfomance regression observed. */
-                                if (nativeCryptTrace) {
-                                    System.err.println("EC KeyPair Generation - Not using OpenSSL integration on AIX.");
-                                }
                             } else {
                                 if (nativeCryptTrace) {
                                     System.err.println("EC KeyPair Generation - Using OpenSSL integration.");
