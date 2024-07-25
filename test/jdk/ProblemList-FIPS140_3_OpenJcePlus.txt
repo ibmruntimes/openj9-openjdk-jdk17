@@ -407,6 +407,8 @@ sun/security/krb5/ktab/FileKeyTab.java https://github.com/ibmruntimes/openj9-ope
 sun/security/krb5/ktab/KeyTabIndex.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 sun/security/krb5/runNameEquals.sh https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 javax/crypto/CipherSpi/ResetByteBuffer.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-s390x
+java/lang/System/LoggerFinder/SignedLoggerFinderTest/SignedLoggerFinderTest.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
+java/lang/ProcessBuilder/PipelineLeaksFD.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 #
 # Extended.openjdk Failures Exclude List for FIPS Testing
 #
