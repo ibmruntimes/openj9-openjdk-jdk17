@@ -446,9 +446,19 @@ java/io/Serializable/serialFilter/GlobalFilterTest.java https://github.com/ibmru
 java/io/Serializable/serialFilter/SerialFilterFactoryTest.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 java/nio/channels/unixdomain/Security.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 java/nio/file/spi/SetDefaultProvider.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
+java/rmi/dgc/VMID/CheckVMID.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
+java/rmi/dgc/dgcImplInsulation/DGCImplInsulation.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 java/rmi/registry/altSecurityManager/AltSecurityManager.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
+java/rmi/registry/classPathCodebase/ClassPathCodebase.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 java/rmi/registry/readTest/CodebaseTest.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
+java/rmi/server/RMIClassLoader/downloadArrayClass/DownloadArrayClass.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
+java/rmi/server/RMIClassLoader/loadProxyClasses/LoadProxyClasses.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
+java/rmi/server/RMIClassLoader/useCodebaseOnly/UseCodebaseOnly.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
+java/rmi/server/RMISocketFactory/useSocketFactory/registry/UseCustomSocketFactory.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
+java/rmi/server/RMISocketFactory/useSocketFactory/unicast/UseCustomSocketFactory.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
+java/rmi/server/clientStackTrace/ClientStackTrace.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 java/rmi/server/useCustomRef/UseCustomRef.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
+java/rmi/transport/dgcDeadLock/DGCDeadLock.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 javax/imageio/CachePremissionsTest/CachePermissionsTest.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 javax/net/ssl/ALPN/SSLEngineAlpnTest.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 javax/net/ssl/ALPN/SSLServerSocketAlpnTest.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
@@ -636,6 +646,7 @@ jdk/security/jarsigner/Properties.java https://github.com/ibmruntimes/openj9-ope
 jdk/security/jarsigner/Spec.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 jdk/security/logging/TestSecurityPropertyModificationLog.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 jdk/security/logging/TestTLSHandshakeLog.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
+sun/rmi/server/MarshalOutputStream/marshalForeignStub/MarshalForeignStub.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 sun/rmi/transport/tcp/disableMultiplexing/DisableMultiplexing.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 sun/security/ec/InvalidCurve.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 sun/security/ec/NSASuiteB/TestSHAwithECDSASignatureOids.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
