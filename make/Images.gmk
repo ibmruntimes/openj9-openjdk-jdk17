@@ -23,6 +23,10 @@
 # questions.
 #
 
+# ===========================================================================
+# (c) Copyright IBM Corp. 2024, 2024 All Rights Reserved
+# ===========================================================================
+
 default: all
 
 include $(SPEC)
@@ -108,6 +112,7 @@ $(eval $(call SetupExecute, jlink_jre, \
     OUTPUT_DIR := $(JRE_IMAGE_DIR), \
     SUPPORT_DIR := $(SUPPORT_OUTPUTDIR)/images/jre, \
     PRE_COMMAND := $(RM) -r $(JRE_IMAGE_DIR), \
+    POST_COMMAND := [ -d $(JRE_IMAGE_DIR)/lib/C ] && $(CP) -rfv $(IMAGES_OUTPUTDIR)/../support/modules_libs/openjceplus/C $(JRE_IMAGE_DIR)/lib, \
     COMMAND := $(JLINK_TOOL) --add-modules $(JRE_MODULES_LIST) \
         $(JLINK_JRE_EXTRA_OPTS) --output $(JRE_IMAGE_DIR), \
 ))
