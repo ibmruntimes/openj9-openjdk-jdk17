@@ -911,6 +911,7 @@ sun/security/tools/keytool/fakecacerts/TrustedCRL.java https://github.com/ibmrun
 sun/security/tools/keytool/fakecacerts/TrustedCert.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 sun/security/tools/keytool/fakegen/DefaultSignatureAlgorithm.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 sun/security/tools/keytool/fakegen/PSS.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
+sun/security/util/Debug/DebugOptions.java https://github.com/eclipse-openj9/openj9/issues/19977 aix-all,linux-ppc64le,linux-s390x,linux-x64,windows-all
 sun/security/util/HostnameMatcher/NullHostnameCheck.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 sun/security/validator/EndEntityExtensionCheck.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
 sun/security/validator/certreplace.sh https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 linux-x64,linux-ppc64le,linux-s390x,aix-all
