@@ -23,6 +23,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2024, 2024 All Rights Reserved
+ * ===========================================================================
+ */
+
 package sun.nio.ch;
 
 import java.io.FileDescriptor;
@@ -36,6 +42,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
+
+import sun.net.util.AIX;
 
 class SourceChannelImpl
     extends Pipe.SourceChannel
@@ -123,8 +131,11 @@ class SourceChannelImpl
             if (!tryClose()) {
                 long th = thread;
                 if (th != 0) {
-                    nd.preClose(fd);
+                    if (!AIX.isAIX)
+                        nd.preClose(fd);
                     NativeThread.signal(th);
+                    if (AIX.isAIX)
+                        nd.preClose(fd);
                 }
             }
         }
