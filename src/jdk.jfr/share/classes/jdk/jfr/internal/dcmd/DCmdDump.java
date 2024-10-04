@@ -201,31 +201,6 @@ final class DCmdDump extends AbstractDCmd {
 
                Options:
 
-                 begin           (Optional) Specify the time from which recording data will be included
-                                 in the dump file. The format is specified as local time.
-                                 (STRING, no default value)
-
-                 end             (Optional) Specify the time to which recording data will be included
-                                 in the dump file. The format is specified as local time.
-                                 (STRING, no default value)
-
-                                 Note: For both begin and end, the time must be in a format that can
-                                 be read by any of these methods:
-
-                                  java.time.LocalTime::parse(String),
-                                  java.time.LocalDateTime::parse(String)
-                                  java.time.Instant::parse(String)
-
-                                 For example, "13:20:15", "2020-03-17T09:00:00" or
-                                 "2020-03-17T09:00:00Z".
-
-                                 Note: begin and end times correspond to the timestamps found within
-                                 the recorded information in the flight recording data.
-
-                                 Another option is to use a time relative to the current time that is
-                                 specified by a negative integer followed by "s", "m" or "h".
-                                 For example, "-12h", "-15m" or "-30s"
-
                  filename        (Optional) Name of the file to which the flight recording data is
                                  dumped. If no filename is given, a filename is generated from the PID
                                  and the current date. The filename may also be a directory in which
@@ -244,13 +219,6 @@ final class DCmdDump extends AbstractDCmd {
                  name            (Optional) Name of the recording. If no name is given, data from all
                                  recordings is dumped. (STRING, no default value)
 
-                 path-to-gc-root (Optional) Flag for saving the path to garbage collection (GC) roots
-                                 at the time the recording data is dumped. The path information is
-                                 useful for finding memory leaks but collecting it can cause the
-                                 application to pause for a short period of time. Turn on this flag
-                                 only when you have an application that you suspect has a memory
-                                 leak. (BOOLEAN, false)
-
                Options must be specified using the <key> or <key>=<value> syntax.
 
                Example usage:
@@ -261,13 +229,6 @@ final class DCmdDump extends AbstractDCmd {
                 $ jcmd <pid> JFR.dump name=1 filename=%s
                 $ jcmd <pid> JFR.dump maxage=1h
                 $ jcmd <pid> JFR.dump maxage=1h maxsize=50M
-                $ jcmd <pid> JFR.dump fillename=leaks.jfr path-to-gc-root=true
-                $ jcmd <pid> JFR.dump begin=13:15
-                $ jcmd <pid> JFR.dump begin=13:15 end=21:30:00
-                $ jcmd <pid> JFR.dump end=18:00 maxage=10m
-                $ jcmd <pid> JFR.dump begin=2021-09-15T09:00:00 end=2021-09-15T10:00:00
-                $ jcmd <pid> JFR.dump begin=-1h
-                $ jcmd <pid> JFR.dump begin=-15m end=-5m
 
                """.formatted(exampleDirectory(), exampleFilename()).lines().toArray(String[]::new);
     }

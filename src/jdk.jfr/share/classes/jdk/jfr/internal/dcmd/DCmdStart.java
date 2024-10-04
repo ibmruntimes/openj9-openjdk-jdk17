@@ -319,14 +319,6 @@ final class DCmdStart extends AbstractDCmd {
                  disk            (Optional) Flag for also writing the data to disk while recording
                                  (BOOLEAN, true)
 
-                 dumponexit      (Optional) Flag for writing the recording to disk when the Java
-                                 Virtual Machine (JVM) shuts down. If set to 'true' and no value
-                                 is given for filename, the recording is written to a file in the
-                                 directory where the process was started. The file name is a
-                                 system-generated name that contains the process ID, the recording
-                                 ID and the current time stamp. (For example:
-                                 id-1-2021_09_14_09_00.jfr) (BOOLEAN, false)
-
                  duration        (Optional) Length of time to record. Note that 0s means forever
                                  (INTEGER followed by 's' for seconds 'm' for minutes or 'h' for
                                  hours, 0s)
@@ -351,20 +343,6 @@ final class DCmdStart extends AbstractDCmd {
                                  be less than the value for the maxchunksize parameter set with
                                  the JFR.configure command. (STRING, 0 (no max size))
 
-                 name            (Optional) Name of the recording. If no name is provided, a name
-                                 is generated. Make note of the generated name that is shown in
-                                 the response to the command so that you can use it with other
-                                 commands. (STRING, system-generated default name)
-
-                 path-to-gc-root (Optional) Flag for saving the path to garbage collection (GC)
-                                 roots at the end of a recording. The path information is useful
-                                 for finding memory leaks but collecting it is time consuming.
-                                 Turn on this flag only when you have an application that you
-                                 suspect has a memory leak. If the settings parameter is set to
-                                 'profile', then the information collected includes the stack
-                                 trace from where the potential leaking object wasallocated.
-                                 (BOOLEAN, false)
-
                  settings        (Optional) Name of the settings file that identifies which events
                                  to record. To specify more than one file, use the settings
                                  parameter repeatedly. Include the path if the file is not in
@@ -379,20 +357,6 @@ final class DCmdStart extends AbstractDCmd {
                                  without a predefined configuration file. (STRING,
                                  JAVA-HOME/lib/jfr/default.jfc)
 
-               Event settings and .jfc options can also be specified using the following syntax:
-
-                 jfc-option=value    (Optional) The option value to modify. To see available
-                                     options for a .jfc file, use the 'jfr configure' command.
-
-                 event-setting=value (Optional) The event setting value to modify. Use the form:
-                                     <event-name>#<setting-name>=<value>
-                                     To add a new event setting, prefix the event name with '+'.
-
-               In case of a conflict between a parameter and a .jfc option, the parameter will
-               take  precedence. The whitespace character can be omitted for timespan values,
-               i.e. 20s. For more information about the settings syntax, see Javadoc of the
-               jdk.jfr package.
-
                Options must be specified using the <key> or <key>=<value> syntax.
 
                Example usage:
@@ -404,11 +368,6 @@ final class DCmdStart extends AbstractDCmd {
                 $ jcmd <pid> JFR.start maxage=1h,maxsize=1000M
                 $ jcmd <pid> JFR.start settings=profile
                 $ jcmd <pid> JFR.start delay=5m,settings=my.jfc
-                $ jcmd <pid> JFR.start gc=high method-profiling=high
-                $ jcmd <pid> JFR.start jdk.JavaMonitorEnter#threshold=1ms
-                $ jcmd <pid> JFR.start +HelloWorld#enabled=true +HelloWorld#stackTrace=true
-                $ jcmd <pid> JFR.start settings=user.jfc com.example.UserDefined#enabled=true
-                $ jcmd <pid> JFR.start settings=none +Hello#enabled=true
 
                Note, if the default event settings are modified, overhead may exceed 1%%.
 
