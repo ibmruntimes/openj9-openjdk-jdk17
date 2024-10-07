@@ -24,7 +24,7 @@
 #
 
 # ===========================================================================
-# (c) Copyright IBM Corp. 2018, 2018 All Rights Reserved
+# (c) Copyright IBM Corp. 2018, 2025 All Rights Reserved
 # ===========================================================================
 
 include LibCommon.gmk
@@ -74,6 +74,26 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBNIO, \
     OPTIMIZATION := HIGH, \
     WARNINGS_AS_ERRORS_xlc := false, \
     CFLAGS := $(CFLAGS_JDKLIB), \
+    FileDispatcherImpl.c_CFLAGS := \
+        -I$(OPENJ9OMR_TOPDIR)/include_core \
+        -I$(OPENJ9_VM_BUILD_DIR)/jcl, \
+    Net.c_CFLAGS := \
+        -I$(OPENJ9OMR_TOPDIR)/include_core \
+        -I$(OPENJ9_VM_BUILD_DIR)/jcl, \
+    nio_util.c_CFLAGS := \
+        -I$(OPENJ9_TOPDIR)/runtime/include \
+        -I$(OPENJ9_TOPDIR)/runtime/oti \
+        -I$(OPENJ9OMR_TOPDIR)/include_core \
+        -I$(OPENJ9_VM_BUILD_DIR) \
+        -I$(OPENJ9_TOPDIR)/runtime/jcl \
+        -I$(OPENJ9_TOPDIR)/runtime/util \
+        -I$(OPENJ9_VM_BUILD_DIR)/jcl, \
+    SocketDispatcher.c_CFLAGS := \
+        -I$(OPENJ9OMR_TOPDIR)/include_core \
+        -I$(OPENJ9_VM_BUILD_DIR)/jcl, \
+    UnixDomainSockets.c_CFLAGS := \
+        -I$(OPENJ9OMR_TOPDIR)/include_core \
+        -I$(OPENJ9_VM_BUILD_DIR)/jcl, \
     DISABLED_WARNINGS_gcc := undef, \
     DISABLED_WARNINGS_clang := undef, \
     EXTRA_HEADER_DIRS := \
