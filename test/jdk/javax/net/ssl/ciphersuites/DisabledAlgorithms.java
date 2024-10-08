@@ -25,6 +25,7 @@
  * @test
  * @bug 8076221 8211883 8279164
  * @summary Check if weak cipher suites are disabled
+ * @library /test/lib
  * @modules jdk.crypto.ec
  * @run main/othervm DisabledAlgorithms default
  * @run main/othervm DisabledAlgorithms empty
@@ -44,6 +45,9 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
+
+import jdk.test.lib.Utils;
+import jdk.test.lib.security.SecurityUtils;
 
 public class DisabledAlgorithms {
 
@@ -129,6 +133,9 @@ public class DisabledAlgorithms {
                 checkFailure(disabled_ciphersuites);
                 break;
             case "empty":
+                if (Utils.isFIPS()) {
+                    return;
+                }
                 // reset jdk.tls.disabledAlgorithms
                 Security.setProperty("jdk.tls.disabledAlgorithms", "");
                 System.out.println("jdk.tls.disabledAlgorithms = "
