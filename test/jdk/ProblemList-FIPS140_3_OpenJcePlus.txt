@@ -288,6 +288,7 @@ javax/crypto/EncryptedPrivateKeyInfo/GetKeySpecException2.java https://github.co
 javax/crypto/EncryptedPrivateKeyInfo/GetKeySpecInvalidEncoding.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 aix-all,linux-ppc64le,linux-s390x,linux-x64,windows-all
 javax/crypto/JceSecurity/SunJCE_BC_LoadOrdering.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 aix-all,linux-ppc64le,linux-s390x,linux-x64,windows-all
 javax/crypto/JceSecurity/VerificationResults.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 aix-all,linux-ppc64le,linux-s390x,linux-x64,windows-all
+javax/crypto/KEM/RSA_KEM.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 generic-all
 javax/crypto/KeyGenerator/CompareKeys.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 aix-all,linux-ppc64le,linux-s390x,linux-x64,windows-all
 javax/crypto/KeyGenerator/TestGetInstance.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 aix-all,linux-ppc64le,linux-s390x,linux-x64,windows-all
 javax/crypto/Mac/ByteBuffers.java https://github.com/ibmruntimes/openj9-openjdk-jdk17/issues/321 aix-all,linux-ppc64le,linux-s390x,linux-x64,windows-all
