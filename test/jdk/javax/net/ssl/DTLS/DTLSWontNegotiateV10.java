@@ -51,7 +51,9 @@ public class DTLSWontNegotiateV10 {
     private static final int READ_TIMEOUT_SECS = Integer.getInteger("readtimeout", 30);
 
     public static void main(String[] args) throws Exception {
-        if (args[0].equals(DTLSV_1_0)) {
+
+        if (args[0].equals(DTLSV_1_0) 
+        && !(Utils.isFIPS())) {
             SecurityUtils.removeFromDisabledTlsAlgs(DTLSV_1_0);
         }
 
@@ -74,6 +76,26 @@ public class DTLSWontNegotiateV10 {
                     break;
                 } catch (SocketTimeoutException exc) {
                     System.out.println("The server timed-out waiting for packets from the client.");
+                } catch (javax.net.ssl.SSLHandshakeException sslhe) {
+                    if (Utils.isFIPS()) {
+                        if(!SecurityUtils.TLS_PROTOCOLS.contains(args[0])) {
+                            if ("No appropriate protocol (protocol is disabled or cipher suites are inappropriate)".equals(sslhe.getMessage())) {
+                                System.out.println("Expected exception msg: <No appropriate protocol (protocol is disabled or cipher suites are inappropriate)> is caught");
+                                return;
+                            } else {
+                                System.out.println("Unexpected exception msg: <" + sslhe.getMessage() + "> is caught");
+                                return;
+                            }
+                        } else {
+                            System.out.println("Unexpected exception is caught");
+                            sslhe.printStackTrace();
+                            return;
+                        }
+                    } else {
+                        System.out.println("Unexpected exception is caught in Non-FIPS mode");
+                        sslhe.printStackTrace();
+                        return;
+                    }
                 }
             }
             if (tries == totalAttempts) {
