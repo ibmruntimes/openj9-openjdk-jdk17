@@ -50,6 +50,7 @@ public class OpenJ9PropsExt implements Callable<Map<String, String>> {
             map.put("vm.hasJFR", "false");
             map.put("vm.jvmti", "true");
             map.put("vm.musl", "false");
+            map.put("vm.opt.final.ClassUnloading", "true");
         }
         catch (Exception e) {
             e.printStackTrace();
