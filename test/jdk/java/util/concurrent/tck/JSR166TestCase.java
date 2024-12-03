@@ -39,7 +39,10 @@
  * @summary Conformance testing variant of JSR-166 tck tests.
  * @build *
  * @modules java.management
- * @run junit/othervm/timeout=1000 -Xdump:system+java+snap:events=systhrow,filter=java/lang/Exception,msg_filter=*JUnit* JSR166TestCase
+ * @run junit/othervm/timeout=1000
+ *      -Xdump:system+java+snap:events=throw+systhrow,filter=java/lang/Exception,msg_filter=*JUnit*
+ *      -Xdump:system+java+snap:events=throw+systhrow,filter=junit/framework/AssertionFailedError
+ *      JSR166TestCase
  */
 
 /*
@@ -48,7 +51,11 @@
  *          with java security manager set to allow.
  * @build *
  * @modules java.management
- * @run junit/othervm/timeout=1000 -Djava.security.manager=allow -Xdump:system+java+snap:events=systhrow,filter=java/lang/Exception,msg_filter=*JUnit* JSR166TestCase
+ * @run junit/othervm/timeout=1000
+ *      -Djava.security.manager=allow
+ *      -Xdump:system+java+snap:events=throw+systhrow,filter=java/lang/Exception,msg_filter=*JUnit*
+ *      -Xdump:system+java+snap:events=throw+systhrow,filter=junit/framework/AssertionFailedError
+ *      JSR166TestCase
  */
 
 /*
@@ -62,7 +69,8 @@
  *      --add-opens java.base/java.lang=ALL-UNNAMED
  *      -Djsr166.testImplementationDetails=true
  *      -Djava.util.concurrent.ForkJoinPool.common.parallelism=0
- *      -Xdump:system+java+snap:events=systhrow,filter=java/lang/Exception,msg_filter=*JUnit*
+ *      -Xdump:system+java+snap:events=throw+systhrow,filter=java/lang/Exception,msg_filter=*JUnit*
+ *      -Xdump:system+java+snap:events=throw+systhrow,filter=junit/framework/AssertionFailedError
  *      JSR166TestCase
  * @run junit/othervm/timeout=1000
  *      --add-opens java.base/java.util.concurrent=ALL-UNNAMED
@@ -70,7 +78,8 @@
  *      -Djsr166.testImplementationDetails=true
  *      -Djava.util.concurrent.ForkJoinPool.common.parallelism=1
  *      -Djava.util.secureRandomSeed=true
- *      -Xdump:system+java+snap:events=systhrow,filter=java/lang/Exception,msg_filter=*JUnit*
+ *      -Xdump:system+java+snap:events=throw+systhrow,filter=java/lang/Exception,msg_filter=*JUnit*
+ *      -Xdump:system+java+snap:events=throw+systhrow,filter=junit/framework/AssertionFailedError
  *      JSR166TestCase
  */
 
@@ -85,13 +94,15 @@
  *      --add-opens java.base/java.util.concurrent=ALL-UNNAMED
  *      --add-opens java.base/java.lang=ALL-UNNAMED
  *      -Djsr166.testImplementationDetails=true
- *      -Xdump:system+java+snap:events=systhrow,filter=java/lang/Exception,msg_filter=*JUnit*
+ *      -Xdump:system+java+snap:events=throw+systhrow,filter=java/lang/Exception,msg_filter=*JUnit*
+ *      -Xdump:system+java+snap:events=throw+systhrow,filter=junit/framework/AssertionFailedError
  *      JSR166TestCase
  * @run junit/othervm/timeout=1000/policy=tck.policy
  *      --add-opens java.base/java.util.concurrent=ALL-UNNAMED
  *      --add-opens java.base/java.lang=ALL-UNNAMED
  *      -Djsr166.testImplementationDetails=true
- *      -Xdump:system+java+snap:events=systhrow,filter=java/lang/Exception,msg_filter=*JUnit*
+ *      -Xdump:system+java+snap:events=throw+systhrow,filter=java/lang/Exception,msg_filter=*JUnit*
+ *      -Xdump:system+java+snap:events=throw+systhrow,filter=junit/framework/AssertionFailedError
  *      JSR166TestCase
  */
 
