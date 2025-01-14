@@ -135,7 +135,7 @@ public class DisabledAlgorithms {
                 checkFailure(DISABLED_CIPHERSUITES);
                 break;
             case "empty":
-                if (Utils.isFIPS()) {
+                if (SecurityUtils.isFIPS()) {
                     return;
                 }
                 // reset jdk.tls.disabledAlgorithms

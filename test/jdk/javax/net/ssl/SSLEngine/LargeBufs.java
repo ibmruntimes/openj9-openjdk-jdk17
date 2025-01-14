@@ -44,6 +44,7 @@ import java.nio.*;
 import java.util.Random;
 
 import jdk.test.lib.Utils;
+import jdk.test.lib.security.SecurityUtils;
 
 public class LargeBufs {
 
@@ -185,7 +186,7 @@ public class LargeBufs {
     public static void main(String args[]) throws Exception {
         LargeBufs test;
 
-        if (!(Utils.isFIPS())) {
+        if (!(SecurityUtils.isFIPS())) {
             // reset the security property to make sure that the algorithms
             // and keys used in this test are not disabled.
             Security.setProperty("jdk.tls.disabledAlgorithms", "");

@@ -39,6 +39,7 @@ import java.security.*;
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.*;
 
 import jdk.test.lib.Utils;
+import jdk.test.lib.security.SecurityUtils;
 
 public class EngineCloseOnAlert {
 
@@ -56,7 +57,7 @@ public class EngineCloseOnAlert {
     private static KeyManagerFactory KMF;
     private static TrustManagerFactory TMF;
 
-    private static final String[] ONECIPHER = (Utils.isFIPS()) ?
+    private static final String[] ONECIPHER = (SecurityUtils.isFIPS()) ?
         new String[] { "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256" } : new String[] { "TLS_RSA_WITH_AES_128_CBC_SHA" };
 
 

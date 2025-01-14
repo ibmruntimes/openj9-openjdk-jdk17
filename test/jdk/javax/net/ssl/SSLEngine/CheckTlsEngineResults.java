@@ -41,6 +41,7 @@ import java.security.*;
 import java.nio.*;
 
 import jdk.test.lib.Utils;
+import jdk.test.lib.security.SecurityUtils;
 
 public class CheckTlsEngineResults {
 
@@ -128,7 +129,7 @@ public class CheckTlsEngineResults {
         SSLEngineResult result1;        // clientEngine's results from last operation
         SSLEngineResult result2;        // serverEngine's results from last operation
         String[] suite1;
-        if (!(Utils.isFIPS())) {
+        if (!(SecurityUtils.isFIPS())) {
             suite1 = new String [] {
                 "TLS_DHE_RSA_WITH_AES_128_CBC_SHA" };
         } else {

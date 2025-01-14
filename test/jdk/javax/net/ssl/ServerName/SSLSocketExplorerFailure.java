@@ -49,6 +49,7 @@ import javax.net.ssl.*;
 import java.security.Security;
 
 import jdk.test.lib.Utils;
+import jdk.test.lib.security.SecurityUtils;
 
 public class SSLSocketExplorerFailure {
 
@@ -236,7 +237,7 @@ public class SSLSocketExplorerFailure {
     volatile Exception clientException = null;
 
     public static void main(String[] args) throws Exception {
-        if (!(Utils.isFIPS())) {
+        if (!(SecurityUtils.isFIPS())) {
             Security.setProperty("jdk.tls.disabledAlgorithms", "");
             Security.setProperty("jdk.certpath.disabledAlgorithms", "");
         }

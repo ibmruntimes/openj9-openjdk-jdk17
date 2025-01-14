@@ -58,13 +58,13 @@ public class Basics {
                 "/" + TRUSTSTORE_FILE;
 
     public static void main(String[] args) throws Exception {
-        if (!(Utils.isFIPS())) {
+        if (!(SecurityUtils.isFIPS())) {
             SecurityUtils.removeFromDisabledTlsAlgs("TLSv1.1");
             runTest("TLSv1.1", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA");
         }
 
         runTest("TLSv1.3", "TLS_AES_256_GCM_SHA384");
-        if (!(Utils.isFIPS())) {
+        if (!(SecurityUtils.isFIPS())) {
             runTest("TLSv1.2", "TLS_RSA_WITH_AES_256_GCM_SHA384");
         }
     }

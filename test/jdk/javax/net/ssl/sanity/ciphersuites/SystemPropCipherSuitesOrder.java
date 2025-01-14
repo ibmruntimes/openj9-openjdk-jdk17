@@ -83,7 +83,7 @@ public class SystemPropCipherSuitesOrder extends SSLSocketTemplate {
 
     public static void main(String[] args) {
 
-        if (Utils.isFIPS()) {
+        if (SecurityUtils.isFIPS()) {
             // if (!SecurityUtils.TLS_PROTOCOLS.contains(args[0])) {
             //     System.out.println(args[0] + " is not supported in FIPS 140-3.");
             //     return;
@@ -126,7 +126,7 @@ public class SystemPropCipherSuitesOrder extends SSLSocketTemplate {
         try {
             new SystemPropCipherSuitesOrder(args[0]).run();
         } catch (javax.net.ssl.SSLHandshakeException sslhe) {
-            if (Utils.isFIPS()) {
+            if (SecurityUtils.isFIPS()) {
                 if (!SecurityUtils.TLS_PROTOCOLS.contains(args[0]) 
                 || (servercipherSuites == null && clientcipherSuites == null)) {
                     if ("No appropriate protocol (protocol is disabled or cipher suites are inappropriate)".equals(sslhe.getMessage())) {
@@ -144,7 +144,7 @@ public class SystemPropCipherSuitesOrder extends SSLSocketTemplate {
         this.protocol = protocol;
         // Re-enable protocol if disabled.
         if (protocol.equals("TLSv1") || protocol.equals("TLSv1.1")) {
-            if (!(Utils.isFIPS())) {
+            if (!(SecurityUtils.isFIPS())) {
                 SecurityUtils.removeFromDisabledTlsAlgs(protocol);
             }
         }

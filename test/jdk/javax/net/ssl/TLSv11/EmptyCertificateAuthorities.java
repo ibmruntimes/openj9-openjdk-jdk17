@@ -254,7 +254,7 @@ public class EmptyCertificateAuthorities {
 
     public static void main(String[] args) throws Exception {
         // MD5 is used in this test case, don't disable MD5 algorithm.
-        if (!(Utils.isFIPS())) {
+        if (!(SecurityUtils.isFIPS())) {
             Security.setProperty("jdk.certpath.disabledAlgorithms",
                         "MD2, RSA keySize < 1024");
             Security.setProperty("jdk.tls.disabledAlgorithms",
@@ -282,7 +282,7 @@ public class EmptyCertificateAuthorities {
         try {
             new EmptyCertificateAuthorities();
         } catch (javax.net.ssl.SSLHandshakeException sslhe) {
-            if (Utils.isFIPS()) {
+            if (SecurityUtils.isFIPS()) {
                 if ("No appropriate protocol (protocol is disabled or cipher suites are inappropriate)".equals(sslhe.getMessage())) {
                     System.out.println("Expected exception msg: <No appropriate protocol (protocol is disabled or cipher suites are inappropriate)> is caught");
                     return;
