@@ -25,11 +25,8 @@
  * @test
  * @bug 8076221 8211883 8279164
  * @summary Check if weak cipher suites are disabled
-<<<<<<< HEAD
  * @library /javax/net/ssl/templates
-=======
  * @library /test/lib
->>>>>>> 6d1b21c539d (Update TLS tests to be run in FIPS 140-3 mode.)
  * @modules jdk.crypto.ec
  * @run main/othervm DisabledAlgorithms default
  * @run main/othervm DisabledAlgorithms empty
