@@ -1,6 +1,6 @@
 #!/bin/bash
 # ===========================================================================
-# (c) Copyright IBM Corp. 2017, 2024 All Rights Reserved
+# (c) Copyright IBM Corp. 2017, 2025 All Rights Reserved
 # ===========================================================================
 # This code is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 only, as
@@ -71,8 +71,8 @@ add_source() {
 #
 configure_defaults() {
 	local current_branch="$(git rev-parse --abbrev-ref HEAD)"
-	local openj9_branch=master
-	local omr_branch=openj9
+	local openj9_branch=v0.49.0-release
+	local omr_branch=v0.49.0-release
 
 	# If this repository is on a release branch, use the same branch names
 	# for OpenJ9 and OMR.
