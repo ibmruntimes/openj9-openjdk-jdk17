@@ -665,7 +665,8 @@ javax/net/ssl/TLSv13/EngineOutOfSeqCCS.java https://github.com/eclipse-openj9/op
 javax/net/ssl/TLSv13/HRRKeyShares.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 javax/net/ssl/ciphersuites/DisabledAlgorithms.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 javax/net/ssl/ciphersuites/ECCurvesconstraints.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
-javax/net/ssl/ciphersuites/TLSWontNegotiateDisabledCipherAlgos.java https://github.ibm.com/runtimes/backlog/issues/1089 generic-all
+javax/net/ssl/ciphersuites/TLSWontNegotiateDisabledCipherAlgos.java#Client https://github.ibm.com/runtimes/backlog/issues/1089 generic-all
+javax/net/ssl/ciphersuites/TLSWontNegotiateDisabledCipherAlgos.java#Server https://github.ibm.com/runtimes/backlog/issues/1089 generic-all
 javax/net/ssl/compatibility/ClientHelloProcessing.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 javax/net/ssl/finalize/SSLSessionFinalizeTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 javax/net/ssl/interop/ClientHelloBufferUnderflowException.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
