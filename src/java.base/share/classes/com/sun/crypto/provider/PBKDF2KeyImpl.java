@@ -68,7 +68,7 @@ final class PBKDF2KeyImpl implements javax.crypto.interfaces.PBEKey {
     @java.io.Serial
     private static final long serialVersionUID = -2234868909660948157L;
 
-    private static final boolean useNativePBKDF2 = Boolean.getBoolean(
+    private static final boolean useNativePBKDF2 = Boolean.parseBoolean(
             GetPropertyAction.privilegedGetProperty("jdk.nativePBKDF2"));
     private static NativeCrypto nativeCrypto;
     private static final boolean nativeCryptTrace = NativeCrypto.isTraceEnabled();
