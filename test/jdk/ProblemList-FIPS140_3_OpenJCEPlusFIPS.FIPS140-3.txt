@@ -133,6 +133,7 @@ com/sun/crypto/provider/KeyFactory/PBKDF2HmacSHA1FactoryTest.java https://github
 com/sun/crypto/provider/KeyFactory/TestProviderLeak.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 com/sun/crypto/provider/KeyGenerator/Test4628062.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 com/sun/crypto/provider/KeyGenerator/TestExplicitKeyLength.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+com/sun/crypto/provider/KeyProtector/IterationCount.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 com/sun/crypto/provider/Mac/DigestCloneabilityTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 com/sun/crypto/provider/Mac/EmptyByteBufferTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 com/sun/crypto/provider/Mac/HmacMD5.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
@@ -253,6 +254,7 @@ java/security/cert/CertPathBuilder/zeroLengthPath/ZeroLengthPath.java https://gi
 java/security/cert/CertPathValidator/OCSP/AIACheck.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/cert/CertPathValidator/OCSP/FailoverToCRL.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/cert/CertPathValidator/OCSP/GetAndPostTests.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+java/security/cert/CertPathValidator/OCSP/OCSPTimeout.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/cert/CertPathValidator/indirectCRL/CircularCRLOneLevel.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/cert/CertPathValidator/indirectCRL/CircularCRLOneLevelRevoked.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/cert/CertPathValidator/indirectCRL/CircularCRLTwoLevel.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
@@ -788,6 +790,7 @@ sun/security/provider/DSA/TestKeyPairGenerator.java https://github.com/eclipse-o
 sun/security/provider/DSA/TestLegacyDSAKeyPairGenerator.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/provider/DSA/TestMaxLengthDER.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/provider/KeyStore/CaseSensitiveAliases.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+sun/security/provider/KeyStore/DKSTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/provider/KeyStore/TestJKSWithSecretKey.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/provider/KeyStore/WrongPassword.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/provider/KeyStore/WrongStoreType.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
@@ -1028,6 +1031,7 @@ sun/security/validator/certreplace.sh https://github.com/eclipse-openj9/openj9/i
 sun/security/validator/samedn.sh https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/x509/AlgorithmId/ExtensibleAlgorithmId.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/x509/AlgorithmId/OmitAlgIdParam.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+sun/security/x509/URICertStore/AIACertTimeout.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/x509/URICertStore/CRLReadTimeout.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/x509/URICertStore/ExtensionsWithLDAP.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/x509/X509CRLImpl/OrderAndDup.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
