@@ -1,5 +1,5 @@
 # ===========================================================================
-# (c) Copyright IBM Corp. 2017, 2024 All Rights Reserved
+# (c) Copyright IBM Corp. 2017, 2025 All Rights Reserved
 # ===========================================================================
 # This code is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 only, as
@@ -76,6 +76,7 @@ OPENJ9_ENABLE_DEMOS        := @OPENJ9_ENABLE_DEMOS@
 OPENJ9_ENABLE_INLINE_TYPES := @OPENJ9_ENABLE_INLINE_TYPES@
 OPENJ9_ENABLE_JFR          := @OPENJ9_ENABLE_JFR@
 OPENJ9_ENABLE_JITSERVER    := @OPENJ9_ENABLE_JITSERVER@
+OPENJ9_ENABLE_SNAPSHOTS    := @OPENJ9_ENABLE_SNAPSHOTS@
 
 # for constructing version output
 COMPILER_VERSION_STRING := @COMPILER_VERSION_STRING@
@@ -87,10 +88,7 @@ J9JDK_EXT_NAME          := Extensions for OpenJDK for Eclipse OpenJ9
 
 # required by CMake
 CMAKE                   := @CMAKE@
-OPENJ9_ENABLE_CMAKE     := @OPENJ9_ENABLE_CMAKE@
 
-# required by UMA
-FREEMARKER_JAR          := @FREEMARKER_JAR@
 OPENJ9_BUILDSPEC        := @OPENJ9_BUILDSPEC@
 
 # required by JPP
@@ -168,11 +166,7 @@ PERL                    := @PERL@
 WITH_OPENSSL            := @WITH_OPENSSL@
 
 # Use '=' instead of ':=' because bootcycle-spec.gmk overrides OUTPUTDIR.
-ifeq (true,$(OPENJ9_ENABLE_CMAKE))
-  OPENJ9_VM_BUILD_DIR = $(OUTPUTDIR)/vm/runtime
-else
-  OPENJ9_VM_BUILD_DIR = $(OUTPUTDIR)/vm
-endif
+OPENJ9_VM_BUILD_DIR = $(OUTPUTDIR)/vm/runtime
 
 # Enable use of j9cfg.h in openjdk native code.
 $(foreach var, \

@@ -23,9 +23,17 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2024, 2025 All Rights Reserved
+ * ===========================================================================
+ */
+
 package sun.security.jca;
 
 import java.security.Provider;
+
+import openj9.internal.security.RestrictedSecurity;
 import sun.security.x509.AlgorithmId;
 
 /**
@@ -47,13 +55,6 @@ public class Providers {
     // current system-wide provider list
     // Note volatile immutable object, so no synchronization needed.
     private static volatile ProviderList providerList;
-
-    static {
-        // set providerList to empty list first in case initialization somehow
-        // triggers a getInstance() call (although that should not happen)
-        providerList = ProviderList.EMPTY;
-        providerList = ProviderList.fromSecurityProperties();
-    }
 
     private Providers() {
         // empty
@@ -91,6 +92,28 @@ public class Providers {
         "SunJCE",
     };
 
+    // Hardcoded fully-qualified class names of providers to use for JAR
+    // verification when RestrictedSecurity is enabled (similar to
+    // jarVerificationProviders array).
+    //
+    // MUST NOT be on the bootclasspath and not in signed JAR files.
+    private static final String[] restrictedJarVerificationProviders = {
+        "sun.security.provider.Sun",
+        "sun.security.rsa.SunRsaSign",
+        // Note: when SunEC is in a signed JAR file, it's not signed
+        // by EC algorithms. So it's still safe to be listed here.
+        "sun.security.ec.SunEC",
+        "com.sun.crypto.provider.SunJCE",
+    };
+
+    static {
+        // set providerList to empty list first in case initialization somehow
+        // triggers a getInstance() call (although that should not happen)
+        providerList = ProviderList.EMPTY;
+        providerList = ProviderList.fromSecurityProperties();
+        RestrictedSecurity.checkHashValues();
+    }
+
     // Return Sun provider.
     // This method should only be called by
     // sun.security.util.ManifestEntryVerifier and java.security.SecureRandom.
@@ -106,7 +129,10 @@ public class Providers {
      */
     public static Object startJarVerification() {
         ProviderList currentList = getProviderList();
-        ProviderList jarList = currentList.getJarList(jarVerificationProviders);
+        ProviderList jarList = currentList.getJarList(
+                RestrictedSecurity.isEnabled()
+                        ? restrictedJarVerificationProviders
+                        : jarVerificationProviders);
         if (jarList.getProvider("SUN") == null) {
             // add backup provider
             Provider p;

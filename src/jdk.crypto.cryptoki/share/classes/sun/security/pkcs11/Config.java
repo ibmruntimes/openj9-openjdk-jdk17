@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,7 +25,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2023, 2023 All Rights Reserved
+ * (c) Copyright IBM Corp. 2023, 2025 All Rights Reserved
  * ===========================================================================
  */
 
@@ -39,6 +39,7 @@ import java.util.*;
 
 import java.security.*;
 
+import sun.security.util.Debug;
 import sun.security.util.PropertyExpander;
 
 import sun.security.pkcs11.wrapper.*;
@@ -135,6 +136,9 @@ final class Config {
 
     // whether to print debug info during startup
     private boolean showInfo = false;
+
+    // whether to allow legacy mechanisms
+    private boolean allowLegacy = false;
 
     // template manager, initialized from parsed attributes
     private TemplateManager templateManager;
@@ -268,6 +272,10 @@ final class Config {
 
     boolean getShowInfo() {
         return (SunPKCS11.debug != null) || showInfo;
+    }
+
+    boolean getAllowLegacy() {
+        return allowLegacy;
     }
 
     TemplateManager getTemplateManager() {
@@ -463,6 +471,8 @@ final class Config {
                 destroyTokenAfterLogout = parseBooleanEntry(word);
             } else if (word.equals("showInfo")) {
                 showInfo = parseBooleanEntry(word);
+            } else if (word.equals("allowLegacy")) {
+                allowLegacy = parseBooleanEntry(word);
             } else if (word.equals("keyStoreCompatibilityMode")) {
                 keyStoreCompatibilityMode = parseBooleanEntry(word);
             } else if (word.equals("explicitCancel")) {
@@ -1049,11 +1059,23 @@ final class Config {
 
 class ConfigurationException extends IOException {
     private static final long serialVersionUID = 254492758807673194L;
+
+    private static final Debug configDebug = Debug.getInstance("sunpkcs11");
+
+    private static void debug(String msg) {
+         // If debugging is enabled, use the Debug class for additional sunpkcs11 logging.
+         if (configDebug != null) {
+             configDebug.println(msg);
+         }
+     }
+
     ConfigurationException(String msg) {
         super(msg);
+        debug(msg);
     }
 
     ConfigurationException(String msg, Throwable e) {
         super(msg, e);
+        debug(msg);
     }
 }

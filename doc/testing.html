@@ -44,6 +44,9 @@
 <li><a href="#docker-tests">Docker Tests</a></li>
 <li><a href="#non-us-locale">Non-US locale</a></li>
 <li><a href="#pkcs11-tests">PKCS11 Tests</a></li>
+<li><a href="#testing-with-alternative-security-providers"
+id="toc-testing-with-alternative-security-providers">Testing with
+alternative security providers</a></li>
 <li><a href="#client-ui-tests">Client UI Tests</a></li>
 </ul></li>
 </ul>
@@ -67,7 +70,7 @@ $ make exploded-test TEST=tier2</code></pre>
 <h2 id="test-selection">Test selection</h2>
 <p>All functionality is available using the <code>test</code> make target. In this use case, the test or tests to be executed is controlled using the <code>TEST</code> variable. To speed up subsequent test runs with no source code changes, <code>test-only</code> can be used instead, which do not depend on the source and test image build.</p>
 <p>For some common top-level tests, direct make targets have been generated. This includes all JTReg test groups, the hotspot gtest, and custom tests (if present). This means that <code>make test-tier1</code> is equivalent to <code>make test TEST=&quot;tier1&quot;</code>, but the latter is more tab-completion friendly. For more complex test runs, the <code>test TEST=&quot;x&quot;</code> solution needs to be used.</p>
-<p>The test specifications given in <code>TEST</code> is parsed into fully qualified test descriptors, which clearly and unambigously show which tests will be run. As an example, <code>:tier1</code> will expand to <code>jtreg:$(TOPDIR)/test/hotspot/jtreg:tier1 jtreg:$(TOPDIR)/test/jdk:tier1 jtreg:$(TOPDIR)/test/langtools:tier1 jtreg:$(TOPDIR)/test/nashorn:tier1 jtreg:$(TOPDIR)/test/jaxp:tier1</code>. You can always submit a list of fully qualified test descriptors in the <code>TEST</code> variable if you want to shortcut the parser.</p>
+<p>The test specifications given in <code>TEST</code> is parsed into fully qualified test descriptors, which clearly and unambigously show which tests will be run. As an example, <code>:tier1</code> will expand to include all subcomponent test directories that define `tier1`, for example: <code>jtreg:$(TOPDIR)/test/hotspot/jtreg:tier1 jtreg:$(TOPDIR)/test/jdk:tier1 jtreg:$(TOPDIR)/test/langtools:tier1 ...</code>. You can always submit a list of fully qualified test descriptors in the <code>TEST</code> variable if you want to shortcut the parser.</p>
 <h3 id="common-test-groups">Common Test Groups</h3>
 <p>Ideally, all tests are run for every change but this may not be practical due to the limited testing resources, the scope of the change, etc.</p>
 <p>The source tree currently defines a few common test groups in the relevant <code>TEST.groups</code> files. There are test groups that cover a specific component, for example <code>hotspot_gc</code>. It is a good idea to look into <code>TEST.groups</code> files to get a sense what tests are relevant to a particular JDK component.</p>
@@ -242,6 +245,18 @@ $ make test JTREG=&quot;VM_OPTIONS=-Duser.language=en -Duser.country=US&quot; TE
 <pre><code>$ make test TEST=&quot;jtreg:sun/security/pkcs11/Secmod/AddTrustedCert.java&quot; \
     JTREG=&quot;JAVA_OPTIONS=-Djdk.test.lib.artifacts.nsslib-linux_aarch64=/path/to/NSS-libs&quot;</code></pre>
 <p>For more notes about the PKCS11 tests, please refer to test/jdk/sun/security/pkcs11/README.</p>
+<h3 id="testing-with-alternative-security-providers">Testing with
+alternative security providers</h3>
+<p>Some security tests use a hardcoded provider for
+<code>KeyFactory</code>, <code>Cipher</code>,
+<code>KeyPairGenerator</code>, <code>KeyGenerator</code>,
+<code>AlgorithmParameterGenerator</code>, <code>KeyAgreement</code>,
+<code>Mac</code>, <code>MessageDigest</code>, <code>SecureRandom</code>,
+<code>Signature</code>, <code>AlgorithmParameters</code>,
+<code>Configuration</code>, <code>Policy</code>, or
+<code>SecretKeyFactory</code> objects. Specify the
+<code>-Dtest.provider.name=NAME</code> property to use a different
+provider for the service(s).</p>
 <h3 id="client-ui-tests">Client UI Tests</h3>
 <h4 id="system-key-shortcuts">System key shortcuts</h4>
 <p>Some Client UI tests use key sequences which may be reserved by the operating system. Usually that causes the test failure. So it is highly recommended to disable system key shortcuts prior testing. The steps to access and disable system key shortcuts for various platforms are provided below.</p>

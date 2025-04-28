@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1998, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1998, 2023, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -25,7 +25,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2020, 2023 All Rights Reserved
+ * (c) Copyright IBM Corp. 2020, 2024 All Rights Reserved
  * ===========================================================================
  */
 
@@ -376,7 +376,7 @@ CreateExecutionEnvironment(int *pargc, char ***pargv,
          *     o          $JVMPATH (directory portion only)
          *     o          $JRE/lib
          *     o          $JRE/../lib
-         *     o          ZLIBNX_PATH (for AIX P9 or newer systems with NX, unless -XX:-UseZlibNX is set)
+         *     o          ZLIBNX_PATH (for AIX P9 or newer systems with NX, when enabled)
          *
          * followed by the user's previous effective LD_LIBRARY_PATH, if
          * any.
@@ -386,7 +386,7 @@ CreateExecutionEnvironment(int *pargc, char ***pargv,
         int aixargc = *pargc - 1; // skip the launcher name
         char **aixargv = *pargv + 1;
         const char *aixarg = NULL;
-        jboolean useZlibNX = JNI_TRUE;
+        jboolean useZlibNX = JNI_FALSE;
         while (aixargc > 0 && *(aixarg = *aixargv) == '-') {
             if (JLI_StrCmp(aixarg, "-XX:+UseZlibNX") == 0) {
                 useZlibNX = JNI_TRUE;
@@ -430,7 +430,7 @@ CreateExecutionEnvironment(int *pargc, char ***pargv,
                 if (lastslash)
                     *lastslash = '\0';
 
-                sprintf(new_runpath, LD_LIBRARY_PATH "="
+                snprintf(new_runpath, new_runpath_size, LD_LIBRARY_PATH "="
                         "%s:"
                         "%s/lib:"
                         "%s/../lib"

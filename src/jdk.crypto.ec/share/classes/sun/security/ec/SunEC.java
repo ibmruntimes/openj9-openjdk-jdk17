@@ -72,30 +72,30 @@ public final class SunEC extends Provider {
     /* The property 'jdk.nativeEC' is used to control enablement of the native
      * ECDH implementation.
      */
-    private static final boolean useNativeECDH = NativeCrypto.isAlgorithmEnabled("jdk.nativeEC", "SunEC");
+    private static final boolean useNativeECDH = NativeCrypto.isAlgorithmEnabled("jdk.nativeEC", "ECDH");
 
     /* The property 'jdk.nativeECKeyGen' is used to control enablement of the native
      * ECKeyGeneration implementation.
      * OpenSSL 1.1.0 or above is required for EC key generation support.
      */
-    private static final boolean useNativeECKeyGen = NativeCrypto.isAlgorithmEnabled("jdk.nativeECKeyGen", "SunEC");
+    private static final boolean useNativeECKeyGen = NativeCrypto.isAlgorithmEnabled("jdk.nativeECKeyGen", "ECKeyGen");
 
     /* The property 'jdk.nativeECDSA' is used to control enablement of the native
      * ECDSA signature implementation.
      */
-    private static final boolean useNativeECDSA = NativeCrypto.isAlgorithmEnabled("jdk.nativeECDSA", "SunEC");
+    private static final boolean useNativeECDSA = NativeCrypto.isAlgorithmEnabled("jdk.nativeECDSA", "ECDSA");
 
     /* The property 'jdk.nativeXDHKeyAgreement' is used to control enablement of the native
      * XDH key agreement. XDH key agreement is only supported in OpenSSL 1.1.1 and above.
      */
     private static final boolean useNativeXDHKeyAgreement =
-        NativeCrypto.isAlgorithmEnabled("jdk.nativeXDHKeyAgreement", "SunEC");
+        NativeCrypto.isAlgorithmEnabled("jdk.nativeXDHKeyAgreement", "XDHKeyAgreement");
 
     /* The property 'jdk.nativeXDHKeyGen' is used to control enablement of the native
      * XDH key generation. XDH key generation is only supported in OpenSSL 1.1.1 and above.
      */
     private static final boolean useNativeXDHKeyGen =
-        NativeCrypto.isAlgorithmEnabled("jdk.nativeXDHKeyGen", "SunEC");
+        NativeCrypto.isAlgorithmEnabled("jdk.nativeXDHKeyGen", "XDHKeyGen");
 
     private static class ProviderServiceA extends ProviderService {
         ProviderServiceA(Provider p, String type, String algo, String cn,
@@ -256,11 +256,6 @@ public final class SunEC extends Provider {
                             if (NativeCrypto.getVersionIfAvailable() < NativeCrypto.OPENSSL_VERSION_1_1_0) {
                                 if (nativeCryptTrace) {
                                     System.err.println("EC KeyPair Generation - Not using OpenSSL integration due to older version of OpenSSL (<1.1.0).");
-                                }
-                            } else if (isAIX) {
-                                /* Disabling OpenSSL usage on AIX due to perfomance regression observed. */
-                                if (nativeCryptTrace) {
-                                    System.err.println("EC KeyPair Generation - Not using OpenSSL integration on AIX.");
                                 }
                             } else {
                                 if (nativeCryptTrace) {

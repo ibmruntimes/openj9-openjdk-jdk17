@@ -40,6 +40,7 @@ public class OpenJ9PropsExt implements Callable<Map<String, String>> {
             map.put("vm.bits", vmBits());
             map.put("vm.compiler2.enabled", "false");
             map.put("vm.debug", "false");
+            map.put("vm.flagless", "true");
             map.put("vm.gc.G1", "false");
             map.put("vm.gc.Parallel", "false");
             map.put("vm.gc.Serial", "false");
@@ -49,6 +50,7 @@ public class OpenJ9PropsExt implements Callable<Map<String, String>> {
             map.put("vm.hasJFR", "false");
             map.put("vm.jvmti", "true");
             map.put("vm.musl", "false");
+            map.put("vm.opt.final.ClassUnloading", "true");
         }
         catch (Exception e) {
             e.printStackTrace();

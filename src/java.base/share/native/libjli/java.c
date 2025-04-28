@@ -25,7 +25,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2022, 2023 All Rights Reserved
+ * (c) Copyright IBM Corp. 2022, 2024 All Rights Reserved
  * ===========================================================================
  */
 
@@ -59,6 +59,7 @@
 
 #include <assert.h>
 
+#include "criuhelpers.h"
 #include "java.h"
 #include "jni.h"
 
@@ -473,6 +474,10 @@ JavaMain(void* _args)
     jobjectArray mainArgs;
     int ret = 0;
     jlong start = 0, end = 0;
+
+#if defined(J9VM_OPT_CRAC_SUPPORT)
+    handleCRaCRestore(argc, argv);
+#endif /* defined(J9VM_OPT_CRAC_SUPPORT) */
 
     RegisterThread();
 
@@ -988,10 +993,11 @@ SetClassPath(const char *s)
     if (sizeof(format) - 2 + JLI_StrLen(s) < JLI_StrLen(s))
         // s is became corrupted after expanding wildcards
         return;
-    def = JLI_MemAlloc(sizeof(format)
+    size_t defSize = sizeof(format)
                        - 2 /* strlen("%s") */
-                       + JLI_StrLen(s));
-    sprintf(def, format, s);
+                       + JLI_StrLen(s);
+    def = JLI_MemAlloc(defSize);
+    snprintf(def, defSize, format, s);
     AddOption(def, NULL);
     if (s != orig)
         JLI_MemFree((char *) s);
@@ -1448,8 +1454,9 @@ ParseArguments(int *pargc, char ***pargv,
                    JLI_StrCCmp(arg, "-oss") == 0 ||
                    JLI_StrCCmp(arg, "-ms") == 0 ||
                    JLI_StrCCmp(arg, "-mx") == 0) {
-            char *tmp = JLI_MemAlloc(JLI_StrLen(arg) + 6);
-            sprintf(tmp, "-X%s", arg + 1); /* skip '-' */
+            size_t tmpSize = JLI_StrLen(arg) + 6;
+            char *tmp = JLI_MemAlloc(tmpSize);
+            snprintf(tmp, tmpSize, "-X%s", arg + 1); /* skip '-' */
             AddOption(tmp, NULL);
         } else if (JLI_StrCmp(arg, "-checksource") == 0 ||
                    JLI_StrCmp(arg, "-cs") == 0 ||
@@ -1781,8 +1788,9 @@ AddApplicationOptions(int cpathc, const char **cpathv)
             s = (char *) JLI_WildcardExpandClasspath(s);
             /* 40 for -Denv.class.path= */
             if (JLI_StrLen(s) + 40 > JLI_StrLen(s)) { // Safeguard from overflow
-                envcp = (char *)JLI_MemAlloc(JLI_StrLen(s) + 40);
-                sprintf(envcp, "-Denv.class.path=%s", s);
+                size_t envcpSize = JLI_StrLen(s) + 40;
+                envcp = (char *)JLI_MemAlloc(envcpSize);
+                snprintf(envcp, envcpSize, "-Denv.class.path=%s", s);
                 AddOption(envcp, NULL);
             }
         }
@@ -1794,8 +1802,9 @@ AddApplicationOptions(int cpathc, const char **cpathv)
     }
 
     /* 40 for '-Dapplication.home=' */
-    apphome = (char *)JLI_MemAlloc(JLI_StrLen(home) + 40);
-    sprintf(apphome, "-Dapplication.home=%s", home);
+    size_t apphomeSize = JLI_StrLen(home) + 40;
+    apphome = (char *)JLI_MemAlloc(apphomeSize);
+    snprintf(apphome, apphomeSize, "-Dapplication.home=%s", home);
     AddOption(apphome, NULL);
 
     /* How big is the application's classpath? */

@@ -23,6 +23,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2024, 2024 All Rights Reserved
+ * ===========================================================================
+ */
+
 package sun.nio.ch;
 
 import java.io.FileDescriptor;
@@ -62,6 +68,7 @@ import static java.net.StandardProtocolFamily.UNIX;
 import sun.net.ConnectionResetException;
 import sun.net.NetHooks;
 import sun.net.ext.ExtendedSocketOptions;
+import sun.net.util.AIX;
 import sun.net.util.SocketExceptions;
 
 /**
@@ -1014,11 +1021,14 @@ class SocketChannelImpl
                 long reader = readerThread;
                 long writer = writerThread;
                 if (reader != 0 || writer != 0) {
-                    nd.preClose(fd);
+                    if (!AIX.isAIX)
+                        nd.preClose(fd);
                     if (reader != 0)
                         NativeThread.signal(reader);
                     if (writer != 0)
                         NativeThread.signal(writer);
+                    if (AIX.isAIX)
+                        nd.preClose(fd);
                 }
             }
         }

@@ -23,6 +23,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2024, 2024 All Rights Reserved
+ * ===========================================================================
+ */
+
 package sun.nio.ch;
 
 import java.io.FileDescriptor;
@@ -56,6 +62,7 @@ import sun.net.NetHooks;
 import sun.net.PlatformSocketImpl;
 import sun.net.ResourceManager;
 import sun.net.ext.ExtendedSocketOptions;
+import sun.net.util.AIX;
 import sun.net.util.SocketExceptions;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -909,13 +916,16 @@ public final class NioSocketImpl extends SocketImpl implements PlatformSocketImp
             // then the socket is pre-closed and the thread(s) signalled. The
             // last thread will close the file descriptor.
             if (!tryClose()) {
-                nd.preClose(fd);
+                if (!AIX.isAIX)
+                    nd.preClose(fd);
                 long reader = readerThread;
                 if (reader != 0)
                     NativeThread.signal(reader);
                 long writer = writerThread;
                 if (writer != 0)
                     NativeThread.signal(writer);
+                if (AIX.isAIX)
+                    nd.preClose(fd);
             }
         }
     }

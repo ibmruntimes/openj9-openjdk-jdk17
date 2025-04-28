@@ -22,6 +22,11 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2025, 2025 All Rights Reserved
+ * ===========================================================================
+ */
 
 package jdk.javadoc.internal.doclets.formats.html;
 
@@ -35,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import javax.lang.model.element.Element;
 
@@ -336,15 +342,27 @@ public class Table extends Content {
             }
         }
         int colIndex = 0;
+        String regex = "<(?:a|area|button|input|object|select|textarea)\\b";
+        Pattern pattern = Pattern.compile(regex);
         for (Content c : contents) {
             HtmlStyle cellStyle = columnStyles.get(colIndex);
             // Replace invalid content with HtmlTree.EMPTY to make sure the cell isn't dropped
             HtmlTree cell = HtmlTree.DIV(cellStyle, c.isValid() ? c : HtmlTree.EMPTY);
+            // Add tab order to only plain text to avoid widget_tabbable_single(potential violation)
+            boolean matchFound = !c.isValid() || pattern.matcher(c.toString()).find();
             if (rowStyle != null) {
                 cell.addStyle(rowStyle);
+                if (!matchFound) {
+                    cell.put(HtmlAttr.ROLE, "tablist")
+                        .put(HtmlAttr.TABINDEX, "0");
+                }
             }
             for (String tabClass : tabClasses) {
                 cell.addStyle(tabClass);
+                if (!matchFound) {
+                    cell.put(HtmlAttr.ROLE, "tablist")
+                        .put(HtmlAttr.TABINDEX, "0");
+                }
             }
             row.add(cell);
             colIndex++;

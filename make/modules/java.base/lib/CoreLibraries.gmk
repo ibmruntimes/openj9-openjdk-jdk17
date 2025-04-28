@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2011, 2022, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2011, 2023, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -22,6 +22,10 @@
 # or visit www.oracle.com if you need additional information or have any
 # questions.
 #
+
+# ===========================================================================
+# (c) Copyright IBM Corp. 2025, 2025 All Rights Reserved
+# ===========================================================================
 
 ##########################################################################################
 # libfdlibm is statically linked with libjava below and not delivered into the
@@ -91,7 +95,30 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBJAVA, \
     OPTIMIZATION := HIGH, \
     CFLAGS := $(CFLAGS_JDKLIB) \
         $(LIBJAVA_CFLAGS), \
+    check_version.c_CFLAGS := \
+        -I$(OPENJ9_TOPDIR)/runtime/include \
+        -I$(OPENJ9_TOPDIR)/runtime/oti \
+        -I$(OPENJ9OMR_TOPDIR)/include_core \
+        -I$(OPENJ9_VM_BUILD_DIR) \
+        -I$(OPENJ9_TOPDIR)/runtime/jcl \
+        -I$(OPENJ9_TOPDIR)/runtime/util \
+        -I$(OPENJ9_VM_BUILD_DIR)/jcl, \
+    io_util_md.c_CFLAGS := \
+        -I$(OPENJ9OMR_TOPDIR)/include_core \
+        -I$(OPENJ9_VM_BUILD_DIR)/jcl, \
     jdk_util.c_CFLAGS := $(VERSION_CFLAGS), \
+    ProcessImpl_md.c_CFLAGS := $(VERSION_CFLAGS), \
+    UnixFileSystem_md.c_CFLAGS := \
+        -I$(OPENJ9OMR_TOPDIR)/include_core \
+        -I$(OPENJ9_VM_BUILD_DIR)/jcl, \
+    VM.c_CFLAGS := \
+        -I$(OPENJ9_TOPDIR)/runtime/include \
+        -I$(OPENJ9_TOPDIR)/runtime/oti \
+        -I$(OPENJ9OMR_TOPDIR)/include_core \
+        -I$(OPENJ9_VM_BUILD_DIR) \
+        -I$(OPENJ9_TOPDIR)/runtime/jcl \
+        -I$(OPENJ9_TOPDIR)/runtime/util \
+        -I$(OPENJ9_VM_BUILD_DIR)/jcl, \
     EXTRA_HEADER_DIRS := libfdlibm, \
     WARNINGS_AS_ERRORS_xlc := false, \
     DISABLED_WARNINGS_gcc := unused-result unused-function, \
@@ -136,7 +163,7 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBZIP, \
         $(LIBZ_CFLAGS), \
     CFLAGS_unix := $(BUILD_LIBZIP_MMAP) -UDEBUG, \
     DISABLED_WARNINGS_gcc := unused-function implicit-fallthrough, \
-    DISABLED_WARNINGS_clang := format-nonliteral, \
+    DISABLED_WARNINGS_clang := format-nonliteral deprecated-non-prototype, \
     LDFLAGS := $(LDFLAGS_JDKLIB) \
         $(call SET_SHARED_LIBRARY_ORIGIN), \
     LIBS_unix := -ljvm -ljava $(LIBZ_LIBS), \
@@ -205,7 +232,7 @@ $(eval $(call SetupJdkLibrary, BUILD_LIBJLI, \
     OPTIMIZATION := HIGH, \
     CFLAGS := $(CFLAGS_JDKLIB) $(LIBJLI_CFLAGS), \
     DISABLED_WARNINGS_gcc := unused-function implicit-fallthrough, \
-    DISABLED_WARNINGS_clang := sometimes-uninitialized format-nonliteral, \
+    DISABLED_WARNINGS_clang := sometimes-uninitialized format-nonliteral deprecated-non-prototype, \
     LDFLAGS := $(LDFLAGS_JDKLIB) \
         $(call SET_SHARED_LIBRARY_ORIGIN), \
     LIBS_unix := $(LIBZ_LIBS), \

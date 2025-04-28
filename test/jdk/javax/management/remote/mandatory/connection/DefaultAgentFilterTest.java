@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -112,7 +112,7 @@ public class DefaultAgentFilterTest {
                     AtomicBoolean error = new AtomicBoolean(false);
                     AtomicBoolean bindError = new AtomicBoolean(false);
                     // The predicate below tries to recognise failures.  On a port clash, it sees e.g.
-                    // Error: Exception thrown by the agent : java.rmi.server.ExportException: Port already in use: 46481; nested exception is:
+                    // Error: Exception thrown by the agent: java.rmi.server.ExportException: Port already in use: 46481; nested exception is:
                     // ...and will never see "main enter" from TestApp.
                     p = ProcessTools.startProcess(
                             TEST_APP_NAME + "{" + name + "}",
@@ -203,7 +203,7 @@ public class DefaultAgentFilterTest {
         pbArgs.addAll(Arrays.asList(args));
         pbArgs.add(TEST_APP_NAME);
 
-        ProcessBuilder pb = ProcessTools.createJavaProcessBuilder(
+        ProcessBuilder pb = ProcessTools.createLimitedTestJavaProcessBuilder(
                 pbArgs.toArray(new String[pbArgs.size()])
         );
 

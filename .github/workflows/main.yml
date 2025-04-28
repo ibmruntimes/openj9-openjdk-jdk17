@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2022, 2024, Oracle and/or its affiliates. All rights reserved.
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
 #
 # This code is free software; you can redistribute it and/or modify it
@@ -35,7 +35,7 @@ on:
       platforms:
         description: 'Platform(s) to execute on (comma separated, e.g. "linux-x64, macos, aarch64")'
         required: true
-        default: 'linux-x64, linux-x86, linux-x64-variants, linux-cross-compile, macos-x64, macos-aarch64, windows-x64, windows-aarch64'
+        default: 'linux-x64, linux-x86-hs, linux-x64-variants, linux-cross-compile, macos-x64, macos-aarch64, windows-x64, windows-aarch64'
       configure-arguments:
         description: 'Additional configure arguments'
         required: false
@@ -53,12 +53,12 @@ jobs:
   ### Determine platforms to include
   ###
 
-  select:
-    name: 'Select platforms'
+  prepare:
+    name: 'Prepare the run'
     runs-on: ubuntu-22.04
     outputs:
       linux-x64: ${{ steps.include.outputs.linux-x64 }}
-      linux-x86: ${{ steps.include.outputs.linux-x86 }}
+      linux-x86-hs: ${{ steps.include.outputs.linux-x86-hs }}
       linux-x64-variants: ${{ steps.include.outputs.linux-x64-variants }}
       linux-cross-compile: ${{ steps.include.outputs.linux-cross-compile }}
       macos-x64: ${{ steps.include.outputs.macos-x64 }}
@@ -67,7 +67,19 @@ jobs:
       windows-aarch64: ${{ steps.include.outputs.windows-aarch64 }}
 
     steps:
-        # This function must be inlined in main.yml, or we'd be forced to checkout the repo
+      - name: 'Checkout the scripts'
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github
+            make/conf/github-actions.conf
+
+      - name: 'Build JTReg'
+        id: jtreg
+        uses: ./.github/actions/build-jtreg
+
+      # TODO: Now that we are checking out the repo scripts, we can put the following code
+      # into a separate file
       - name: 'Check what jobs to run'
         id: include
         run: |
@@ -109,7 +121,7 @@ jobs:
           }
 
           echo "linux-x64=$(check_platform linux-x64 linux x64)" >> $GITHUB_OUTPUT
-          echo "linux-x86=$(check_platform linux-x86 linux x86)" >> $GITHUB_OUTPUT
+          echo "linux-x86-hs=$(check_platform linux-x86-hs linux x86)" >> $GITHUB_OUTPUT
           echo "linux-x64-variants=$(check_platform linux-x64-variants variants)" >> $GITHUB_OUTPUT
           echo "linux-cross-compile=$(check_platform linux-cross-compile cross-compile)" >> $GITHUB_OUTPUT
           echo "macos-x64=$(check_platform macos-x64 macos x64)" >> $GITHUB_OUTPUT
@@ -123,21 +135,22 @@ jobs:
 
   build-linux-x64:
     name: linux-x64
-    needs: select
+    needs: prepare
     uses: ./.github/workflows/build-linux.yml
     with:
       platform: linux-x64
       gcc-major-version: '10'
       configure-arguments: ${{ github.event.inputs.configure-arguments }}
       make-arguments: ${{ github.event.inputs.make-arguments }}
-    if: needs.select.outputs.linux-x64 == 'true'
+    if: needs.prepare.outputs.linux-x64 == 'true'
 
-  build-linux-x86:
-    name: linux-x86
-    needs: select
+  build-linux-x86-hs:
+    name: linux-x86-hs
+    needs: prepare
     uses: ./.github/workflows/build-linux.yml
     with:
       platform: linux-x86
+      make-target: 'hotspot'
       gcc-major-version: '10'
       gcc-package-suffix: '-multilib'
       apt-architecture: 'i386'
@@ -147,11 +160,11 @@ jobs:
       extra-conf-options: '--with-target-bits=32'
       configure-arguments: ${{ github.event.inputs.configure-arguments }}
       make-arguments: ${{ github.event.inputs.make-arguments }}
-    if: needs.select.outputs.linux-x86 == 'true'
+    if: needs.prepare.outputs.linux-x86-hs == 'true'
 
   build-linux-x64-hs-nopch:
     name: linux-x64-hs-nopch
-    needs: select
+    needs: prepare
     uses: ./.github/workflows/build-linux.yml
     with:
       platform: linux-x64
@@ -161,11 +174,11 @@ jobs:
       extra-conf-options: '--disable-precompiled-headers'
       configure-arguments: ${{ github.event.inputs.configure-arguments }}
       make-arguments: ${{ github.event.inputs.make-arguments }}
-    if: needs.select.outputs.linux-x64-variants == 'true'
+    if: needs.prepare.outputs.linux-x64-variants == 'true'
 
   build-linux-x64-hs-zero:
     name: linux-x64-hs-zero
-    needs: select
+    needs: prepare
     uses: ./.github/workflows/build-linux.yml
     with:
       platform: linux-x64
@@ -175,11 +188,11 @@ jobs:
       extra-conf-options: '--with-jvm-variants=zero --disable-precompiled-headers'
       configure-arguments: ${{ github.event.inputs.configure-arguments }}
       make-arguments: ${{ github.event.inputs.make-arguments }}
-    if: needs.select.outputs.linux-x64-variants == 'true'
+    if: needs.prepare.outputs.linux-x64-variants == 'true'
 
   build-linux-x64-hs-minimal:
     name: linux-x64-hs-minimal
-    needs: select
+    needs: prepare
     uses: ./.github/workflows/build-linux.yml
     with:
       platform: linux-x64
@@ -189,11 +202,11 @@ jobs:
       extra-conf-options: '--with-jvm-variants=minimal --disable-precompiled-headers'
       configure-arguments: ${{ github.event.inputs.configure-arguments }}
       make-arguments: ${{ github.event.inputs.make-arguments }}
-    if: needs.select.outputs.linux-x64-variants == 'true'
+    if: needs.prepare.outputs.linux-x64-variants == 'true'
 
   build-linux-x64-hs-optimized:
     name: linux-x64-hs-optimized
-    needs: select
+    needs: prepare
     uses: ./.github/workflows/build-linux.yml
     with:
       platform: linux-x64
@@ -204,45 +217,45 @@ jobs:
       extra-conf-options: '--with-debug-level=optimized --disable-precompiled-headers'
       configure-arguments: ${{ github.event.inputs.configure-arguments }}
       make-arguments: ${{ github.event.inputs.make-arguments }}
-    if: needs.select.outputs.linux-x64-variants == 'true'
+    if: needs.prepare.outputs.linux-x64-variants == 'true'
 
   build-linux-cross-compile:
     name: linux-cross-compile
-    needs:
-      - select
+    needs: prepare
     uses: ./.github/workflows/build-cross-compile.yml
     with:
       gcc-major-version: '10'
       configure-arguments: ${{ github.event.inputs.configure-arguments }}
       make-arguments: ${{ github.event.inputs.make-arguments }}
-    if: needs.select.outputs.linux-cross-compile == 'true'
+    if: needs.prepare.outputs.linux-cross-compile == 'true'
 
   build-macos-x64:
     name: macos-x64
-    needs: select
+    needs: prepare
     uses: ./.github/workflows/build-macos.yml
     with:
       platform: macos-x64
-      xcode-toolset-version: '12.5.1'
+      runs-on: 'macos-13'
+      xcode-toolset-version: '14.3.1'
       configure-arguments: ${{ github.event.inputs.configure-arguments }}
       make-arguments: ${{ github.event.inputs.make-arguments }}
-    if: needs.select.outputs.macos-x64 == 'true'
+    if: needs.prepare.outputs.macos-x64 == 'true'
 
   build-macos-aarch64:
     name: macos-aarch64
-    needs: select
+    needs: prepare
     uses: ./.github/workflows/build-macos.yml
     with:
       platform: macos-aarch64
-      xcode-toolset-version: '12.5.1'
-      extra-conf-options: '--openjdk-target=aarch64-apple-darwin'
+      runs-on: 'macos-14'
+      xcode-toolset-version: '15.4'
       configure-arguments: ${{ github.event.inputs.configure-arguments }}
       make-arguments: ${{ github.event.inputs.make-arguments }}
-    if: needs.select.outputs.macos-aarch64 == 'true'
+    if: needs.prepare.outputs.macos-aarch64 == 'true'
 
   build-windows-x64:
     name: windows-x64
-    needs: select
+    needs: prepare
     uses: ./.github/workflows/build-windows.yml
     with:
       platform: windows-x64
@@ -250,11 +263,11 @@ jobs:
       msvc-toolset-architecture: 'x86.x64'
       configure-arguments: ${{ github.event.inputs.configure-arguments }}
       make-arguments: ${{ github.event.inputs.make-arguments }}
-    if: needs.select.outputs.windows-x64 == 'true'
+    if: needs.prepare.outputs.windows-x64 == 'true'
 
   build-windows-aarch64:
     name: windows-aarch64
-    needs: select
+    needs: prepare
     uses: ./.github/workflows/build-windows.yml
     with:
       platform: windows-aarch64
@@ -264,7 +277,7 @@ jobs:
       extra-conf-options: '--openjdk-target=aarch64-unknown-cygwin'
       configure-arguments: ${{ github.event.inputs.configure-arguments }}
       make-arguments: ${{ github.event.inputs.make-arguments }}
-    if: needs.select.outputs.windows-aarch64 == 'true'
+    if: needs.prepare.outputs.windows-aarch64 == 'true'
 
   ###
   ### Test jobs
@@ -280,16 +293,6 @@ jobs:
       bootjdk-platform: linux-x64
       runs-on: ubuntu-22.04
 
-  test-linux-x86:
-    name: linux-x86
-    needs:
-      - build-linux-x86
-    uses: ./.github/workflows/test.yml
-    with:
-      platform: linux-x86
-      bootjdk-platform: linux-x64
-      runs-on: ubuntu-22.04
-
   test-macos-x64:
     name: macos-x64
     needs:
@@ -298,7 +301,19 @@ jobs:
     with:
       platform: macos-x64
       bootjdk-platform: macos-x64
-      runs-on: macos-11
+      runs-on: macos-13
+      xcode-toolset-version: '14.3.1'
+
+  test-macos-aarch64:
+    name: macos-aarch64
+    needs:
+      - build-macos-aarch64
+    uses: ./.github/workflows/test.yml
+    with:
+      platform: macos-aarch64
+      bootjdk-platform: macos-aarch64
+      runs-on: macos-14
+      xcode-toolset-version: '15.4'
 
   test-windows-x64:
     name: windows-x64
@@ -317,7 +332,7 @@ jobs:
     if: always()
     needs:
       - build-linux-x64
-      - build-linux-x86
+      - build-linux-x86-hs
       - build-linux-x64-hs-nopch
       - build-linux-x64-hs-zero
       - build-linux-x64-hs-minimal
@@ -328,31 +343,28 @@ jobs:
       - build-windows-x64
       - build-windows-aarch64
       - test-linux-x64
-      - test-linux-x86
       - test-macos-x64
+      - test-macos-aarch64
       - test-windows-x64
 
     steps:
-        # Hack to get hold of the api environment variables that are only defined for actions
-      - name: 'Get API configuration'
-        id: api
-        uses: actions/github-script@v7
-        with:
-          script: 'return { url: process.env["ACTIONS_RUNTIME_URL"], token: process.env["ACTIONS_RUNTIME_TOKEN"] }'
-
       - name: 'Remove bundle artifacts'
         run: |
           # Find and remove all bundle artifacts
-          ALL_ARTIFACT_URLS="$(curl -s \
-              -H 'Accept: application/json;api-version=6.0-preview' \
-              -H 'Authorization: Bearer ${{ fromJson(steps.api.outputs.result).token }}' \
-              '${{ fromJson(steps.api.outputs.result).url }}_apis/pipelines/workflows/${{ github.run_id }}/artifacts?api-version=6.0-preview')"
-          BUNDLE_ARTIFACT_URLS="$(echo "$ALL_ARTIFACT_URLS" | jq -r -c '.value | map(select(.name|startswith("bundles-"))) | .[].url')"
-          for url in $BUNDLE_ARTIFACT_URLS; do
-            echo "Removing $url"
-            curl -s \
-                -H 'Accept: application/json;api-version=6.0-preview' \
-                -H 'Authorization: Bearer ${{ fromJson(steps.api.outputs.result).token }}' \
-                -X DELETE "$url" \
+          # See: https://docs.github.com/en/rest/actions/artifacts?apiVersion=2022-11-28
+          ALL_ARTIFACT_IDS="$(curl -sL \
+              -H 'Accept: application/vnd.github+json' \
+              -H 'Authorization: Bearer ${{ github.token }}' \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              '${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts?per_page=100')"
+          BUNDLE_ARTIFACT_IDS="$(echo "$ALL_ARTIFACT_IDS" | jq -r -c '.artifacts | map(select(.name|startswith("bundles-"))) | .[].id')"
+          for id in $BUNDLE_ARTIFACT_IDS; do
+            echo "Removing $id"
+            curl -sL \
+                -X DELETE \
+                -H 'Accept: application/vnd.github+json' \
+                -H 'Authorization: Bearer ${{ github.token }}' \
+                -H 'X-GitHub-Api-Version: 2022-11-28' \
+                "${{ github.api_url }}/repos/${{ github.repository }}/actions/artifacts/$id" \
             || echo "Failed to remove bundle"
           done
