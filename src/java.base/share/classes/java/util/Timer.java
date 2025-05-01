@@ -25,7 +25,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2022, 2023 All Rights Reserved
+ * (c) Copyright IBM Corp. 2022, 2025 All Rights Reserved
  * ===========================================================================
  */
 
@@ -216,6 +216,7 @@ public class Timer {
         // only tasks scheduled before Checkpoint to be adjusted
         if ((InternalCRIUSupport.getCheckpointRestoreNanoTimeDelta() == 0)
             && (task != null)
+            && InternalCRIUSupport.isTimeCompensationEnabled()
         ) {
             task.criuAdjustRequired = true;
         }
@@ -279,6 +280,7 @@ public class Timer {
         // only tasks scheduled before Checkpoint to be adjusted
         if ((InternalCRIUSupport.getCheckpointRestoreNanoTimeDelta() == 0)
             && (task != null)
+            && InternalCRIUSupport.isTimeCompensationEnabled()
         ) {
             task.criuAdjustRequired = true;
         }
@@ -367,6 +369,7 @@ public class Timer {
         // only tasks scheduled before Checkpoint to be adjusted
         if ((InternalCRIUSupport.getCheckpointRestoreNanoTimeDelta() == 0)
             && (task != null)
+            && InternalCRIUSupport.isTimeCompensationEnabled()
         ) {
             task.criuAdjustRequired = true;
         }
