@@ -31,6 +31,7 @@
  * @bug 8139565
  * @summary Restrict certificates with DSA keys less than 1024 bits
  * @library /javax/net/ssl/templates
+ * @library /test/lib
  * @run main/othervm DisabledShortDSAKeys PKIX TLSv1.2
  * @run main/othervm DisabledShortDSAKeys SunX509 TLSv1.2
  * @run main/othervm DisabledShortDSAKeys PKIX TLSv1.1
@@ -54,6 +55,8 @@ import java.security.spec.*;
 import java.security.interfaces.*;
 import java.util.Base64;
 
+import jdk.test.lib.Utils;
+import jdk.test.lib.security.SecurityUtils;
 
 public class DisabledShortDSAKeys extends SSLContextTemplate {
 
@@ -175,11 +178,12 @@ public class DisabledShortDSAKeys extends SSLContextTemplate {
     volatile Exception clientException = null;
 
     public static void main(String[] args) throws Exception {
-        Security.setProperty("jdk.certpath.disabledAlgorithms",
-                "DSA keySize < 1024");
-        Security.setProperty("jdk.tls.disabledAlgorithms",
-                "DSA keySize < 1024");
-
+        if (!(SecurityUtils.isFIPS())) {
+            Security.setProperty("jdk.certpath.disabledAlgorithms",
+                        "DSA keySize < 1024");
+            Security.setProperty("jdk.tls.disabledAlgorithms",
+                        "DSA keySize < 1024");
+        }
         if (debug) {
             System.setProperty("javax.net.debug", "all");
         }
