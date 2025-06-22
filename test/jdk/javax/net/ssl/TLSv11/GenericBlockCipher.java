@@ -51,6 +51,7 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
+import jdk.test.lib.Utils;
 import jdk.test.lib.security.SecurityUtils;
 
 public class GenericBlockCipher {
@@ -150,7 +151,7 @@ public class GenericBlockCipher {
 
         // enable a block cipher
         sslSocket.setEnabledCipherSuites(
-            new String[] {"TLS_RSA_WITH_AES_128_CBC_SHA"});
+                new String[] {"TLS_RSA_WITH_AES_128_CBC_SHA"});
 
         InputStream sslIS = sslSocket.getInputStream();
         OutputStream sslOS = sslSocket.getOutputStream();
@@ -175,7 +176,9 @@ public class GenericBlockCipher {
 
     public static void main(String[] args) throws Exception {
         // Re-enable TLSv1.1 since test depends on it.
-        SecurityUtils.removeFromDisabledTlsAlgs("TLSv1.1");
+        if (!(SecurityUtils.isFIPS())) {
+            SecurityUtils.removeFromDisabledTlsAlgs("TLSv1.1");
+        }
 
         String keyFilename =
             System.getProperty("test.src", ".") + "/" + pathToStores +
@@ -195,7 +198,19 @@ public class GenericBlockCipher {
         /*
          * Start the tests.
          */
-        new GenericBlockCipher();
+        try {
+            new GenericBlockCipher();
+        } catch (javax.net.ssl.SSLHandshakeException sslhe) {
+            if (SecurityUtils.isFIPS()) {
+                if ("No appropriate protocol (protocol is disabled or cipher suites are inappropriate)".equals(sslhe.getMessage())) {
+                    System.out.println("Expected exception msg: <No appropriate protocol (protocol is disabled or cipher suites are inappropriate)> is caught");
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
     }
 
     Thread clientThread = null;
