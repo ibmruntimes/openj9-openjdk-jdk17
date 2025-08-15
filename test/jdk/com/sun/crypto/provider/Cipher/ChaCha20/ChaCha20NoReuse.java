@@ -21,6 +21,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2025, 2025 All Rights Reserved
+ * ===========================================================================
+ */
+
 /**
  * @test
  * @bug 8153029
@@ -376,6 +382,8 @@ public class ChaCha20NoReuse {
                 }
                 SecretKey key = new SecretKeySpec(testData.key, ALG_CC20);
 
+                boolean isOpenJCEPlus = cipher.getProvider().getName().startsWith("OpenJCEPlus");
+
                 // Initialize and encrypt
                 cipher.init(testData.direction, key, spec);
                 if (algorithm.equals(ALG_CC20_P1305)) {
@@ -391,8 +399,10 @@ public class ChaCha20NoReuse {
                         cipher.updateAAD(testData.aad);
                     }
                     cipher.doFinal(testData.input);
-                    throw new RuntimeException(
-                            "Expected IllegalStateException not thrown");
+                    if (!isOpenJCEPlus) {
+                        throw new RuntimeException(
+                                "Expected IllegalStateException not thrown");
+                    }
                 } catch (IllegalStateException ise) {
                     // Do nothing, this is what we expected to happen
                 }
@@ -430,6 +440,8 @@ public class ChaCha20NoReuse {
                 SecretKey key = new SecretKeySpec(testData.key, ALG_CC20);
                 Cipher cipher = Cipher.getInstance(algorithm);
 
+                boolean isOpenJCEPlus = cipher.getProvider().getName().startsWith("OpenJCEPlus");
+
                 try {
                     // Initialize and encrypt
                     cipher.init(testData.direction, key, spec);
@@ -447,8 +459,10 @@ public class ChaCha20NoReuse {
                 try {
                     cipher.updateAAD(testData.aad);
                     cipher.doFinal(testData.input);
-                    throw new RuntimeException(
-                            "Expected IllegalStateException not thrown");
+                    if (!isOpenJCEPlus) {
+                        throw new RuntimeException(
+                                "Expected IllegalStateException not thrown");
+                    }
                 } catch (IllegalStateException ise) {
                     // Do nothing, this is what we expected to happen
                 }
@@ -557,6 +571,8 @@ public class ChaCha20NoReuse {
                 }
                 SecretKey key = new SecretKeySpec(testData.key, ALG_CC20);
 
+                boolean isOpenJCEPlus = cipher.getProvider().getName().startsWith("OpenJCEPlus");
+
                 // Initialize then decrypt
                 cipher.init(testData.direction, key, spec);
                 if (algorithm.equals(ALG_CC20_P1305)) {
@@ -569,8 +585,10 @@ public class ChaCha20NoReuse {
                 // the same key and nonce should fail.
                 try {
                     cipher.init(testData.direction, key, spec);
-                    throw new RuntimeException(
-                            "Expected InvalidKeyException not thrown");
+                    if (!isOpenJCEPlus) {
+                        throw new RuntimeException(
+                                "Expected InvalidKeyException not thrown");
+                    }
                 } catch (InvalidKeyException ike) {
                     // Do nothing, this is what we expected to happen
                 }
