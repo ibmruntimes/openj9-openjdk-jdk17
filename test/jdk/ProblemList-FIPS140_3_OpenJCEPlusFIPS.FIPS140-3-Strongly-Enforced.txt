@@ -557,6 +557,7 @@ javax/net/ssl/DTLSv10/DTLSv10RehandshakeWithCipherChangeTest.java https://github
 javax/net/ssl/DTLSv10/DTLSv10RehandshakeWithDataExTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 javax/net/ssl/DTLSv10/DTLSv10SequenceNumberTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 javax/net/ssl/DTLSv10/DTLSv10UnsupportedCiphersTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+javax/net/ssl/finalize/SSLSessionFinalizeTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 javax/net/ssl/FixingJavadocs/ImplicitHandshake.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 javax/net/ssl/FixingJavadocs/KMTMGetNothing.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 javax/net/ssl/FixingJavadocs/SSLSessionNulls.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
@@ -886,6 +887,10 @@ sun/security/ssl/HandshakeOutStream/NullCerts.java https://github.com/eclipse-op
 sun/security/ssl/InputRecord/ClientHelloRead.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/InputRecord/SSLSocketTimeoutNulls.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/ProtocolVersion/HttpsProtocols.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+sun/security/ssl/SignatureScheme/DisableSignatureSchemePerScopeDTLS12.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+sun/security/ssl/SignatureScheme/DisableSignatureSchemePerScopeTLS12.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+sun/security/ssl/SignatureScheme/DisableSignatureSchemePerScopeTLS13.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+sun/security/ssl/SignatureScheme/MixingTLSUsageConstraintsWithNonTLS.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/SSLContextImpl/CustomizedCipherSuites.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/SSLContextImpl/CustomizedDTLSDefaultProtocols.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/SSLContextImpl/CustomizedDTLSServerDefaultProtocols.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
@@ -913,6 +918,7 @@ sun/security/ssl/SSLEngineImpl/SSLEngineDeadlock.java https://github.com/eclipse
 sun/security/ssl/SSLEngineImpl/SSLEngineFailedALPN.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/SSLEngineImpl/SSLEngineKeyLimit.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/SSLEngineImpl/TLS13BeginHandshake.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+sun/security/ssl/SSLLogger/DebugPropertyValuesTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/SSLLogger/LoggingFormatConsistency.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/SSLSessionContextImpl/DefautlCacheSize.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/SSLSessionContextImpl/Timeout.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
