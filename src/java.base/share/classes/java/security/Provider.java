@@ -1294,8 +1294,12 @@ public abstract class Provider extends Properties {
         Service s = serviceMap.get(key);
         if (s == null) {
             s = legacyMap.get(key);
-            if (s != null && !s.isValid()) {
+            if (s != null && (!s.isValid() || !RestrictedSecurity.isServiceAllowed(s))) {
                 legacyMap.remove(key, s);
+                return null;
+            }
+        } else {
+            if (!RestrictedSecurity.isServiceAllowed(s)) {
                 return null;
             }
         }
@@ -1334,11 +1338,16 @@ public abstract class Provider extends Properties {
         if (serviceSet == null || legacyChanged || servicesChanged) {
             Set<Service> set = new LinkedHashSet<>();
             if (!serviceMap.isEmpty()) {
-                set.addAll(serviceMap.values());
+                serviceMap.values().forEach(service -> {
+                    if (RestrictedSecurity.isServiceAllowed(service)) {
+                        // If allowed by RestrictedSecurity, add it to set.
+                        set.add(service);
+                    }
+                });
             }
             if (!legacyMap.isEmpty()) {
                 legacyMap.entrySet().forEach(entry -> {
-                    if (!entry.getValue().isValid()) {
+                    if (!entry.getValue().isValid() || !RestrictedSecurity.isServiceAllowed(entry.getValue())) {
                         legacyMap.remove(entry.getKey(), entry.getValue());
                     } else {
                         set.add(entry.getValue());
@@ -1346,7 +1355,7 @@ public abstract class Provider extends Properties {
                 });
             }
             serviceSet = Collections.unmodifiableSet(set);
-            servicesChanged = false;
+            servicesChanged = RestrictedSecurity.isEnabled();
             legacyChanged = false;
         }
         return serviceSet;
