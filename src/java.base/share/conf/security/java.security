@@ -181,7 +181,7 @@ RestrictedSecurity.NSS.140-2.securerandom.algorithm = PKCS11
 RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3.desc.name = OpenJCEPlusFIPS Cryptographic Module FIPS 140-3
 RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3.desc.default = false
 RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3.desc.fips = true
-RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3.desc.hash = SHA256:615fc6fb0c77c2465d106c6e9847a1272157dc4af294766949ee222de7db141b
+RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3.desc.hash = SHA256:7a1b8a1b9e77b021a4ed8acf97b90f92d9f262105c3fa70ff0fc3622587833c9
 RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3.desc.number = Certificate #XXX
 RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3.desc.policy = https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/
 RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3.desc.sunsetDate = 2026-09-21
@@ -230,6 +230,14 @@ RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3.jce.provider.1 = com.ibm.crypto.plu
     {Cipher, AES, *}, \
     {Cipher, AES/CCM/NoPadding, *}, \
     {Cipher, AES/GCM/NoPadding, *}, \
+    {Cipher, AES/KW/NoPadding, *}, \
+    {Cipher, AES/KWP/NoPadding, *}, \
+    {Cipher, AES_128/KW/NoPadding, *}, \
+    {Cipher, AES_128/KWP/NoPadding, *}, \
+    {Cipher, AES_192/KW/NoPadding, *}, \
+    {Cipher, AES_192/KWP/NoPadding, *}, \
+    {Cipher, AES_256/KW/NoPadding, *}, \
+    {Cipher, AES_256/KWP/NoPadding, *}, \
     {KeyAgreement, ECDH, *}, \
     {KeyFactory, DSA, *}, \
     {KeyFactory, EC, *}, \
