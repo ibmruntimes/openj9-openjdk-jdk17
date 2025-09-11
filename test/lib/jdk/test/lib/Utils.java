@@ -71,11 +71,18 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.security.KeyStore;
+import java.security.Key;
+import java.security.cert.Certificate;
+import java.util.Enumeration;
 
 import static java.lang.System.lineSeparator;
 import static jdk.test.lib.Asserts.assertTrue;
 import jdk.test.lib.process.ProcessTools;
 import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.security.SecurityUtils;
 
 /**
  * Common library for various test helper functions.
@@ -161,6 +168,7 @@ public final class Utils {
      * Contains the seed value used for {@link java.util.Random} creation.
      */
     public static final long SEED;
+
     static {
        var seed = Long.getLong(SEED_PROPERTY_NAME);
        if (seed != null) {
@@ -172,7 +180,12 @@ public final class Utils {
            if (v.build().orElse(0) > 0) {
                // promotable build -> use 1st 8 bytes of md5($version)
                try {
-                   var md = MessageDigest.getInstance("MD5");
+                   var md = MessageDigest.getInstance("SHA-256");
+                   System.out.println("System.getProperty(semeru.fips) is: " + System.getProperty("semeru.fips"));
+                   if (!SecurityUtils.isFIPS()) {
+                      System.out.println("Using MD5");
+                      md = MessageDigest.getInstance("MD5");
+                   }
                    var bytes = v.toString()
                                 .getBytes(StandardCharsets.UTF_8);
                    bytes = md.digest(bytes);
