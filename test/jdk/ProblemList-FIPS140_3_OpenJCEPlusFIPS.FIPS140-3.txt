@@ -176,7 +176,7 @@ java/security/KeyRep/Serial.java https://github.com/eclipse-openj9/openj9/issues
 java/security/KeyRep/SerialDSAPubKey.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/KeyRep/SerialOld.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/KeyStore/CheckInputStream.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
-java/security/KeyStore/CheckMacOSKeyChainTrust.java https://github.com/eclipse-openj9/openj9/issues/20343 mac-aarch64, mac-x64
+java/security/KeyStore/CheckMacOSKeyChainTrust.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/KeyStore/EntryMethods.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/KeyStore/KeyStoreBuilder.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/KeyStore/OneProbeOneNot.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
@@ -203,9 +203,11 @@ java/security/Policy/ExtensiblePolicy/ExtensiblePolicyWithJarTest.java https://g
 java/security/Policy/GetInstance/GetInstance.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/Policy/GetInstance/GetInstanceSecurity.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/Policy/SignedJar/SignedJarTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+java/security/Provider/CaseSensitiveServices.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/Provider/ChangeProviders.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/Provider/DefaultProviderList.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/Provider/GetInstance.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+java/security/Provider/GetServiceRace.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/Provider/NewInstance.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/Provider/ProviderInfoCheck.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/Provider/SecurityProviderModularTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
@@ -218,7 +220,7 @@ java/security/SecureRandom/DefaultProvider.java https://github.com/eclipse-openj
 java/security/SecureRandom/EnoughSeedTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/SecureRandom/GetAlgorithm.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/SecureRandom/GetInstanceTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
-java/security/SecureRandom/MacNativePRNGSetSeed.java https://github.com/eclipse-openj9/openj9/issues/20343 mac-aarch64, mac-x64
+java/security/SecureRandom/MacNativePRNGSetSeed.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/SecureRandom/MultiThreadTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/SecureRandom/NoSync.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/SecureRandom/Serialize.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
@@ -247,6 +249,7 @@ java/security/SignedObject/Chain.java https://github.com/eclipse-openj9/openj9/i
 java/security/SignedObject/Copy.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/SignedObject/Correctness.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/cert/CertPath/Serialize.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+java/security/cert/CertPathBuilder/GetInstance.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/cert/CertPathBuilder/akiExt/AKISerialNumber.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/cert/CertPathBuilder/selfIssued/DisableRevocation.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 java/security/cert/CertPathBuilder/selfIssued/KeyUsageMatters.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
@@ -294,6 +297,7 @@ javax/crypto/CryptoPermission/RC4AliasPermCheck.java https://github.com/eclipse-
 javax/crypto/CryptoPermission/RSANoLimit.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 javax/crypto/CryptoPermissions/InconsistentEntries.java https://github.com/eclipse-openj9/openj9/issues/20978 generic-all
 javax/crypto/EncryptedPrivateKeyInfo/GetAlgName.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+javax/crypto/EncryptedPrivateKeyInfo/GetEncoded.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 javax/crypto/EncryptedPrivateKeyInfo/GetKeySpec.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 javax/crypto/EncryptedPrivateKeyInfo/GetKeySpecException.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 javax/crypto/EncryptedPrivateKeyInfo/GetKeySpecException2.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
@@ -948,6 +952,7 @@ sun/security/ssl/SSLSocketImpl/InvalidateServerSessionRenegotiate.java https://g
 sun/security/ssl/SSLSocketImpl/LargePacketAfterHandshakeTest.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/SSLSocketImpl/NewSocketMethods.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/SSLSocketImpl/NoImpactServerRenego.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
+sun/security/ssl/SSLSocketImpl/NonAutoClose.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/SSLSocketImpl/NotifyHandshakeTest.sh https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/SSLSocketImpl/RejectClientRenego.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
 sun/security/ssl/SSLSocketImpl/ReuseAddr.java https://github.com/eclipse-openj9/openj9/issues/20343 generic-all
