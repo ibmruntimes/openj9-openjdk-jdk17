@@ -810,6 +810,7 @@ sun/security/ssl/SignatureScheme/CustomizedServerSchemes.java https://github.com
 sun/security/ssl/SignatureScheme/DisableSignatureSchemePerScopeDTLS12.java https://github.com/eclipse-openj9/openj9/issues/20978 generic-all
 sun/security/ssl/SignatureScheme/DisableSignatureSchemePerScopeTLS12.java https://github.com/eclipse-openj9/openj9/issues/20978 generic-all
 sun/security/ssl/SignatureScheme/DisableSignatureSchemePerScopeTLS13.java https://github.com/eclipse-openj9/openj9/issues/20978 generic-all
+sun/security/ssl/SignatureScheme/MD5NotAllowedInTLS13CertificateSignature.java https://github.com/eclipse-openj9/openj9/issues/20978 generic-all
 sun/security/ssl/SignatureScheme/MixingTLSUsageConstraintsWithNonTLS.java https://github.com/eclipse-openj9/openj9/issues/20978 generic-all
 sun/security/ssl/SignatureScheme/SigAlgosExtTestWithTLS12.java https://github.com/eclipse-openj9/openj9/issues/20978 generic-all
 sun/security/ssl/SignatureScheme/SigAlgosExtTestWithTLS13.java https://github.com/eclipse-openj9/openj9/issues/20978 generic-all
