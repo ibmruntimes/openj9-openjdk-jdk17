@@ -31,6 +31,7 @@ import java.security.PrivilegedAction;
 import java.security.Provider;
 import java.security.Provider.Service;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -64,6 +65,8 @@ public final class RestrictedSecurity {
     private static boolean isFIPSEnabled;
 
     private static final boolean allowSetProperties;
+    private static final boolean supressSunsetWarning;
+    private static final boolean ignoreSunsetExpiration;
 
     private static final boolean isNSSSupported;
     private static final boolean isOpenJCEPlusCertifiedPlatform;
@@ -95,7 +98,9 @@ public final class RestrictedSecurity {
                                 System.getProperty("semeru.customprofile"),
                                 System.getProperty("os.name"),
                                 System.getProperty("os.arch"),
-                                System.getProperty("semeru.fips.allowsetproperties") };
+                                System.getProperty("semeru.fips.allowsetproperties"),
+                                System.getProperty("semeru.restrictedsecurity.supresssunsetwarning", "false"),
+                                System.getProperty("semeru.restrictedsecurity.ignoresunsetexpiration", "false") };
                     }
                 });
         final List<String> nssSupportedArch = List.of("amd64", "ppc64le", "s390x");
@@ -117,6 +122,8 @@ public final class RestrictedSecurity {
 
         userEnabledFIPS = Boolean.parseBoolean(props[0]);
         allowSetProperties = Boolean.parseBoolean(props[4]);
+        supressSunsetWarning = Boolean.parseBoolean(props[5]);
+        ignoreSunsetExpiration = Boolean.parseBoolean(props[6]);
 
         if (userEnabledFIPS) {
             if (isFIPSSupported) {
@@ -633,9 +640,27 @@ public final class RestrictedSecurity {
             printStackTraceAndExit("Restricted security property is null.");
         }
 
+        int expireMonths = monthsToPolicySunset(restricts.descSunsetDate);
+        // Check if the SunsetDate will expire within 6 months.
+        if (expireMonths <= 6) {
+            if (!supressSunsetWarning) {
+                System.err.println("WARNING: The current security profile will sunset within "
+                        + expireMonths + " months, on " + restricts.descSunsetDate + ".");
+            }
+        }
+
         // Check if the SunsetDate expired.
-        if (isPolicySunset(restricts.descSunsetDate)) {
-            printStackTraceAndExit("Restricted security policy expired.");
+        if (expireMonths == 0) {
+            if (ignoreSunsetExpiration) {
+                System.err.println("WARNING: The current security profile expired on " + restricts.descSunsetDate
+                        + ", but the system property semeru.restrictedsecurity.ignoresunsetexpiration=true is set."
+                        + " Sunset enforcement is being ignored — this configuration is NOT secure and may violate"
+                        + " compliance requirements.");
+            } else {
+                printStackTraceAndExit(
+                        "Restricted security policy has expired. The associated library will not be loaded,"
+                                + " and any application functionality that depends on it will fail to initialize.");
+            }
         }
 
         // Check secure random settings.
@@ -654,25 +679,30 @@ public final class RestrictedSecurity {
      * Check if restricted security policy is sunset.
      *
      * @param descSunsetDate the sunset date from java.security
-     * @return true if restricted security policy sunset
+     * @return the months until restricted security policy sunset
      */
-    private static boolean isPolicySunset(String descSunsetDate) {
-        boolean isSunset = false;
-        // Only check if a sunset date is specified in the profile.
-        if (!isNullOrBlank(descSunsetDate)) {
-            try {
-                isSunset = LocalDate.parse(descSunsetDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-                        .isBefore(LocalDate.now());
-            } catch (DateTimeParseException except) {
-                printStackTraceAndExit(
-                        "Restricted security policy sunset date is incorrect, the correct format is yyyy-MM-dd.");
-            }
+    private static int monthsToPolicySunset(String descSunsetDate) {
+        // If no sunset date is specified, it will not sunset.
+        if (isNullOrBlank(descSunsetDate)) {
+            return Integer.MAX_VALUE;
         }
 
-        if (debug != null) {
-            debug.println("Restricted security policy is sunset: " + isSunset);
+        try {
+            LocalDate sunsetDate = LocalDate.parse(descSunsetDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            LocalDate now = LocalDate.now();
+
+            if (sunsetDate.isBefore(now)) {
+                return 0; // already sunset.
+            }
+
+            Period period = Period.between(now, sunsetDate);
+            return period.getYears() * 12 + period.getMonths();
+
+        } catch (DateTimeParseException except) {
+            printStackTraceAndExit(
+                    "Restricted security policy sunset date is incorrect, the correct format is yyyy-MM-dd.");
         }
-        return isSunset;
+        return Integer.MAX_VALUE; 
     }
 
     /**
