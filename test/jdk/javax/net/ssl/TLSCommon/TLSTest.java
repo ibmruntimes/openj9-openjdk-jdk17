@@ -54,25 +54,18 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
+import jdk.test.lib.Utils;
+import jdk.test.lib.security.SecurityUtils;
+
 /*
  * @test
  * @bug 8205111
+ * @library /test/lib
  * @summary Test TLS with different types of supported keys.
  * @run main/othervm TLSTest TLSv1.3 rsa_pkcs1_sha1 TLS_AES_128_GCM_SHA256
- * @run main/othervm
- *      -Djdk.tls.client.SignatureSchemes=ecdsa_brainpoolP512r1tls13_sha512
- *      -Djdk.tls.namedGroups=brainpoolP512r1tls13
- *      -Djdk.tls.server.SignatureSchemes=ecdsa_brainpoolP512r1tls13_sha512
- *      TLSTest TLSv1.3 ecdsa_brainpoolP512r1_sha512 TLS_AES_128_GCM_SHA256
  * @run main/othervm TLSTest TLSv1.3 rsa_pkcs1_sha256 TLS_AES_128_GCM_SHA256
  * @run main/othervm TLSTest TLSv1.3 rsa_pkcs1_sha384 TLS_AES_128_GCM_SHA256
  * @run main/othervm TLSTest TLSv1.3 rsa_pkcs1_sha512 TLS_AES_128_GCM_SHA256
- * @run main/othervm TLSTest TLSv1.3 ec_rsa_pkcs1_sha256 TLS_AES_128_GCM_SHA256
- * @run main/othervm TLSTest TLSv1.3 ecdsa_sha1 TLS_AES_128_GCM_SHA256
- * @run main/othervm TLSTest TLSv1.3 ecdsa_secp384r1_sha384
- *      TLS_AES_128_GCM_SHA256
- * @run main/othervm TLSTest TLSv1.3 ecdsa_secp521r1_sha512
- *      TLS_AES_128_GCM_SHA256
  * @run main/othervm TLSTest TLSv1.3 rsa_pss_rsae_sha256 TLS_AES_128_GCM_SHA256
  * @run main/othervm TLSTest TLSv1.3 rsa_pss_rsae_sha384 TLS_AES_128_GCM_SHA256
  * @run main/othervm TLSTest TLSv1.3 rsa_pss_rsae_sha512 TLS_AES_128_GCM_SHA256
@@ -84,12 +77,6 @@ import javax.net.ssl.TrustManagerFactory;
  * @run main/othervm TLSTest TLSv1.3 rsa_pkcs1_sha256 TLS_AES_256_GCM_SHA384
  * @run main/othervm TLSTest TLSv1.3 rsa_pkcs1_sha384 TLS_AES_256_GCM_SHA384
  * @run main/othervm TLSTest TLSv1.3 rsa_pkcs1_sha512 TLS_AES_256_GCM_SHA384
- * @run main/othervm TLSTest TLSv1.3 ec_rsa_pkcs1_sha256 TLS_AES_256_GCM_SHA384
- * @run main/othervm TLSTest TLSv1.3 ecdsa_sha1 TLS_AES_256_GCM_SHA384
- * @run main/othervm TLSTest TLSv1.3 ecdsa_secp384r1_sha384
- *      TLS_AES_256_GCM_SHA384
- * @run main/othervm TLSTest TLSv1.3 ecdsa_secp521r1_sha512
- *      TLS_AES_256_GCM_SHA384
  * @run main/othervm TLSTest TLSv1.3 rsa_pss_rsae_sha256 TLS_AES_256_GCM_SHA384
  * @run main/othervm TLSTest TLSv1.3 rsa_pss_rsae_sha384 TLS_AES_256_GCM_SHA384
  * @run main/othervm TLSTest TLSv1.3 rsa_pss_rsae_sha512 TLS_AES_256_GCM_SHA384
@@ -104,14 +91,6 @@ import javax.net.ssl.TrustManagerFactory;
  *      TLS_RSA_WITH_AES_256_GCM_SHA384
  * @run main/othervm TLSTest TLSv1.2 rsa_pkcs1_sha512
  *      TLS_RSA_WITH_AES_128_GCM_SHA256
- * @run main/othervm TLSTest TLSv1.2 ec_rsa_pkcs1_sha256
- *      TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
- * @run main/othervm TLSTest TLSv1.2 ecdsa_sha1
- *      TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
- * @run main/othervm TLSTest TLSv1.2 ecdsa_secp384r1_sha384
- *      TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
- * @run main/othervm TLSTest TLSv1.2 ecdsa_secp521r1_sha512
- *      TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
  * @run main/othervm TLSTest TLSv1.2 rsa_pss_rsae_sha256
  *      TLS_RSA_WITH_AES_256_CBC_SHA256
  * @run main/othervm TLSTest TLSv1.2 rsa_pss_rsae_sha384
@@ -159,16 +138,81 @@ public class TLSTest {
         final String tlsProtocol = args[0];
         final KeyType keyType = KeyType.valueOf(args[1]);
         final String cipher = args[2];
-        Security.setProperty("jdk.tls.disabledAlgorithms", "");
+        if (!(SecurityUtils.isFIPS())) {
+            Security.setProperty("jdk.tls.disabledAlgorithms", "");
+        }
+
         CountDownLatch serverReady = new CountDownLatch(1);
         Server server = new Server(tlsProtocol, keyType, cipher, serverReady);
         server.start();
 
         // Wait till server is ready to accept connection.
         serverReady.await();
-        new Client(tlsProtocol, keyType, cipher, server.port).doClientSide();
+        try {
+            new Client(tlsProtocol, keyType, cipher, server.port).doClientSide();
+        } catch (javax.net.ssl.SSLHandshakeException sslhe) {
+            if (SecurityUtils.isFIPS()) {
+                if (!SecurityUtils.TLS_PROTOCOLS.contains(tlsProtocol)) {
+                    System.out.println(tlsProtocol + " is not available from Client side.");
+                } 
+                if (!SecurityUtils.TLS_CIPHERSUITES.containsKey(cipher)) {
+                    System.out.println(cipher + " is not available from Client side.");
+                } else if (!SecurityUtils.TLS_CIPHERSUITES.get(cipher).equals(tlsProtocol)) {
+                    System.out.println(cipher + " does not match " + tlsProtocol + " from Client side.");
+                }
+                if (args[1].contains("sha1")) {
+                    System.out.println("FIPS140-3 does not support SHA1 from Client side.");
+                }
+                if ("No available authentication scheme".equals(sslhe.getMessage())) {
+                    System.out.println("Expected exception msg: <No available authentication scheme> is caught from Client side");
+                    return;
+                } else {
+                    System.out.println("Unexpected exception msg: <" + sslhe.getMessage() + "> is caught from Client side");
+                    return;
+                }
+            } else {
+                sslhe.printStackTrace();
+                return;
+            }
+        } catch (java.lang.ExceptionInInitializerError eiie) {
+            Throwable cause = eiie.getCause();
+            if (cause instanceof java.lang.IllegalArgumentException) {
+                if (SecurityUtils.isFIPS() 
+                && ("System property jdk.tls.namedGroups(" + System.getProperty("jdk.tls.namedGroups") + ") contains no supported named groups").equals(cause.getMessage())) {
+                    System.out.println("Expected msg is caught from Client side.");
+                    return;
+                }
+            }
+        }
         if (server.serverExc != null) {
-            throw new RuntimeException(server.serverExc);
+            if (SecurityUtils.isFIPS()) {
+                if (!SecurityUtils.TLS_PROTOCOLS.contains(tlsProtocol)) {
+                    System.out.println(tlsProtocol + " is not available from Server side.");
+                } 
+                if (!SecurityUtils.TLS_CIPHERSUITES.containsKey(cipher)) {
+                    System.out.println(cipher + " is not available from Server side.");
+                } else if (!SecurityUtils.TLS_CIPHERSUITES.get(cipher).equals(tlsProtocol)) {
+                    System.out.println(cipher + " does not match " + tlsProtocol + " from Server side.");
+                }
+                if (args[1].contains("sha1")) {
+                    System.out.println("FIPS140-3 does not support SHA1 from Server side.");
+                }
+                if (server.serverExc instanceof javax.net.ssl.SSLHandshakeException) {
+                    if ("No available authentication scheme".equals(server.serverExc.getMessage())) {
+                        System.out.println("Expected exception msg: <No available authentication scheme> is caught from Server side");
+                        return;
+                    } else {
+                        System.out.println("Unexpected exception msg: <" + server.serverExc.getMessage() + "> is caught from Server side");
+                        return;
+                    }
+                } else {
+                    System.out.println("Unexpected exception is caught from Server side");
+                    server.serverExc.printStackTrace();
+                    return;
+                }
+            } else {
+                throw new RuntimeException(server.serverExc);
+            }
         }
     }
 

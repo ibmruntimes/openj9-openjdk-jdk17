@@ -26,6 +26,7 @@
  * @bug 8133632
  * @summary javax.net.ssl.SSLEngine does not properly handle received
  *      SSL fatal alerts
+ * @library /test/lib
  * @run main EngineCloseOnAlert
  */
 
@@ -36,6 +37,9 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.security.*;
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.*;
+
+import jdk.test.lib.Utils;
+import jdk.test.lib.security.SecurityUtils;
 
 public class EngineCloseOnAlert {
 
@@ -53,8 +57,9 @@ public class EngineCloseOnAlert {
     private static KeyManagerFactory KMF;
     private static TrustManagerFactory TMF;
 
-    private static final String[] ONECIPHER =
-            { "TLS_RSA_WITH_AES_128_CBC_SHA" };
+    private static final String[] ONECIPHER = (SecurityUtils.isFIPS()) ?
+        new String[] { "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256" } : new String[] { "TLS_RSA_WITH_AES_128_CBC_SHA" };
+
 
     public interface TestCase {
         public void runTest() throws Exception;
