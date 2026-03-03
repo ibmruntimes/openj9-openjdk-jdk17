@@ -25,7 +25,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2024, 2024 All Rights Reserved
+ * (c) Copyright IBM Corp. 2024, 2026 All Rights Reserved
  * ===========================================================================
  */
 
@@ -1800,6 +1800,26 @@ class DatagramChannelImpl
                 tryFinishClose();
             }
         }
+    }
+
+    /**
+     * This method is added to support the pollset implementation.
+     * Translates an interest operation set into a native poll event set.
+     */
+    @Override
+    public void translateAndSetInterestOps(int ops, SelectionKeyImpl sk) {
+        int newOps = 0;
+
+        if ((ops & SelectionKey.OP_READ) != 0) {
+            newOps |= Net.POLLIN;
+        }
+        if ((ops & SelectionKey.OP_WRITE) != 0) {
+            newOps |= Net.POLLOUT;
+        }
+        if ((ops & SelectionKey.OP_CONNECT) != 0) {
+            newOps |= Net.POLLIN;
+        }
+        ((SelectorImpl) sk.selector()).putEventOps(sk, newOps);
     }
 
     /**

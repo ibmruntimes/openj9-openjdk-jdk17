@@ -25,7 +25,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2024, 2024 All Rights Reserved
+ * (c) Copyright IBM Corp. 2024, 2026 All Rights Reserved
  * ===========================================================================
  */
 
@@ -196,6 +196,16 @@ class SourceChannelImpl
         } finally {
             readLock.unlock();
         }
+    }
+
+    /**
+     * This method is added to support the pollset implementation.
+     * Translates an interest operation set into a native poll event set.
+     */
+    @Override
+    public void translateAndSetInterestOps(int ops, SelectionKeyImpl sk) {
+        int newOps = ((ops & SelectionKey.OP_READ) != 0) ? Net.POLLIN : 0;
+        ((SelectorImpl) sk.selector()).putEventOps(sk, newOps);
     }
 
     public boolean translateReadyOps(int ops, int initialOps, SelectionKeyImpl ski) {

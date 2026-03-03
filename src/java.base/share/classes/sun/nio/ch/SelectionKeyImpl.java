@@ -23,6 +23,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2025, 2026 All Rights Reserved
+ * ===========================================================================
+ */
+
 package sun.nio.ch;
 
 import java.io.FileDescriptor;
@@ -35,6 +41,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.spi.AbstractSelectionKey;
 
+import sun.nio.ch.PollsetSelectorFeature;
 
 /**
  * An implementation of SelectionKey.
@@ -102,6 +109,9 @@ public final class SelectionKeyImpl
     @Override
     public SelectionKey interestOps(int ops) {
         ensureValid();
+        if (PollsetSelectorFeature.ENABLED) {
+            return nioInterestOps(ops);
+        }
         if ((ops & ~channel().validOps()) != 0)
             throw new IllegalArgumentException();
         int oldOps = (int) INTERESTOPS.getAndSet(this, ops);
@@ -154,6 +164,10 @@ public final class SelectionKeyImpl
         if ((ops & ~channel().validOps()) != 0)
             throw new IllegalArgumentException();
         interestOps = ops;
+        if (PollsetSelectorFeature.ENABLED) {
+            channel.translateAndSetInterestOps(ops, this);
+            return this;
+        }
         selector.setEventOps(this);
         return this;
     }

@@ -25,7 +25,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2024, 2024 All Rights Reserved
+ * (c) Copyright IBM Corp. 2024, 2026 All Rights Reserved
  * ===========================================================================
  */
 
@@ -659,6 +659,18 @@ class ServerSocketChannelImpl
         synchronized (stateLock) {
             return localAddress;
         }
+    }
+
+    /**
+     * This method is added to support the pollset implementation.
+     * Translates an interest operation set into a native poll event set.
+     */
+    @Override
+    public void translateAndSetInterestOps(int ops, SelectionKeyImpl sk) {
+        // translate ops
+        int newOps = ((ops & SelectionKey.OP_ACCEPT) != 0) ? Net.POLLIN : 0;
+        // place ops into pollfd array
+        ((SelectorImpl) sk.selector()).putEventOps(sk, newOps);
     }
 
     /**

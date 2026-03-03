@@ -23,6 +23,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2025, 2026 All Rights Reserved
+ * ===========================================================================
+ */
+
 package sun.nio.ch;
 
 import java.nio.channels.Channel;
@@ -63,6 +69,11 @@ public interface SelChImpl extends Channel {
      *          contain
      */
     boolean translateAndSetReadyOps(int ops, SelectionKeyImpl ski);
+
+    // This method is added to support the pollset implementation.
+    default void translateAndSetInterestOps(int ops, SelectionKeyImpl sk) {
+        // Do nothing by default.
+    }
 
     /**
      * Translates an interest operation set into a native event set
