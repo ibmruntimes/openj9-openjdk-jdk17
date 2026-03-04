@@ -23,9 +23,16 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2025, 2026 All Rights Reserved
+ * ===========================================================================
+ */
+
 package sun.nio.ch;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.IllegalSelectorException;
 import java.nio.channels.SelectableChannel;
@@ -43,6 +50,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import sun.nio.ch.PollsetSelectorFeature;
 
 /**
  * Base Selector implementation class.
@@ -84,6 +92,22 @@ public abstract class SelectorImpl
     public final Set<SelectionKey> keys() {
         ensureOpen();
         return publicKeys;
+    }
+
+    /**
+     * This method is added to support the pollset implementation.
+     * Getter for keys.
+     */
+    protected final Set<SelectionKey> keySet() {
+        return keys;
+    }
+
+    /**
+     * This method is added to support the pollset implementation.
+     * Getter for selected keys.
+     */
+    protected final Set<SelectionKey> selectedKeySet() {
+        return selectedKeys;
     }
 
     @Override
@@ -178,8 +202,28 @@ public abstract class SelectorImpl
      */
     protected abstract void implClose() throws IOException;
 
+    // This method is added to support the pollset implementation.
+    public void putEventOps(SelectionKeyImpl sk, int ops) {
+        // Do nothing by default.
+    }
+
     @Override
     public final void implCloseSelector() throws IOException {
+        if (PollsetSelectorFeature.ENABLED) {
+            Iterator<SelectionKey> i = keys.iterator();
+            while (i.hasNext()) {
+                i.next().cancel();
+            }
+            wakeup();
+            synchronized (this) {
+                synchronized (publicKeys) {
+                    synchronized (publicSelectedKeys) {
+                       implClose();
+                    }
+                }
+            }
+            return;
+        }
         wakeup();
         synchronized (this) {
             implClose();
@@ -210,6 +254,13 @@ public abstract class SelectorImpl
         SelectionKeyImpl k = new SelectionKeyImpl((SelChImpl)ch, this);
         if (attachment != null)
             k.attach(attachment);
+        if (PollsetSelectorFeature.ENABLED) {
+            synchronized (publicKeys) {
+                implRegister(k);
+            }
+            k.interestOps(ops);
+            return k;
+        }
 
         // register (if needed) before adding to key set
         implRegister(k);
@@ -257,6 +308,26 @@ public abstract class SelectorImpl
      * Invoked by selection operations to process the cancelled keys
      */
     protected final void processDeregisterQueue() throws IOException {
+        if (PollsetSelectorFeature.ENABLED) {
+            // Precondition: Synchronized on this, keys, and selectedKeys.
+            Set<SelectionKey> cks = cancelledKeys();
+            synchronized (cks) {
+                if (!cks.isEmpty()) {
+                    Iterator<SelectionKey> i = cks.iterator();
+                    while (i.hasNext()) {
+                        SelectionKeyImpl ski = (SelectionKeyImpl) i.next();
+                        try {
+                            implDereg(ski);
+                        } catch (SocketException se) {
+                            throw new IOException("Error deregistering key", se);
+                        } finally {
+                            i.remove();
+                        }
+                    }
+                }
+            }
+            return;
+        }
         assert Thread.holdsLock(this);
         assert Thread.holdsLock(publicSelectedKeys);
 
