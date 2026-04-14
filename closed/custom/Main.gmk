@@ -43,7 +43,15 @@ OPENJ9_MAKE := $(MAKE) $(MAKE_ARGS) -f $(TOPDIR)/closed/OpenJ9.gmk
 
 create-main-targets-include java.base-gensrc : generate-j9jcl-sources
 
-j9vm-build : buildtools-langtools
+# JFR header generation target - invokes wrapper that includes upstream GensrcJfr.gmk
+.PHONY : hotspot-jfr-gensrc
+
+hotspot-jfr-gensrc : buildtools-hotspot
+  ifeq (true,$(OPENJ9_ENABLE_JFR))
+	@+($(MAKE) $(MAKE_ARGS) -f $(TOPDIR)/closed/make/hotspot/gensrc/GensrcJfrWrapper.gmk)
+  endif
+
+j9vm-build : buildtools-langtools hotspot-jfr-gensrc
   ifeq ($(BUILD_OPENSSL), true)
 	@+$(MAKE) $(MAKE_ARGS) -f $(TOPDIR)/closed/openssl.gmk
   endif # BUILD_OPENSSL
