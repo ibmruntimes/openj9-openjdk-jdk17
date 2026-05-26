@@ -43,8 +43,6 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
-import sun.net.util.AIX;
-
 class SinkChannelImpl
     extends Pipe.SinkChannel
     implements SelChImpl
@@ -131,11 +129,8 @@ class SinkChannelImpl
             if (!tryClose()) {
                 long th = thread;
                 if (th != 0) {
-                    if (!AIX.isAIX)
-                        nd.preClose(fd);
+                    nd.preClose(fd);
                     NativeThread.signal(th);
-                    if (AIX.isAIX)
-                        nd.preClose(fd);
                 }
             }
         }
