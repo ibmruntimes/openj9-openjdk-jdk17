@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2001, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -78,7 +78,6 @@ import java.util.function.Consumer;
 import jdk.internal.ref.CleanerFactory;
 import sun.net.ResourceManager;
 import sun.net.ext.ExtendedSocketOptions;
-import sun.net.util.AIX;
 import sun.net.util.IPAddressUtil;
 
 /**
@@ -1736,18 +1735,7 @@ class DatagramChannelImpl
                 registry.invalidateAll();
 
             if (!tryClose()) {
-                long reader = readerThread;
-                long writer = writerThread;
-                if (reader != 0 || writer != 0) {
-                    if (!AIX.isAIX)
-                        nd.preClose(fd);
-                    if (reader != 0)
-                        NativeThread.signal(reader);
-                    if (writer != 0)
-                        NativeThread.signal(writer);
-                    if (AIX.isAIX)
-                        nd.preClose(fd);
-                }
+                nd.preClose(fd, readerThread, writerThread);
             }
         }
     }

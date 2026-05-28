@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2000, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2000, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -63,7 +63,6 @@ import static java.net.StandardProtocolFamily.UNIX;
 
 import sun.net.NetHooks;
 import sun.net.ext.ExtendedSocketOptions;
-import sun.net.util.AIX;
 
 /**
  * An implementation of ServerSocketChannels
@@ -588,14 +587,7 @@ class ServerSocketChannelImpl
             assert state < ST_CLOSING;
             state = ST_CLOSING;
             if (!tryClose()) {
-                long th = thread;
-                if (th != 0) {
-                    if (!AIX.isAIX)
-                        nd.preClose(fd);
-                    NativeThread.signal(th);
-                    if (AIX.isAIX)
-                        nd.preClose(fd);
-                }
+                nd.preClose(fd, thread, 0);
             }
         }
     }
