@@ -31,37 +31,28 @@
 
 package sun.security.util;
 
+import java.math.BigInteger;
 import java.security.AccessController;
 import java.security.AlgorithmParameters;
+import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.PrivilegedAction;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.InvalidKeyException;
-import java.security.interfaces.ECKey;
-import java.security.interfaces.EdECKey;
-import java.security.interfaces.EdECPublicKey;
-import java.security.interfaces.RSAKey;
-import java.security.interfaces.DSAKey;
-import java.security.interfaces.DSAParams;
-import java.security.interfaces.XECKey;
 import java.security.SecureRandom;
-import java.security.spec.AlgorithmParameterSpec;
-import java.security.spec.KeySpec;
-import java.security.spec.ECParameterSpec;
-import java.security.spec.InvalidParameterSpecException;
+import java.security.interfaces.*;
+import java.security.spec.*;
+import java.util.Arrays;
 import javax.crypto.SecretKey;
 import javax.crypto.interfaces.DHKey;
 import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.DHPublicKeySpec;
-import java.math.BigInteger;
-import java.security.spec.NamedParameterSpec;
-import java.util.Arrays;
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.auth.DestroyFailedException;
 
 import jdk.internal.access.SharedSecrets;
+import com.sun.crypto.provider.PBKDF2KeyImpl;
 import sun.security.jca.JCAUtil;
 
 /**
@@ -445,6 +436,8 @@ public final class KeyUtil {
                 if (k instanceof SecretKeySpec sk) {
                     SharedSecrets.getJavaxCryptoSpecAccess()
                             .clearSecretKeySpec(sk);
+                } else if (k instanceof PBKDF2KeyImpl p2k) {
+                    p2k.clear();
                 } else {
                     try {
                         k.destroy();
