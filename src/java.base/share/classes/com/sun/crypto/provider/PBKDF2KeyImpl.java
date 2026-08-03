@@ -63,7 +63,7 @@ import sun.security.action.GetPropertyAction;
  * @author Valerie Peng
  *
  */
-final class PBKDF2KeyImpl implements javax.crypto.interfaces.PBEKey {
+public final class PBKDF2KeyImpl implements javax.crypto.interfaces.PBEKey {
 
     @java.io.Serial
     private static final long serialVersionUID = -2234868909660948157L;
