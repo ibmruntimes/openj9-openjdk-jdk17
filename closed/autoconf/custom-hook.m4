@@ -1,5 +1,5 @@
 # ===========================================================================
-# (c) Copyright IBM Corp. 2017, 2025 All Rights Reserved
+# (c) Copyright IBM Corp. 2017, 2026 All Rights Reserved
 # ===========================================================================
 # This code is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 only, as
@@ -54,7 +54,6 @@ AC_DEFUN_ONCE([CUSTOM_EARLY_HOOK],
   OPENJ9_CONFIGURE_DDR
   OPENJ9_CONFIGURE_DEMOS
   OPENJ9_CONFIGURE_HEALTHCENTER
-  OPENJ9_CONFIGURE_INLINE_TYPES
   OPENJ9_CONFIGURE_JFR
   OPENJ9_CONFIGURE_JITSERVER
   OPENJ9_CONFIGURE_NUMA
@@ -406,25 +405,6 @@ AC_DEFUN([OPENJ9_CONFIGURE_CRAC_AND_CRIU_SUPPORT],
     OPENJ9_ENABLE_CRIU_SUPPORT=false
   fi
   AC_SUBST(OPENJ9_ENABLE_CRIU_SUPPORT)
-])
-
-AC_DEFUN([OPENJ9_CONFIGURE_INLINE_TYPES],
-[
-  AC_MSG_CHECKING([for inline types])
-  AC_ARG_ENABLE([inline-types], [AS_HELP_STRING([--enable-inline-types], [enable Inline-Type support @<:@disabled@:>@])])
-  OPENJ9_ENABLE_INLINE_TYPES=false
-
-  if test "x$enable_inline_types" = xyes ; then
-    AC_MSG_RESULT([yes (explicitly enabled)])
-    OPENJ9_ENABLE_INLINE_TYPES=true
-  elif test "x$enable_inline_types" = xno ; then
-    AC_MSG_RESULT([no (explicitly disabled)])
-  elif test "x$enable_inline_types" = x ; then
-    AC_MSG_RESULT([no (default)])
-  else
-    AC_MSG_ERROR([--enable-inline-types accepts no argument])
-  fi
-  AC_SUBST(OPENJ9_ENABLE_INLINE_TYPES)
 ])
 
 AC_DEFUN([OPENJ9_CONFIGURE_JFR],
