@@ -21,7 +21,7 @@
 RestrictedSecurity.TestConstraints.Version.desc.name = Test Base Profile
 RestrictedSecurity.TestConstraints.Version.desc.default = false
 RestrictedSecurity.TestConstraints.Version.desc.fips = false
-RestrictedSecurity.TestConstraints.Version.desc.hash = SHA256:45f44716785e8fc1ec6a19f83ecda7b04b68b6ebda6c4bd4031eee2a9637b88f
+RestrictedSecurity.TestConstraints.Version.desc.hash = SHA256:aeb9aef67d2bf9e71e6b33aa6befc1a1f6208b5da9895c3b09d2cab02c020516
 RestrictedSecurity.TestConstraints.Version.fips.mode = test
 
 RestrictedSecurity.TestConstraints.Version.jce.provider.1 = sun.security.provider.Sun [ \
@@ -35,6 +35,7 @@ RestrictedSecurity.TestConstraints.Version.jce.provider.1 = sun.security.provide
     {MessageDigest, MD5, *, FullClassName:TestConstraintsSuccess}, \
     {MessageDigest, MD5, *, FullClassName:AnotherNonExistingClass}, \
     {MessageDigest, SHA-256, *}, \
+    {MessageDigest, sha384, *, FullClassName:TestConstraintsSuccess}, \
     {MessageDigest, SHA-512, *, FullClassName:TestConstraintsSuccess}, \
     {KeyStore, PKCS12, *, FullClassName:TestConstraintsSuccess}]
 RestrictedSecurity.TestConstraints.Version.jce.provider.2 = sun.security.ec.SunEC [ \
