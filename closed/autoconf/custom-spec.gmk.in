@@ -83,7 +83,7 @@ CXX_VERSION_STRING := @CXX_VERSION_STRING@
 
 include $(TOPDIR)/closed/openjdk-tag.gmk
 
-J9JDK_EXT_VERSION       := 17.0.20.10-ea
+J9JDK_EXT_VERSION       := 17.0.20.10
 J9JDK_EXT_NAME          := Extensions for OpenJDK for Eclipse OpenJ9
 
 # required by CMake
