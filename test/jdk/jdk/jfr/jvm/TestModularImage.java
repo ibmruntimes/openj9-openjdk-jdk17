@@ -20,6 +20,13 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2026, 2026 All Rights Reserved
+ * ===========================================================================
+ */
+
 package jdk.jfr.jvm;
 
 import java.io.File;
@@ -83,7 +90,7 @@ public class TestModularImage {
     }
 
     private static void testCommandLineWithJFR(Path binPath) throws Exception {
-        var result = java(binPath, "-XX:StartFlightRecording", "--module", "hello.world/hello.Main");
+        var result = java(binPath, "-XX:+EnableOpenJ9ExperimentalFlightRecording", "-XX:StartFlightRecording", "--module", "hello.world/hello.Main");
         result.shouldNotContain(ERROR_LINE1);
         result.shouldNotContain(ERROR_LINE2);
         result.shouldContain(HELLO_WORLD);
@@ -92,7 +99,7 @@ public class TestModularImage {
     }
 
     private static void testJcmdWithJFR(Path binPath, String jcmd) throws Exception {
-        var result = java(binPath, "--module", "hello.world/hello.Main", jcmd);
+        var result = java(binPath, "-XX:+EnableOpenJ9ExperimentalFlightRecording", "--module", "hello.world/hello.Main", jcmd);
         result.shouldContain(HELLO_WORLD);
         result.shouldNotContain(ERROR_LINE1);
         result.shouldNotContain(ERROR_LINE2);
@@ -101,7 +108,7 @@ public class TestModularImage {
     }
 
     private static void testCommandLineWithoutJFR(Path binPath) throws Exception {
-        var result = java(binPath, "-XX:StartFlightRecording", "--module", "hello.world/hello.Main");
+        var result = java(binPath, "-XX:+EnableOpenJ9ExperimentalFlightRecording", "-XX:StartFlightRecording", "--module", "hello.world/hello.Main");
         result.shouldContain(ERROR_LINE1);
         result.shouldContain(ERROR_LINE2);
         result.shouldNotContain(HELLO_WORLD);
@@ -110,7 +117,7 @@ public class TestModularImage {
     }
 
     private static void testJcmdWithoutJFR(Path binPath, String jcmd) throws Exception {
-        OutputAnalyzer result = java(binPath, "--module", "hello.world/hello.Main", jcmd);
+        OutputAnalyzer result = java(binPath, "-XX:+EnableOpenJ9ExperimentalFlightRecording", "--module", "hello.world/hello.Main", jcmd);
         result.shouldContain(HELLO_WORLD);
         result.shouldContain("Module jdk.jfr not found.");
         result.shouldContain("Flight Recorder can not be enabled.");
