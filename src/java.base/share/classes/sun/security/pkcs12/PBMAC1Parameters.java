@@ -116,7 +116,7 @@ final class PBMAC1Parameters {
      * Encode PBMAC1 parameters from components.
      */
     static byte[] encode(byte[] salt, int iterationCount, int keyLength,
-            String kdfHmac, String hmac) throws NoSuchAlgorithmException {
+            String kdfHmac, String hmac) throws NoSuchAlgorithmException, IOException {
 
         DerOutputStream out = new DerOutputStream();
 
@@ -125,9 +125,11 @@ final class PBMAC1Parameters {
                 iterationCount, keyLength, kdfHmac));
 
         // messageAuthScheme AlgorithmIdentifier {{PBMAC1-MACs}}
-        out.write(AlgorithmId.get(hmac));
-        return new DerOutputStream().write(DerValue.tag_Sequence, out)
-                .toByteArray();
+        AlgorithmId.get(hmac).encode(out);
+        DerOutputStream tmp = new DerOutputStream();
+        tmp.write(DerValue.tag_Sequence, out);
+        byte[] result = tmp.toByteArray();
+        return result;
     }
 
     PBKDF2Parameters getKdfParams() {

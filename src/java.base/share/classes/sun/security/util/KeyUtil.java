@@ -437,7 +437,7 @@ public final class KeyUtil {
                     SharedSecrets.getJavaxCryptoSpecAccess()
                             .clearSecretKeySpec(sk);
                 } else if (k instanceof PBKDF2KeyImpl p2k) {
-                    p2k.clear();
+                    p2k.clearPassword();
                 } else {
                     try {
                         k.destroy();

@@ -335,7 +335,7 @@ class MacData {
             final AlgorithmId digestAlgorithm = AlgorithmId.get(algName);
             DerOutputStream tmp2 = new DerOutputStream();
 
-            tmp2.write(digestAlgorithm);
+            digestAlgorithm.encode(tmp2);
             tmp2.putOctetString(digest);
 
             // wrap into a SEQUENCE

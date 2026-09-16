@@ -108,17 +108,22 @@ public final class PBKDF2Parameters {
         iterationCount = pBKDF2_params.data.getInteger();
 
         // keyLength INTEGER (1..MAX) OPTIONAL,
-        var ksDer = pBKDF2_params.data.getOptional(DerValue.tag_Integer);
-        if (ksDer.isPresent()) {
-            keyLength = ksDer.get().getInteger() * 8; // keyLength (in bits)
+        DerValue ksDer = null;
+        if (pBKDF2_params.data.available() > 0 && pBKDF2_params.data.peekByte() == DerValue.tag_Integer) {
+            ksDer = pBKDF2_params.data.getDerValue();
+        }
+        if (ksDer != null) {
+            keyLength = ksDer.getInteger() * 8; // keyLength (in bits)
         } else {
             keyLength = -1;
         }
 
         // prf AlgorithmIdentifier {{PBKDF2-PRFs}} DEFAULT algid-hmacWithSHA1
-        var prfDer = pBKDF2_params.data.getOptional(DerValue.tag_Sequence);
-        if (prfDer.isPresent()) {
-            DerValue prf = prfDer.get();
+        DerValue prf = null;
+        if (pBKDF2_params.data.available() > 0 && pBKDF2_params.data.peekByte() == DerValue.tag_Sequence) {
+            prf = pBKDF2_params.data.getDerValue();
+        }
+        if (prf != null) {
             // the pseudorandom function (default is HmacSHA1)
             ObjectIdentifier kdfAlgo_OID = prf.data.getOID();
             KnownOIDs o = KnownOIDs.findMatch(kdfAlgo_OID.toString());
@@ -134,15 +139,13 @@ public final class PBKDF2Parameters {
                         + "pseudorandom function");
             }
             prfAlgo = o.stdName();
-            prf.data.getOptional(DerValue.tag_Null);
-            prf.data.atEnd();
         } else {
             prfAlgo = "HmacSHA1";
         }
     }
 
     public static byte[] encode(byte[] salt, int iterationCount,
-            int keyLength, String kdfHmac) {
+            int keyLength, String kdfHmac) throws IOException {
         ObjectIdentifier prf =
                ObjectIdentifier.of(KnownOIDs.findMatch(kdfHmac));
         return PBKDF2Parameters.encode(salt, iterationCount, keyLength, prf);
@@ -153,7 +156,7 @@ public final class PBKDF2Parameters {
      * The outer algorithm ID is also encoded in addition to the parameters.
      */
     public static byte[] encode(byte[] salt, int iterationCount,
-            int keyLength, ObjectIdentifier prf) {
+            int keyLength, ObjectIdentifier prf) throws IOException {
         assert keyLength != -1;
 
         DerOutputStream out = new DerOutputStream();
@@ -164,14 +167,17 @@ public final class PBKDF2Parameters {
         tmp0.putInteger(keyLength);
 
         // prf AlgorithmIdentifier {{PBKDF2-PRFs}}
-        tmp0.write(new AlgorithmId(prf));
+        AlgorithmId tmpAlgId = new AlgorithmId(prf);
+        tmpAlgId.encode(tmp0);
 
         // id-PBKDF2 OBJECT IDENTIFIER ::= {pkcs-5 12}
         out.putOID(ObjectIdentifier.of(KnownOIDs.PBKDF2));
         out.write(DerValue.tag_Sequence, tmp0);
-
-        return new DerOutputStream().write(DerValue.tag_Sequence, out)
-                .toByteArray();
+        
+        DerOutputStream tmp = new DerOutputStream();
+        tmp.write(DerValue.tag_Sequence, out);
+        byte[] result = tmp.toByteArray();
+        return result;
     }
 
     /**
