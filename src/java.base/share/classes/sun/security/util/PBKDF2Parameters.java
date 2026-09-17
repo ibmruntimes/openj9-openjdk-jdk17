@@ -108,22 +108,16 @@ public final class PBKDF2Parameters {
         iterationCount = pBKDF2_params.data.getInteger();
 
         // keyLength INTEGER (1..MAX) OPTIONAL,
-        DerValue ksDer = null;
-        if (pBKDF2_params.data.available() > 0 && pBKDF2_params.data.peekByte() == DerValue.tag_Integer) {
-            ksDer = pBKDF2_params.data.getDerValue();
-        }
-        if (ksDer != null) {
-            keyLength = ksDer.getInteger() * 8; // keyLength (in bits)
+        var paramsData = pBKDF2_params.data;
+        if (paramsData.available() > 0 && paramsData.peekByte() == DerValue.tag_Integer) {
+            keyLength = paramsData.getDerValue().getInteger() * 8; // keyLength (in bits)
         } else {
             keyLength = -1;
         }
 
         // prf AlgorithmIdentifier {{PBKDF2-PRFs}} DEFAULT algid-hmacWithSHA1
-        DerValue prf = null;
-        if (pBKDF2_params.data.available() > 0 && pBKDF2_params.data.peekByte() == DerValue.tag_Sequence) {
-            prf = pBKDF2_params.data.getDerValue();
-        }
-        if (prf != null) {
+        if (paramsData.available() > 0 && paramsData.peekByte() == DerValue.tag_Sequence) {
+            var prf = paramsData.getDerValue();
             // the pseudorandom function (default is HmacSHA1)
             ObjectIdentifier kdfAlgo_OID = prf.data.getOID();
             KnownOIDs o = KnownOIDs.findMatch(kdfAlgo_OID.toString());
@@ -139,6 +133,12 @@ public final class PBKDF2Parameters {
                         + "pseudorandom function");
             }
             prfAlgo = o.stdName();
+            if (paramsData.available() > 0 && paramsData.peekByte() == DerValue.tag_Null) {
+                paramsData.getDerValue();
+            }
+            if (paramsData.available() > 0) {
+                throw new IOException("Extra unused bytes");
+            }
         } else {
             prfAlgo = "HmacSHA1";
         }
@@ -167,17 +167,16 @@ public final class PBKDF2Parameters {
         tmp0.putInteger(keyLength);
 
         // prf AlgorithmIdentifier {{PBKDF2-PRFs}}
-        AlgorithmId tmpAlgId = new AlgorithmId(prf);
+        var tmpAlgId = new AlgorithmId(prf);
         tmpAlgId.encode(tmp0);
 
         // id-PBKDF2 OBJECT IDENTIFIER ::= {pkcs-5 12}
         out.putOID(ObjectIdentifier.of(KnownOIDs.PBKDF2));
         out.write(DerValue.tag_Sequence, tmp0);
-        
-        DerOutputStream tmp = new DerOutputStream();
+
+        var tmp = new DerOutputStream();
         tmp.write(DerValue.tag_Sequence, out);
-        byte[] result = tmp.toByteArray();
-        return result;
+        return tmp.toByteArray();
     }
 
     /**

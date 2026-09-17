@@ -128,8 +128,7 @@ final class PBMAC1Parameters {
         AlgorithmId.get(hmac).encode(out);
         DerOutputStream tmp = new DerOutputStream();
         tmp.write(DerValue.tag_Sequence, out);
-        byte[] result = tmp.toByteArray();
-        return result;
+        return tmp.toByteArray();
     }
 
     PBKDF2Parameters getKdfParams() {
