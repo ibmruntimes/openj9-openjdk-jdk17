@@ -23,12 +23,6 @@
  * questions.
  */
 
-/*
- * ===========================================================================
- * (c) Copyright IBM Corp. 2026, 2026 All Rights Reserved
- * ===========================================================================
- */
-
 package sun.security.pkcs12;
 
 import java.io.IOException;
@@ -75,9 +69,9 @@ class MacData {
 
     private static final Debug debug = Debug.getInstance("pkcs12");
     private final String macAlgorithm;
-    private final byte[] digest;
-    private final byte[] macSalt;
-    private final int iterations;
+    private byte[] digest;
+    private byte[] macSalt;
+    private int iterations;
 
     // The following three fields are for PBMAC1.
     private final int keyLength;
@@ -87,7 +81,9 @@ class MacData {
     /**
      * Parses a PKCS#12 MAC data.
      */
-    MacData(DerInputStream derin) throws IOException {
+    MacData(DerInputStream derin)
+        throws IOException, ParsingException
+    {
         DerValue[] macData = derin.getSequence(2);
         if (macData.length < 2 || macData.length > 3) {
             throw new ParsingException("Invalid length for MacData");
