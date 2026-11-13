@@ -23,12 +23,6 @@
  * questions.
  */
 
-/*
- * ===========================================================================
- * (c) Copyright IBM Corp. 2026, 2026 All Rights Reserved
- * ===========================================================================
- */
-
 package sun.security.util;
 
 import java.io.IOException;
@@ -114,16 +108,19 @@ public final class PBKDF2Parameters {
         iterationCount = pBKDF2_params.data.getInteger();
 
         // keyLength INTEGER (1..MAX) OPTIONAL,
-        var paramsData = pBKDF2_params.data;
-        if (paramsData.available() > 0 && paramsData.peekByte() == DerValue.tag_Integer) {
-            keyLength = paramsData.getDerValue().getInteger() * 8; // keyLength (in bits)
+        DerInputStream ksData = pBKDF2_params.data;
+        if (ksData.available() > 0 &&
+                ksData.data[ksData.pos] == DerValue.tag_Integer) {
+            keyLength = ksData.getInteger() * 8; // keyLength (in bits)
         } else {
             keyLength = -1;
         }
 
         // prf AlgorithmIdentifier {{PBKDF2-PRFs}} DEFAULT algid-hmacWithSHA1
-        if (paramsData.available() > 0 && paramsData.peekByte() == DerValue.tag_Sequence) {
-            var prf = paramsData.getDerValue();
+        DerInputStream prfData = pBKDF2_params.data;
+        if (prfData.available() > 0 &&
+                prfData.data[prfData.pos] == DerValue.tag_Sequence) {
+            DerValue prf = prfData.getDerValue();
             // the pseudorandom function (default is HmacSHA1)
             ObjectIdentifier kdfAlgo_OID = prf.data.getOID();
             KnownOIDs o = KnownOIDs.findMatch(kdfAlgo_OID.toString());
@@ -137,10 +134,11 @@ public final class PBKDF2Parameters {
                         + "pseudorandom function");
             }
             prfAlgo = o.stdName();
-            if (paramsData.available() > 0 && paramsData.peekByte() == DerValue.tag_Null) {
-                paramsData.getDerValue();
+            if (prf.data.available() > 0 &&
+                    prf.data.data[prf.data.pos] == DerValue.tag_Null) {
+                prf.data.getDerValue();
             }
-            if (paramsData.available() > 0) {
+            if (prf.data.available() != 0) {
                 throw new IOException("Extra unused bytes");
             }
         } else {
@@ -149,7 +147,7 @@ public final class PBKDF2Parameters {
     }
 
     public static byte[] encode(byte[] salt, int iterationCount,
-            int keyLength, String kdfHmac) throws IOException {
+            int keyLength, String kdfHmac) {
         ObjectIdentifier prf =
                ObjectIdentifier.of(KnownOIDs.findMatch(kdfHmac));
         return PBKDF2Parameters.encode(salt, iterationCount, keyLength, prf);
@@ -160,27 +158,30 @@ public final class PBKDF2Parameters {
      * The outer algorithm ID is also encoded in addition to the parameters.
      */
     public static byte[] encode(byte[] salt, int iterationCount,
-            int keyLength, ObjectIdentifier prf) throws IOException {
+            int keyLength, ObjectIdentifier prf) {
         assert keyLength != -1;
 
         DerOutputStream out = new DerOutputStream();
         DerOutputStream tmp0 = new DerOutputStream();
+        DerOutputStream dos = new DerOutputStream();
 
-        tmp0.putOctetString(salt);
-        tmp0.putInteger(iterationCount);
-        tmp0.putInteger(keyLength);
+        try {
+            tmp0.putOctetString(salt);
+            tmp0.putInteger(iterationCount);
+            tmp0.putInteger(keyLength);
 
-        // prf AlgorithmIdentifier {{PBKDF2-PRFs}}
-        var tmpAlgId = new AlgorithmId(prf);
-        tmpAlgId.encode(tmp0);
+            // prf AlgorithmIdentifier {{PBKDF2-PRFs}}
+            new AlgorithmId(prf).encode(tmp0);
 
-        // id-PBKDF2 OBJECT IDENTIFIER ::= {pkcs-5 12}
-        out.putOID(ObjectIdentifier.of(KnownOIDs.PBKDF2));
-        out.write(DerValue.tag_Sequence, tmp0);
+            // id-PBKDF2 OBJECT IDENTIFIER ::= {pkcs-5 12}
+            out.putOID(ObjectIdentifier.of(KnownOIDs.PBKDF2));
+            out.write(DerValue.tag_Sequence, tmp0);
 
-        var tmp = new DerOutputStream();
-        tmp.write(DerValue.tag_Sequence, out);
-        return tmp.toByteArray();
+            dos.write(DerValue.tag_Sequence, out);
+        } catch (IOException e) {
+            // ignore
+        }
+        return dos.toByteArray();
     }
 
     /**

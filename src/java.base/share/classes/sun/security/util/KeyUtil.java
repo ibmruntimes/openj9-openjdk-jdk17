@@ -23,26 +23,27 @@
  * questions.
  */
 
-/*
- * ===========================================================================
- * (c) Copyright IBM Corp. 2026, 2026 All Rights Reserved
- * ===========================================================================
- */
-
 package sun.security.util;
 
-import java.math.BigInteger;
 import java.security.AccessController;
 import java.security.AlgorithmParameters;
-import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.PrivilegedAction;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.InvalidKeyException;
+import java.security.interfaces.ECKey;
+import java.security.interfaces.EdECKey;
+import java.security.interfaces.EdECPublicKey;
+import java.security.interfaces.RSAKey;
+import java.security.interfaces.DSAKey;
+import java.security.interfaces.DSAParams;
+import java.security.interfaces.XECKey;
 import java.security.SecureRandom;
-import java.security.interfaces.*;
-import java.security.spec.*;
-import java.util.Arrays;
+import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.KeySpec;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.InvalidParameterSpecException;
 import javax.crypto.SecretKey;
 import javax.crypto.interfaces.DHKey;
 import javax.crypto.interfaces.DHPublicKey;
@@ -50,9 +51,13 @@ import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.DHPublicKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.auth.DestroyFailedException;
-
 import jdk.internal.access.SharedSecrets;
+
 import com.sun.crypto.provider.PBKDF2KeyImpl;
+import java.math.BigInteger;
+import java.security.spec.NamedParameterSpec;
+import java.util.Arrays;
+
 import sun.security.jca.JCAUtil;
 
 /**
@@ -407,26 +412,6 @@ public final class KeyUtil {
         }
     }
 
-    // destroy secret keys in a best-effort way
-    public static void destroySecretKeys(SecretKey... keys) {
-        for (SecretKey k : keys) {
-            if (k != null) {
-                if (k instanceof SecretKeySpec sk) {
-                    SharedSecrets.getJavaxCryptoSpecAccess()
-                            .clearSecretKeySpec(sk);
-                } else if (k instanceof PBKDF2KeyImpl p2k) {
-                    p2k.clearPassword();
-                } else {
-                    try {
-                        k.destroy();
-                    } catch (DestroyFailedException e) {
-                        // swallow
-                    }
-                }
-            }
-        }
-    }
-
     /**
      * Trim leading (most significant) zeroes from the result.
      *
@@ -469,6 +454,26 @@ public final class KeyUtil {
     public static boolean isSupportedKeyAgreementOutputAlgorithm(String alg) {
         return alg.equalsIgnoreCase("TlsPremasterSecret")
                 || alg.equalsIgnoreCase("Generic");
+    }
+
+    // destroy secret keys in a best-effort way
+    public static void destroySecretKeys(SecretKey... keys) {
+        for (SecretKey k : keys) {
+            if (k != null) {
+                if (k instanceof SecretKeySpec sk) {
+                    SharedSecrets.getJavaxCryptoSpecAccess()
+                            .clearSecretKeySpec(sk);
+                } else if (k instanceof PBKDF2KeyImpl p2k) {
+                    p2k.clearPassword();
+                } else {
+                    try {
+                        k.destroy();
+                    } catch (DestroyFailedException e) {
+                        // swallow
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -25,7 +25,7 @@
 
 /*
  * ===========================================================================
- * (c) Copyright IBM Corp. 2022, 2022 All Rights Reserved
+ * (c) Copyright IBM Corp. 2022, 2026 All Rights Reserved
  * ===========================================================================
  */
 
@@ -188,6 +188,7 @@ Java_jdk_internal_loader_NativeLibraries_load
      * the official solution has not yet been released in OpenJDK.
      */
     if (handle) {
+        JVM_RecordLibrary(env, lib, cname);
         loaded = JNI_TRUE;
     }
 
