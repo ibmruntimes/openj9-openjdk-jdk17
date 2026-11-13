@@ -23,6 +23,12 @@
  * questions.
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2026, 2026 All Rights Reserved
+ * ===========================================================================
+ */
+
 #ifndef _JAVASOFT_JVM_H_
 #define _JAVASOFT_JVM_H_
 
@@ -152,6 +158,9 @@ JVM_IsUseContainerSupport(void);
 
 JNIEXPORT void * JNICALL
 JVM_LoadLibrary(const char *name, jboolean throwException);
+
+JNIEXPORT void JNICALL
+JVM_RecordLibrary(JNIEnv *env, jobject nativeLibImpl, const char *name);
 
 JNIEXPORT void JNICALL
 JVM_UnloadLibrary(void * handle);
