@@ -26,6 +26,12 @@
  * Google Author(s): Behdad Esfahbod
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2026, 2026 All Rights Reserved
+ * ===========================================================================
+ */
+
 #ifndef HB_OT_LAYOUT_COMMON_HH
 #define HB_OT_LAYOUT_COMMON_HH
 
@@ -2641,7 +2647,12 @@ struct hb_scalar_cache_t
 {
   private:
   static constexpr unsigned STATIC_LENGTH = 128;
+#if defined(_AIX)
+  /* On AIX, the definition of NAN is incompatible with constexpr use. */
+  static const float INVALID;
+#else /* defined(_AIX) */
   static constexpr float INVALID = NAN;
+#endif /* defined(_AIX) */
 
   public:
   hb_scalar_cache_t () {}
