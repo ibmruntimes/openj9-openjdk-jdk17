@@ -28,6 +28,12 @@
  * Google Author(s): Behdad Esfahbod
  */
 
+/*
+ * ===========================================================================
+ * (c) Copyright IBM Corp. 2026, 2026 All Rights Reserved
+ * ===========================================================================
+ */
+
 #include "hb.hh"
 
 #ifndef HB_NO_OT_LAYOUT
@@ -56,6 +62,10 @@
 
 using OT::Layout::GSUB;
 using OT::Layout::GPOS;
+
+#if defined(_AIX)
+const float OT::hb_scalar_cache_t::INVALID = NAN;
+#endif /* defined(_AIX) */
 
 /**
  * SECTION:hb-ot-layout
